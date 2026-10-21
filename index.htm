@@ -68,6 +68,8 @@
 
   .cuerpo > img.sinfoto { background: var(--sinfoto); }
 
+  .cuerpo > img.conEnlace { cursor: pointer; }
+
   .cuerpo > img.logo { object-fit: contain; background: #fff; padding: 6%; box-sizing: border-box; }
 
   .cuerpo > img.portada { flex: none; align-self: stretch; width: auto; height: auto; min-height: 90px;
@@ -135,6 +137,10 @@
   .fila .fLugar { text-align: right; max-width: 18em; }
   .fila .fIconos { display: flex; align-self: center; min-width: 16px; }
   .fila .fIconos img { height: 16px; width: 16px; display: block; }
+  /* el logo de la fila con su propio hover (como en el detalle): sobre él se resalta el logo, no la fila */
+  .fila .fIconos a { display: block; padding: 3px; margin: -3px; border-radius: 4px; }
+  .fila .fIconos a:hover { background: var(--enlace); }
+  .listado .fila:has(.fIconos a:hover):not(.abierta) { background: none; }
   .fila .fMini { align-self: stretch; height: auto; min-height: 1.2em; aspect-ratio: 16 / 9; width: auto; contain: size;   /* el alto de la fila (contain: no la agranda) */
                  object-fit: cover; justify-self: end; border-radius: 2px; display: block; }
   .fila .fMini.sinfoto { background: var(--sinfoto); }
@@ -474,7 +480,6 @@ function organizadores(){
 const organiza = organizadores();
 
 const esFb = u => /^https?:\/\/([a-z]+\.)?(facebook\.com|fb\.com|fb\.me)\//i.test(u);
-const iconoUrl = u => esFb(u) ? 'img/perfil.svg' : 'img/web.svg';
 function enlace(href, texto, icono){
   const a = document.createElement('a');
   a.href = href; a.textContent = texto; a.target = '_blank'; a.rel = 'noopener';
@@ -484,6 +489,27 @@ function enlace(href, texto, icono){
     a.prepend(img);
   }
   return a;
+}
+
+// los logos de la ficha, siempre en este orden y solo los que tiene: local (mapa), fb, www, yt;
+// la imagen de la ficha abre la url del primero
+function logosFicha(d, img, texto, {mapa = '', fb = '', www = [], video = ''}){
+  const dominio = u => u.replace(/^https?:\/\/(www\.)?/, '').split('/')[0];
+  const logos = [...(mapa ? [enlace(mapa, 'map', 'img/mapa.svg')] : []),
+                 ...(fb ? [enlace(fb, 'facebook', 'img/perfil.svg')] : []),
+                 ...www.map(u => enlace(u, dominio(u), 'img/web.svg')),
+                 ...(video ? [enlace(video, 'video', 'img/yt.svg')] : [])];
+  if (!texto && !logos.length) return;
+  const par = document.createElement('p');
+  par.className = 'enlaces';
+  if (texto) par.append(texto);
+  par.append(...logos);
+  d.appendChild(par);
+  if (logos.length && img){
+    img.classList.add('conEnlace');
+    img.title = logos[0].href;
+    img.onclick = () => window.open(logos[0].href, '_blank', 'noopener');
+  }
 }
 
 function cara(p){
@@ -635,22 +661,16 @@ function rellenaEvento(c, p, conLugar){
     });
     d.appendChild(par);
   }
-  const par = document.createElement('p');
-  par.className = 'enlaces';
-  if (p.fb && esFb(p.fb)) par.append(document.createTextNode(p.tipo), enlace(p.fb, 'facebook', iconoUrl(p.fb)));
-  else par.appendChild(p.fb ? enlace(p.fb, p.tipo, iconoUrl(p.fb))
-                            : document.createTextNode(p.tipo));
-  for (const u of p.www) par.appendChild(enlace(u, u.replace(/^https?:\/\/(www\.)?/, '').split('/')[0], 'img/web.svg'));
-  if (p.video) par.appendChild(enlace(p.video, 'video', 'img/yt.svg'));
-  if (p.mapa) par.appendChild(enlace(p.mapa, 'map', 'img/mapa.svg'));
-  d.appendChild(par);
+  const fb = p.fb && esFb(p.fb) ? p.fb : '';
+  logosFicha(d, img, p.tipo, {mapa: p.mapa, fb, www: [...(p.fb && !fb ? [p.fb] : []), ...p.www.filter(u => u != p.fb)], video: p.video});
 }
 
 const TEXTO_ROL = {org: 'organizer', art: 'artist', vip: 'vip'};   // texto propio en wwt (en aux.js, para index.htm)
 const textoRol = r => TEXTO_ROL[r] || (ROLES[r] && ROLES[r].nombre) || r;
 
 function rellenaPersona(c, p, conLugar){
-  c.appendChild(cara(p));
+  const img = cara(p);
+  c.appendChild(img);
   const d = document.createElement('div');
   d.className = 'texto';
   c.appendChild(d);
@@ -690,15 +710,9 @@ function rellenaPersona(c, p, conLugar){
   }
   if (textos.length) linea('prv', textos.join(', '));
   if (par.childNodes.length) d.appendChild(par);
-  const enlaces = [...urls.filter(u => /youtu/.test(u)).map(v => enlace(v, 'video', 'img/yt.svg')),
-                   ...urls.filter(u => !/youtu/.test(u)).map(u => enlace(u, u.replace(/^https?:\/\/(www\.)?/, '').split('/')[0], 'img/web.svg')),
-                   ...(p.fb ? [enlace(p.fb, 'perfil', 'img/perfil.svg')] : [])];
-  if (enlaces.length){
-    const par = document.createElement('p');
-    par.className = 'enlaces';
-    for (const e of enlaces) par.appendChild(e);
-    d.appendChild(par);
-  }
+  const fb = p.fb && esFb(p.fb) ? p.fb : '';
+  logosFicha(d, img, '', {fb, www: [...(p.fb && !fb ? [p.fb] : []), ...urls.filter(u => !/youtu/.test(u) && u != p.fb)],
+                          video: urls.find(u => /youtu/.test(u)) || ''});
 }
 
 function rellenaLista(c, p, conLugar){
@@ -709,11 +723,7 @@ function rellenaLista(c, p, conLugar){
   d.className = 'texto';
   c.appendChild(d);
   titulo(d, p, conLugar);
-  if (!p.fb) return;
-  const par = document.createElement('p');
-  par.className = 'enlaces';
-  par.appendChild(enlace(p.fb, esFb(p.fb) ? 'facebook' : p.fb.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''), iconoUrl(p.fb)));
-  d.appendChild(par);
+  if (p.fb) logosFicha(d, img, '', esFb(p.fb) ? {fb: p.fb} : {www: [p.fb]});
 }
 
 function rellena(c, p, conLugar){ (p.lista ? rellenaLista : p.evento ? rellenaEvento : rellenaPersona)(c, p, conLugar); }
