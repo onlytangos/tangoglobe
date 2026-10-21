@@ -1,0 +1,1306 @@
+<!doctype html>
+<!-- wwt/index.htm — wwt: eventos y personas por zona, con mapa (doc.txt) -->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WWT</title>
+
+<script src="datajs/aux.js"></script>
+<script src="datajs/datos.cifrados.js"></script>
+<script src="datajs/fotoid.js"></script>
+<script src="datajs/ciudades.js"></script>
+<script src="datajs/paises.js"></script>
+
+<link rel="stylesheet" href="leaflet/leaflet.css">
+<script src="leaflet/leaflet.js"></script>
+<style>
+  :root { --maxFoto: 110px;   /* tamaño máximo de las fotos */ color-scheme: dark;
+          --fondo: #222; --barra: #444; --tarjeta: #3a3a3a; --sinfoto: #474747;
+          --texto: #eee; --suave: #999; --enlace: #8ab4f8; --borde: #555;
+          --acento: #ffd8b0; }
+  html { overflow-y: scroll; }
+  body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; background: var(--fondo); color: var(--texto); }
+  a { color: var(--enlace); }
+
+  .teselaBase { filter: sepia(1) hue-rotate(180deg) saturate(3) brightness(.85); }
+  .teselaNombres { filter: sepia(.6) hue-rotate(180deg) saturate(1.5); }
+  #mapa.leaflet-container { background: #0d1b2a; }
+
+  #mapa .leaflet-control-attribution { background: transparent; color: #8899aa; font-size: 9px; }
+  #mapa .leaflet-control-attribution a { color: inherit; }
+  .creditos { font-size: .8em; color: var(--suave); }
+
+  #mapa .leaflet-control-zoom { border: 1px solid var(--acento); }
+  #mapa .leaflet-control-zoom a { background: var(--acento); color: #000; border-bottom-color: #0003;
+                                 width: 20px; height: 20px; line-height: 20px; font-size: 15px; }
+  #mapa .leaflet-control-zoom a:hover { background: #ffc890; }
+  #mapa .leaflet-control-zoom a.leaflet-disabled { background: var(--acento); color: #0006; }
+  .cuerpo a { text-decoration: none; font-weight: 600; }
+  .cuerpo a:hover { color: var(--texto); }
+  .cuerpo p.enlaces { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 10px; }
+  .cuerpo p.enlaces a { display: inline-flex; align-items: center; gap: 5px; }
+  .cuerpo .icono { height: 16px; width: auto; }
+  .filtros { display: flex; justify-content: center; margin: -16px -16px 16px; padding: 12px 16px;
+             position: sticky; top: 0; z-index: 2; background: var(--barra); box-shadow: 0 1px 6px rgba(0,0,0,.6); }
+  select { font-size: 1em; padding: 4px 6px; background: var(--tarjeta); color: var(--texto); border: 1px solid var(--borde); border-radius: 4px; }
+  #buscar { font-size: 1em; padding: 4px 6px; width: 100%; box-sizing: border-box;
+             background: var(--tarjeta); color: var(--texto); border: 1px solid var(--borde); border-radius: 4px; }
+  #info { display: flex; }
+  .cuerpo.encontrado { outline: 2px solid var(--enlace); }
+  .busca { position: relative; flex: 1 1 8.5em; min-width: 8.5em; }
+  #selArea, #selRol { width: 9.5em; box-sizing: border-box; }
+  #sugs { position: absolute; left: 0; top: 100%; margin-top: 4px; width: min(28em, 90vw); z-index: 2;
+          background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,.6);
+          max-height: calc(10 * 26px); overflow-y: auto; }
+  #sugs div { height: 26px; line-height: 26px; padding: 0 8px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #sugs div.activa, #sugs div:hover { background: var(--barra); }
+  #sugs small { color: var(--suave); }
+  #sugs .tipo { display: inline-block; width: 3.2em; margin-right: 6px; font-size: .75em; font-weight: 600;
+                text-align: center; color: var(--suave); border: 1px solid var(--borde); border-radius: 3px; line-height: 1.5; }
+
+  #sugs .tipo.geoARE { background: #fffbe8; border-color: #fffbe8; color: #333; }
+  #sugs .tipo.geoCON { background: #fff3b8; border-color: #fff3b8; color: #333; }
+  #sugs .tipo.geoCIT { background: #ffe680; border-color: #ffe680; color: #333; }
+  #sugs .tipo.gente { background: #9be39b; border-color: #9be39b; color: #333; }   /* personas de tipo people */
+  #info img { width: 22px; height: 22px; opacity: .8; }
+  #info:hover img { opacity: 1; }
+
+  .cuerpo > img.sinfoto { background: var(--sinfoto); }
+
+  .cuerpo > img.logo { object-fit: contain; background: #fff; padding: 6%; box-sizing: border-box; }
+
+  .cuerpo > img.portada { flex: none; align-self: stretch; width: auto; height: auto; min-height: 90px;
+                           max-width: min(50%, var(--maxFoto)); max-height: var(--maxFoto); aspect-ratio: 16 / 9; object-fit: cover; contain: size; }
+
+  dialog { border: 1px solid var(--borde); border-radius: 8px; padding: 16px; width: min(520px, 90vw);
+           background: var(--barra); color: var(--texto); box-shadow: 0 4px 24px rgba(0,0,0,.8); }
+  dialog { margin-top: 56px; }
+  dialog::backdrop { background: rgba(0,0,0,.7); }
+  .cuerpo { display: flex; gap: 14px; align-items: flex-start; }
+
+  .cuerpo > img, .cuerpo > .sinfoto { flex: none; align-self: stretch; width: auto; height: auto; min-height: 90px;
+                                        max-width: min(50%, var(--maxFoto)); max-height: var(--maxFoto); aspect-ratio: 1; object-fit: cover; border-radius: 6px;
+                                        contain: size; }
+  .cuerpo > img { background: #000; }
+  .texto { flex: 1; min-width: 0; }
+  dialog .texto { padding-right: 28px; }
+  .cuerpo h2 { margin: 0 0 8px; font-size: 1.1em; }
+  .cuerpo p { margin: 0; font-size: .9em; overflow-wrap: anywhere; }   /* líneas de texto seguidas; los enlaces, aparte (p.enlaces) */
+
+  .listado { display: flex; flex-direction: column; gap: 8px; width: var(--anchoCab, 640px); max-width: 100%; box-sizing: border-box; margin: 0 auto; }
+  .listado .cuerpo { padding: 12px; background: var(--barra); border: 1px solid var(--borde); border-radius: 8px; }
+  .listado .cuerpo > img, .listado .cuerpo > .sinfoto { aspect-ratio: 16 / 9; }
+
+  .cabecera { display: flex; flex-direction: column; gap: 12px; width: 41em; max-width: 100%; min-width: 0; }
+  .linea1 { display: flex; flex-wrap: wrap; gap: 2px; align-items: center; justify-content: center; }
+
+  .cabecera:has(#fechas:not(.oculto)) .linea1 { width: 0; min-width: 100%; flex-wrap: nowrap; }
+  .cabecera:has(#fechas:not(.oculto)) .linea1 > label { flex: 0 1 9.5em; min-width: 4.5em; }
+  .cabecera:has(#fechas:not(.oculto)) .linea1 select { width: 100%; }
+  .cabecera:has(#fechas:not(.oculto)) .busca { flex-basis: 5em; min-width: 5em; }
+  .fechas { display: flex; flex-direction: column; gap: 4px; align-items: stretch; justify-content: center; min-width: 0; }
+
+  .fechas.sinFechas { visibility: hidden; height: 0; overflow: hidden; margin-top: -12px; }
+  .tira { display: flex; min-width: 0; overflow-x: auto; scrollbar-width: thin; }
+  .fechas button, #bMapa { flex: none; font-size: .85em; padding: 3px 7px; white-space: nowrap; cursor: pointer;
+                   background: var(--tarjeta); color: var(--texto); border: 1px solid var(--borde); border-radius: 4px; }
+  .tira button { border-radius: 0; margin-left: -1px; }
+  .tira button:first-child { border-radius: 4px 0 0 4px; margin-left: 0; }
+  .tira button:last-child { border-radius: 0 4px 4px 0; }
+  .tira button { display: flex; flex-direction: column; align-items: center; line-height: 1.25; padding: 4px 7px; }
+
+  .tira { flex: 1 1 auto; }
+  .tira button { flex: 1 0 auto; }
+  .tira button small { font-size: .85em; color: var(--suave); }
+  .tira button.vacio { cursor: default; }
+  .tira button.activo small { color: #333; }
+  .fechas button.activo { background: var(--acento); border-color: var(--acento); color: #000; position: relative; }
+
+  .listado .cuerpo.linea { padding: 6px 12px; cursor: pointer; }
+  .listado .linea h2 { flex: 1; min-width: 0; margin: 0; font-size: 1em; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .listado .linea:hover { border-color: var(--enlace); }
+
+  .listado.filas { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 0; border-top: 1px solid var(--borde); }
+  .listado.filas.conFecha { grid-template-columns: auto auto minmax(0, 1fr) auto auto; }
+  .listado .fila { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; column-gap: 16px; align-items: center;
+                   padding: 7px 10px; border-bottom: 1px solid var(--borde); border-left: 2px solid transparent; cursor: pointer; }
+  .listado .fila:hover { background: rgba(255, 255, 255, .04); }
+  .listado .fila.abierta { background: var(--acento); color: #000; }
+  .listado .fila.abierta .fFecha, .listado .fila.abierta .fLugar { color: #5c4a38; }
+  .listado .fila.encontrado { outline: 0; border-left-color: var(--enlace); }
+  .fila span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fila .fFecha, .fila .fLugar { color: var(--suave); font-size: .85em; font-variant-numeric: tabular-nums; }
+  .fila .fNombre { font-weight: 500; }
+  .fila .fLugar { text-align: right; max-width: 18em; }
+  .fila .fIconos { display: flex; align-self: center; min-width: 16px; }
+  .fila .fIconos img { height: 16px; width: 16px; display: block; }
+  .fila .fMini { align-self: stretch; height: auto; min-height: 1.2em; aspect-ratio: 16 / 9; width: auto; contain: size;   /* el alto de la fila (contain: no la agranda) */
+                 object-fit: cover; justify-self: end; border-radius: 2px; display: block; }
+  .fila .fMini.sinfoto { background: var(--sinfoto); }
+  .fila .fMini.logo { object-fit: contain; background: #fff; }
+  @media (max-width: 600px) {
+    .listado.filas { grid-template-columns: auto minmax(0, 1fr) auto; }
+    .listado.filas.conFecha { grid-template-columns: auto auto minmax(0, 1fr) auto; }
+    .fila .fLugar { grid-column: 2; text-align: left; max-width: none; }
+    .conFecha .fila .fLugar { grid-column: 3; }
+    .fila .fFecha, .fila .fIconos { grid-row: 1 / span 2; }
+    .fila .fMini { grid-column: 3; grid-row: 1 / span 2; }
+    .conFecha .fila .fMini { grid-column: 4; }
+  }
+
+  .mapaCaja { position: relative; z-index: 0; }
+  .mapaCaja.cerrado { display: none; }
+  .mapa { height: 202px; max-height: 28.8vh; border: 1px solid var(--borde); border-radius: 6px; }
+  #bMapa:disabled { opacity: .45; cursor: default; }
+  .linea1 #bMapa { font-size: 1em; padding: 4px 6px; width: 4.8em; box-sizing: border-box; text-align: center; }
+  @media (max-width: 600px) { .mapa { height: 144px; } }
+  .aviso { color: var(--suave); }
+  .oculto { display: none !important; }
+  #fCerrar { position: absolute; top: 6px; right: 8px; border: 0; background: none; color: var(--suave); font-size: 1.3em; cursor: pointer; }
+  #fCerrar:hover { color: var(--texto); }
+
+  .detalle { position: relative; width: var(--anchoCab, 640px); max-width: 100%; box-sizing: border-box; margin: 0 auto 16px; padding: 16px; background: var(--barra);
+             border: 1px solid var(--borde); border-radius: 8px; }
+
+  .detalle { position: sticky; top: calc(var(--altoBarra, 0px) + 16px); z-index: 1; max-height: 60vh; overflow-y: auto;
+             box-shadow: 0 -16px 0 var(--fondo), 0 16px 0 var(--fondo); }
+  .detalle .texto { padding-right: 28px; }
+  .detalle .texto > * { margin: 0; line-height: 22px; }   /* título, fecha, org, enlaces...: todas las líneas con el mismo interlineado */
+  .detalle .texto p.enlaces { margin-top: 0; row-gap: 0; }
+  #dCerrar { position: absolute; top: 6px; right: 8px; border: 0; background: none; color: var(--acento); font-size: 1.3em; font-weight: 700; cursor: pointer; }
+  #dCerrar:hover { color: #ffc890; }
+
+  .detalle.filas { background: var(--fondo); border: 0; border-radius: 0; border-top: 1px solid var(--borde);
+                   border-bottom: 1px solid var(--borde); padding: 14px 10px; }
+  .detalle.filas h2 { font-weight: 500; font-size: 1.05em; }
+  .detalle.filas h2 .hLugar { color: var(--suave); font-size: .8em; font-weight: 400; margin-left: 10px; }
+  .detalle.filas p { color: var(--suave); }
+  .detalle.filas p.fFecha { font-variant-numeric: tabular-nums; margin-top: 0; }
+  .detalle.filas .cuerpo a { font-weight: 500; }
+  .detalle.filas .cuerpo > img { border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="filtros">
+ <div class="cabecera">
+  <div class="linea1">
+    <a id="info" href="#" title="KoKo Tango"><img src="img/koko.svg" alt="KoKo Tango"></a>
+    <span class="busca"><input id="buscar" type="search" placeholder="search" autocomplete="off"><div id="sugs" class="oculto"></div></span>
+    <label><select id="selArea" data-inicial="Asia"></select></label>
+    <label><select id="selRol" data-inicial="evt"></select></label>
+    <button id="bMapa" title="show / hide the map">map</button>
+  </div>
+  <div id="mapaCaja" class="mapaCaja oculto">
+    <div id="mapa" class="mapa"></div>
+  </div>
+  <div id="mapaAviso" class="aviso oculto"></div>
+  <div id="fechas" class="fechas oculto">
+    <div id="fBotones" class="tira"></div>
+    <div id="rBotones" class="tira oculto"></div>
+  </div>
+ </div>
+</div>
+<div id="detalle" class="detalle oculto"><button id="dCerrar" title="close">&times;</button><div id="dCuerpo" class="cuerpo"></div></div>
+<div id="listado" class="listado"></div>
+<dialog id="ficha"><button id="fCerrar" title="close">&times;</button><div id="fCuerpo" class="cuerpo"></div></dialog>
+
+<script>
+const FOTOS = 'foto';
+const TODOS = '*';
+const ESTILO_LISTADO = 'filas';
+const EVT = 'evt';
+const SEM = 'sem';
+const ACA = 'aca';
+const MIL = 'mil';
+const PRA = 'pra';
+const regular = r => r == MIL || r == PRA;   // milongas y prácticas: por días de la semana
+const deEventos = r => r == EVT || r == SEM || r == ACA || regular(r);
+const sinFecha = r => r == ACA || regular(r);
+const rolEvento = t => String(t).indexOf('seminar') != -1 ? SEM : String(t).indexOf('academy') != -1 ? ACA
+                     : String(t).split(' ')[0] == 'milonga' ? MIL : String(t).split(' ')[0] == 'practica' ? PRA : EVT;
+const PEO = 'peo';
+const TIPOS_P = Object.keys(TIPOS_PERSONA).filter(t => t != 'person');   // group, shop, hostel: en el selector, sin tiras
+const LIS = 'lis';
+const MUNDIAL = 'World';
+const $ = id => document.getElementById(id);
+
+function foto(idfoto, evento){
+  const f = fotoDeId(idfoto, evento);
+  return f ? FOTOS + f.carpeta + '/' + f.fichero : '';
+}
+
+const coordCiudad = r => (typeof CIUDADES_COORD == 'undefined' ? null
+                          : CIUDADES_COORD[String(r[CAMPO.country]).trim() + '|' + String(r[CAMPO.city]).trim()]) || null;
+function coordDe(r){
+  const v = leeVarios(r), la = parseFloat((v.lat || [])[0]), lo = parseFloat((v.lon || [])[0]);
+  return !isNaN(la) && !isNaN(lo) ? [la, lo] : coordCiudad(r);
+}
+let _venues = null;
+function venueDe(e){
+  const loc = (leeVarios(e).loc || [])[0];
+  if (!loc) return null;
+  _venues = _venues || new Map((typeof publicEvent == 'undefined' ? [] : publicEvent).filter(x => x[CAMPO.tipo] == 'venue')
+                                 .map(x => [x[CAMPO.country] + '|' + x[CAMPO.city] + '|' + x[CAMPO.name], x]));
+  return _venues.get(e[CAMPO.country] + '|' + e[CAMPO.city] + '|' + loc) || null;
+}
+function urlSala(e){   // el Facebook (o la web) del venue de su sala, si lo tiene
+  const v = venueDe(e), u = v ? String(v[CAMPO.urlfb] || '') : '';
+  return /^https?:\/\//.test(u) ? u : '';
+}
+function dirSala(e){   // la dirección (dir) de la milonga o, si no la tiene, la de su venue
+  const v = venueDe(e);
+  return (leeVarios(e).dir || (v ? leeVarios(v).dir : null) || [''])[0];
+}
+function posEvento(e){
+  const v = leeVarios(e), la = parseFloat((v.lat || [])[0]), lo = parseFloat((v.lon || [])[0]);
+  if (!isNaN(la) && !isNaN(lo)) return [la, lo];
+  const venue = venueDe(e);
+  return venue ? coordDe(venue) : coordCiudad(e);
+}
+function fotoEvento(e){
+  const venue = venueDe(e);
+  return foto(e[CAMPO.idfoto], true) || (venue ? foto(venue[CAMPO.idfoto], true) : '');
+}
+
+let personas = [];
+function cargaFilas(filas){
+  const porClave = new Map();
+  for (const c of filas){
+    const f = foto(c[CAMPO.idfoto], false);
+    const url = c[CAMPO.urlfb] && c[CAMPO.urlfb] != '-' ? c[CAMPO.urlfb] : '';
+    const clave = f || url || 'nombre:' + c[CAMPO.name];
+    const v = leeVarios(c);
+    const coments = [...(v.txt || []), ...(v.ins || []).map(u => 'Instagram @' + u), ...(v.wec || []).map(w => 'WeChat ' + w),
+                     ...(v.kak || []).map(k => 'Kakao ' + k), ...(v.tel || []).map(t => '☎ ' + t), ...(v.ema || [])];
+    const notas = [...(v.vid || []), ...(v.www || []), ...(v.prv || [])].filter(x => x && x != '-').join(',');
+    const fb = /facebook\.com\//.test(url) ? url : '';
+    const area  = c[CAMPO.area] && c[CAMPO.area] != '-' ? c[CAMPO.area] : '-';
+    const pais  = c[CAMPO.country] && c[CAMPO.country] != '-' ? c[CAMPO.country] : '-';
+    const lugar = [c[CAMPO.city], c[CAMPO.country]].filter(x => x && x != '-').join(', ');
+    const ciudad = c[CAMPO.city] && c[CAMPO.city] != '-' ? String(c[CAMPO.city]).trim() : '';
+    const roles = String(c[CAMPO.roles] || '').split(',').map(r => r.trim()).filter(r => ROLES[r]);   // el import ya los deja con su nombre de ROLES
+    const video = (v.vid || [''])[0];
+    const p = porClave.get(clave);
+    const pos = coordDe(c);
+    const tipoP = String(c[CAMPO.tipo] || '').trim() in TIPOS_PERSONA ? String(c[CAMPO.tipo]).trim() : 'person';
+    if (!p){ porClave.set(clave, {area, pais, lugar, ciudad, pos, roles, tipoP, nombre: c[CAMPO.name], video, foto: f, fb, notas: notas ? [notas] : [],
+                                     coment: coments}); continue; }
+    if (!p.pos) p.pos = pos;
+    if (!p.fb) p.fb = fb;
+    if (p.tipoP == 'person') p.tipoP = tipoP;
+    for (const t of coments) if (!p.coment.includes(t)) p.coment.push(t);
+    if (notas && !p.notas.some(n => n.includes(notas))){
+      p.notas = p.notas.filter(n => !notas.includes(n));
+      p.notas.push(notas);
+    }
+    if (p.area == '-') p.area = area;
+    if (p.pais == '-') p.pais = pais;
+    if (!p.lugar) p.lugar = lugar;
+    if (!p.ciudad) p.ciudad = ciudad;
+    if (!p.video) p.video = video;
+    for (const r of roles) if (!p.roles.includes(r)) p.roles.push(r);
+  }
+  personas = [...porClave.values(), ...eventos(), ...listas()];
+  personas.forEach((p, i) => p.id = i);
+  fotosDeLista(porClave);
+  sugerencias();
+  pinta();
+}
+
+const claveNom = (n, f) => String(n).toLowerCase().replace(/[^\p{L}\p{N}]/gu, '') + '#' + f;
+const orgsDe = e => leeVarios(e).org || [];
+const wwwDe = e => (leeVarios(e).www || [''])[0];
+const inicio = d => {
+  const f = String(d || '').split('.'), dia = parseInt(String(f[3] || '').split('-')[0]), mes = parseInt(f[1]), anyo = parseInt(f[4]);
+  return f[0] == 'EVT' && !isNaN(dia + mes + anyo) ? Math.round(Date.UTC(anyo, mes, dia) / 864e5) : null;
+};
+function proximaReg(f, solo){   // solo: días de la semana (0 = domingo) a los que se limita
+  const r = leeReg(f), hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  const dias = r ? r.dias.filter(d => !solo || solo.includes(d)) : [];
+  if (!dias.length) return null;
+  if (r.frec != 'M'){
+    const k = Math.min(...dias.map(d => (d - hoy.getDay() + 7) % 7));
+    return new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + k);
+  }
+  const fechas = [0, 1].flatMap(m => r.semanas.map(s => {
+    const primero = new Date(hoy.getFullYear(), hoy.getMonth() + m, 1);
+    const dia1 = 1 + (dias[0] - primero.getDay() + 7) % 7;
+    const ult = new Date(primero.getFullYear(), primero.getMonth() + 1, 0).getDate();
+    const dia = s == 'L' ? dia1 + 7 * Math.floor((ult - dia1) / 7) : dia1 + 7 * (s - 1);
+    return dia <= ult ? new Date(primero.getFullYear(), primero.getMonth(), dia) : null;
+  }));
+  return fechas.filter(d => d && d >= hoy).sort((a, b) => a - b)[0] || null;
+}
+function mapaDe(e){
+  const venue = venueDe(e), v = leeVarios(e), vv = venue ? leeVarios(venue) : {};
+  const dir = (v.dir || vv.dir || [''])[0];
+  const lugar = [e[CAMPO.city], e[CAMPO.country]].map(x => String(x || '').trim())
+                .filter(x => x && x != '-' && !dir.toLowerCase().includes(x.toLowerCase()));
+  const trozos = [(v.loc || [''])[0], dir, ...lugar].join(', ').split(',').map(x => x.trim()).filter(Boolean);
+  const texto = trozos.filter((x, i) => trozos.findIndex(y => y.toLowerCase() == x.toLowerCase()) == i).join(', ');
+  const la = parseFloat((v.lat || vv.lat || [])[0]), lo = parseFloat((v.lon || vv.lon || [])[0]);
+  const conPos = !isNaN(la) && !isNaN(lo);
+  const q = texto || (conPos ? la + ',' + lo : '');
+  return q ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q) : '';
+}
+function eventos(){
+  const porClave = new Map(), lista = [];
+  for (const e of (typeof publicEvent == 'undefined' ? [] : publicEvent)){
+    if (!String(e[CAMPO.tipo]).startsWith('event') && !sinFecha(rolEvento(e[CAMPO.tipo]))) continue;
+    const url = /^https?:\/\//.test(e[CAMPO.urlfb] || '') ? e[CAMPO.urlfb] : '';
+    const n = inicio(fechaDe(e));
+    const claves = d => [...[url, wwwDe(e)].filter(Boolean).map(u => 'u:' + claveUrl(u) + '#' + (n == null ? fechaDe(e) : n + d)), n != null && 'n:' + claveNom(e[CAMPO.name], n + d)].filter(Boolean);
+    const ya = [0, -1, 1].flatMap(d => n == null && d ? [] : claves(d)).map(k => porClave.get(k)).find(Boolean);
+    if (ya){
+      if (!ya.fb && url) ya.fb = url;
+      if (!ya.foto) ya.foto = fotoEvento(e);
+      if (!ya.pos) ya.pos = posEvento(e);
+      const orgs = orgsDe(e);
+      for (const o of orgs) if (!ya.orgs.includes(o)) ya.orgs.push(o);
+      if (wwwDe(e) && !ya.www.includes(wwwDe(e))) ya.www.push(wwwDe(e));
+      if (!ya.video) ya.video = (leeVarios(e).vid || [''])[0];
+      for (const k of claves(0)) if (!porClave.has(k)) porClave.set(k, ya);
+      continue;
+    }
+    const f = fechaDe(e).split('.');
+    const prox = f[0] == 'REG' ? proximaReg(fechaDe(e)) : null;
+    const fecha = f[0] == 'EVT' ? [f[4], f[2], f[3]].filter(Boolean).join('.')
+                : prox ? [prox.getFullYear(), MESES[prox.getMonth()], prox.getDate()].join('.') : '';
+    const reg = f[0] == 'REG' ? textoReg(fechaDe(e)) : '';
+    const orden = f[0] == 'EVT' ? (parseInt(f[4]) || 9999) * 100 + (parseInt(f[1]) || 0) : prox ? prox.getFullYear() * 100 + prox.getMonth() : 999999;
+    const mes = f[0] == 'EVT' ? parseInt(f[1]) : prox ? prox.getMonth() : NaN, dia = prox ? prox.getDate() : parseInt(f[3]) || 1;
+    const orgs = orgsDe(e);
+    const ev = {evento: true, area: e[CAMPO.area] && e[CAMPO.area] != '-' ? e[CAMPO.area] : '-', pais: e[CAMPO.country] && e[CAMPO.country] != '-' ? e[CAMPO.country] : '-', roles: [rolEvento(e[CAMPO.tipo])], nombre: e[CAMPO.name], foto: fotoEvento(e),
+                         fb: url, tipo: String(e[CAMPO.tipo]).replace(/^event\s*/, '') || 'event', pos: posEvento(e),
+                         ciudad: e[CAMPO.city] && e[CAMPO.city] != '-' ? String(e[CAMPO.city]).trim() : '',
+                         lugar: e[CAMPO.city] && e[CAMPO.city] != '-' ? String(e[CAMPO.city]).trim() : '',
+                         sala: (leeVarios(e).loc || [''])[0], venue: (venueDe(e) || [])[CAMPO.name] || '', salaFb: urlSala(e), salaDir: dirSala(e), fecha, reg, orden, fechaOrig: fechaDe(e),
+                         mapa: regular(rolEvento(e[CAMPO.tipo])) ? mapaDe(e) : '', mes, dia, orgs, www: wwwDe(e) ? [wwwDe(e)] : [],
+                         video: (leeVarios(e).vid || [''])[0], notas: [], coment: []};
+    for (const k of claves(0)) porClave.set(k, ev);
+    lista.push(ev);
+  }
+  return lista;
+}
+
+const LOGOS = [[/hoy-milonga\.com/, 'img/hoymilonga.svg'], [/faitango\.it/, 'img/faitango.png'],
+               [/mp\.weixin\.qq\.com/, 'img/wechat.png'], [/tangomarathons\.com/, 'img/tangomarathons.png']];
+function fotosDeLista(porClave){
+  const conFoto = [...porClave.values()].filter(p => p.foto);
+  for (const l of personas.filter(p => p.lista)){
+    const autor = (l.nombre.match(/\(([^()]+)\)\s*$/) || [])[1];
+    const p = autor && conFoto.find(p => p.nombre == autor || p.nombre.startsWith(autor + ' ('));
+    if (p) l.foto = p.foto;
+    const logo = !l.foto && LOGOS.find(([re]) => re.test(l.fb));
+    if (logo){ l.foto = logo[1]; l.logo = true; }
+  }
+}
+
+function centroPais(pais){
+  if (typeof PAISES_GEO == 'undefined') return null;
+  const f = PAISES_GEO.features.find(f => f.properties.nombres.includes(pais));
+  if (!f) return null;
+  const polis = f.geometry.type == 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates;
+  const cajas = polis.map(p => { const xs = p[0].map(c => c[0]), ys = p[0].map(c => c[1]);
+                                 return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)]; });
+  const [x0, y0, x1, y1] = cajas.reduce((m, c) => (c[2] - c[0]) * (c[3] - c[1]) > (m[2] - m[0]) * (m[3] - m[1]) ? c : m);
+  return [(y0 + y1) / 2, (x0 + x1) / 2];
+}
+const lugarLista = e => deZona(e) ? e[CAMPO.area]
+                      : [e[CAMPO.city], e[CAMPO.country]].filter(x => x && x != '-').join(', ');
+const deZona = e => String(e[CAMPO.city]).startsWith('*');
+function posLista(e){
+  if (e[CAMPO.area] == MUNDIAL) return [0, 0];
+  const v = VISTA_AREA[e[CAMPO.area]];
+  if (deZona(e) && v) return [(v[0][0] + v[1][0]) / 2, (v[0][1] + v[1][1]) / 2];
+  return coordDe(e) || centroPais(e[CAMPO.country]);
+}
+// rutas relativas de los datos (img/... : las tablas de resbeto) desde la raíz de tangoinfo; push.sh deja RAIZ en ''
+const RAIZ = '';
+const deRaiz = u => /^img\//.test(String(u)) ? RAIZ + u : u;
+const esEnlace = u => /^https?:\/\//.test(u || '') || /^(\.\.\/)?img\//.test(u || '');
+const urlLista = e => deRaiz([e[CAMPO.urlfb], ...(leeVarios(e).www || [])].find(u => esEnlace(u)) || '');
+function listas(){
+  return (typeof publicEvent == 'undefined' ? [] : publicEvent).filter(e => e[CAMPO.tipo] == 'list').map(e => ({
+    lista: true, area: e[CAMPO.area] && e[CAMPO.area] != '-' ? e[CAMPO.area] : '-', pais: e[CAMPO.country] && e[CAMPO.country] != '-' ? e[CAMPO.country] : '-', roles: [LIS], nombre: e[CAMPO.name], pos: posLista(e), zona: deZona(e),
+    fb: urlLista(e), lugar: lugarLista(e), ciudad: /^[^*-]/.test(String(e[CAMPO.city] || '').trim()) ? String(e[CAMPO.city]).trim() : '', www: (leeVarios(e).www || []).map(deRaiz),
+    foto: foto(e[CAMPO.idfoto], true) || deRaiz((leeVarios(e).www || []).find(u => /^img\//.test(u)) || ''), video: '', notas: [], coment: []}));   // sin foto: su imagen (img/...)
+}
+
+const enArea = (p, a) => a == TODOS || p.area == a || p.area == MUNDIAL;
+const enRol  = (p, r) => r == LIS ? !!p.lista
+                       : p.lista ? false
+                       : r == TODOS ? true
+                       : r == PEO ? !p.evento && p.tipoP == 'person'
+                       : TIPOS_P.includes(r) ? !p.evento && p.tipoP == r
+                       : deEventos(r) ? !!p.evento && p.roles.includes(r)
+                       : !p.evento && p.roles.includes(r);
+
+function opciones(sel, valores, etiqueta, cuenta, todos = 'all'){
+  const actual = sel.value || sel.dataset.inicial || TODOS;
+  sel.innerHTML = '';
+  const opcion = (dentro, v) => {
+    const o = document.createElement('option');
+    o.value = v;
+    o.textContent = (v == TODOS ? todos : etiqueta(v)) + (cuenta ? ' (' + cuenta(v) + ')' : '');
+    dentro.appendChild(o);
+  };
+  opcion(sel, TODOS);
+  for (const v of valores){
+    if (typeof v != 'object'){ opcion(sel, v); continue; }
+    const g = document.createElement('optgroup');
+    g.label = v.grupo;
+    for (const w of v.valores) opcion(g, w);
+    sel.appendChild(g);
+  }
+  sel.value = actual;
+  if (sel.selectedIndex < 0) sel.value = TODOS;
+}
+
+function organizadores(){
+  const organiza = new Map();
+  for (const e of (typeof publicEvent == 'undefined' ? [] : publicEvent)){
+    if (e[CAMPO.tipo] == 'venue') continue;
+    const url = /^https?:\/\//.test(e[CAMPO.urlfb] || '') ? e[CAMPO.urlfb] : '';
+    for (const o of orgsDe(e)){
+      if (!organiza.has(o)) organiza.set(o, []);
+      if (!organiza.get(o).some(x => x.nombre == e[CAMPO.name])) organiza.get(o).push({nombre: e[CAMPO.name], url});
+    }
+  }
+  return organiza;
+}
+const organiza = organizadores();
+
+const esFb = u => /^https?:\/\/([a-z]+\.)?(facebook\.com|fb\.com|fb\.me)\//i.test(u);
+const iconoUrl = u => esFb(u) ? 'img/perfil.svg' : 'img/web.svg';
+function enlace(href, texto, icono){
+  const a = document.createElement('a');
+  a.href = href; a.textContent = texto; a.target = '_blank'; a.rel = 'noopener';
+  if (icono){
+    const img = document.createElement('img');
+    img.src = icono; img.alt = ''; img.className = 'icono';
+    a.prepend(img);
+  }
+  return a;
+}
+
+function cara(p){
+  const img = document.createElement('img');
+  img.src = p.foto || 'img/sinfoto.svg';
+  img.alt = p.nombre;
+  img.loading = 'lazy';
+  if (!p.foto) img.className = 'sinfoto';
+  if (p.logo) img.className = 'logo';
+  return img;
+}
+
+function iconoFila(p){   // un solo icono: su Facebook (urlfb) si lo tiene; si no, su web
+  const s = document.createElement('span');
+  s.className = 'fIconos';
+  const notas = (p.notas || []).join(' ').match(/https?:\/\/[^\s,]+/g) || [];
+  const fb = p.fb && esFb(p.fb) ? p.fb : '';
+  const web = fb ? '' : [p.fb, ...(p.www || []), ...notas].find(u => u && esEnlace(u) && !esFb(u) && !/youtu/.test(u));
+  if (fb || web){
+    const a = enlace(fb || web, '', fb ? 'img/perfil.svg' : 'img/web.svg');
+    a.title = fb ? 'facebook' : 'web';
+    a.onclick = e => e.stopPropagation();
+    s.appendChild(a);
+  }
+  return s;
+}
+
+const fechaListado = p => (p.fecha || '').replace(/^\d{4}\./, '') || (regular(p.roles[0]) ? '?' : '');
+
+// milongas por días de la semana: un solo día a la vez (diasSel, con uno o vacío = todos)
+const DIAS_SEM = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+let diasSel = new Set();
+function proximaEn(p, dias){   // próxima fecha (desde hoy) de la milonga p en alguno de esos días (todos si no se dan); null si no hay
+  const f = String(p.fechaOrig || '').split('.');
+  if (f[0] != 'EVT') return proximaReg(p.fechaOrig, dias);
+  const n = inicio(p.fechaOrig), hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  if (n == null) return null;
+  const u = new Date(n * 864e5), d = new Date(u.getUTCFullYear(), u.getUTCMonth(), u.getUTCDate());
+  return d >= hoy && (!dias || dias.includes(d.getDay())) ? d : null;
+}
+const horaDe = p => (leeReg(p.fechaOrig) || {hora: ''}).hora.slice(0, 4) || '9999';
+const textoDia = d => DIAS_SEM[d.getDay()] + ' ' + MESES[d.getMonth()] + '.' + d.getDate();
+function filasMilongas(lista){   // [{p, dia}] por fecha desde hoy: con días elegidos, una por cada uno en que se hace
+  const filas = diasSel.size ? lista.flatMap(p => [...diasSel].map(d => ({p, dia: proximaEn(p, [d])}))).filter(x => x.dia)
+                             : lista.map(p => ({p, dia: proximaEn(p)}));
+  const t = x => x.dia ? x.dia.getTime() : Infinity;
+  return filas.sort((x, y) => t(x) - t(y) || horaDe(x.p).localeCompare(horaDe(y.p)) || x.p.nombre.localeCompare(y.p.nombre));
+}
+// people por roles: dos tiras (públicos y privados), varios a la vez; rolesSel vacío = todos
+const PTC = 'ptc';   // los roles PTC (p24, p25, p26...) en un solo botón
+const PTCS = Object.keys(ROLES).filter(r => String(ROLES[r].desc).startsWith('PTC'));
+const rolesDe = k => k == PTC ? PTCS : [k];
+const tiraRoles = pub => [...new Set(Object.keys(ROLES).filter(r => !!ROLES[r].publico == pub)
+                                     .map(r => PTCS.includes(r) ? PTC : r))];
+let rolesSel = new Set();
+const conRol = (p, k) => rolesDe(k).some(r => p.roles.includes(r));
+const enRoles = p => !rolesSel.size || [...rolesSel].some(k => conRol(p, k));
+function pintaRoles(cuenta){
+  const tira = (div, claves) => {
+    div.innerHTML = '';
+    for (const k of claves){
+      const b = document.createElement('button');
+      b.textContent = k === null ? 'ALL' : k == PTC ? 'PTC' : textoRol(k);
+      b.title = k === null ? 'all people' : k == PTC ? PTCS.map(textoRol).join(', ') : (ROLES[k] || {}).desc || '';
+      const n = document.createElement('small'), cuantos = cuenta(k);
+      n.textContent = cuantos;
+      b.appendChild(n);
+      b.classList.toggle('activo', k === null ? !rolesSel.size : rolesSel.has(k));
+      b.classList.toggle('vacio', !cuantos);
+      if (cuantos) b.onclick = () => {
+        if (k === null) rolesSel.clear();
+        else if (!rolesSel.delete(k)) rolesSel.add(k);
+        soloBuscado = false;
+        pinta();
+      };
+      div.appendChild(b);
+    }
+  };
+  tira($('fBotones'), [null, ...tiraRoles(true)]);
+  tira($('rBotones'), tiraRoles(false));
+}
+
+function pintaDias(cuenta){
+  const div = $('fBotones');
+  div.innerHTML = '';
+  const hoy = new Date().getDay();
+  [null, ...[0, 1, 2, 3, 4, 5, 6].map(k => (hoy + k) % 7)].forEach(d => {
+    const b = document.createElement('button');
+    b.textContent = d === null ? 'WEEK' : DIAS_SEM[d];
+    b.title = d === null ? 'all days' : d == hoy ? 'today' : '';
+    const n = document.createElement('small'), cuantos = cuenta(d);
+    n.textContent = cuantos;
+    b.appendChild(n);
+    b.classList.toggle('activo', d === null ? !diasSel.size : diasSel.has(d));
+    b.classList.toggle('vacio', !cuantos);
+    if (cuantos) b.onclick = () => {
+      diasSel = new Set(d === null ? [] : [d]);
+      soloBuscado = false;
+      pinta();
+    };
+    div.appendChild(b);
+  });
+}
+
+function titulo(d, p, conLugar, fechaAparte){
+  const h = document.createElement('h2');
+  if (conLugar && ESTILO_LISTADO == 'filas'){
+    h.textContent = p.nombre;
+    const lugar = p.ciudad ? [p.ciudad, p.pais != '-' ? p.pais : ''].filter(Boolean).join(', ') : p.lugar;   // todos: nombre y ciudad, país (el venue va en su línea)
+    if (lugar){
+      const s = document.createElement('span');
+      s.className = 'hLugar';
+      s.textContent = lugar;
+      h.appendChild(s);
+    }
+  } else h.textContent = (conLugar ? [fechaAparte ? '' : fechaListado(p), p.nombre, p.lugar] : [p.nombre]).filter(Boolean).join(' - ');
+  d.appendChild(h);
+}
+
+function rellenaEvento(c, p, conLugar){
+  const img = cara(p);
+  if (p.foto) img.className = 'portada';
+  c.appendChild(img);
+  const d = document.createElement('div');
+  d.className = 'texto';
+  c.appendChild(d);
+  titulo(d, p, conLugar, true);
+  const fecha = p.reg ? 'regular ' + p.reg : p.fecha;
+  for (const texto of conLugar ? [fecha] : [p.lugar, fecha]){
+    if (!texto) continue;
+    const par = document.createElement('p');
+    par.textContent = texto;
+    if (conLugar) par.className = 'fFecha';
+    d.appendChild(par);
+  }
+  if (p.sala){
+    const par = document.createElement('p');
+    par.append('venue: ', p.salaFb ? enlace(p.salaFb, p.sala) : p.sala, ...(p.salaDir ? [' · ' + p.salaDir] : []));
+    d.appendChild(par);
+  }
+  if (p.orgs.length){
+    const par = document.createElement('p');
+    par.appendChild(document.createTextNode('org: '));
+    p.orgs.forEach((nombre, i) => {
+      if (i) par.appendChild(document.createTextNode(', '));
+      const url = (personas.find(x => !x.evento && x.nombre == nombre && x.fb) || {}).fb;
+      par.appendChild(url ? enlace(url, nombre) : document.createTextNode(nombre));
+    });
+    d.appendChild(par);
+  }
+  const par = document.createElement('p');
+  par.className = 'enlaces';
+  if (p.fb && esFb(p.fb)) par.append(document.createTextNode(p.tipo), enlace(p.fb, 'facebook', iconoUrl(p.fb)));
+  else par.appendChild(p.fb ? enlace(p.fb, p.tipo, iconoUrl(p.fb))
+                            : document.createTextNode(p.tipo));
+  for (const u of p.www) par.appendChild(enlace(u, u.replace(/^https?:\/\/(www\.)?/, '').split('/')[0], 'img/web.svg'));
+  if (p.video) par.appendChild(enlace(p.video, 'video', 'img/yt.svg'));
+  if (p.mapa) par.appendChild(enlace(p.mapa, 'map', 'img/mapa.svg'));
+  d.appendChild(par);
+}
+
+const TEXTO_ROL = {org: 'organizer', art: 'artist', vip: 'vip'};   // texto propio en wwt (en aux.js, para index.htm)
+const textoRol = r => TEXTO_ROL[r] || (ROLES[r] && ROLES[r].nombre) || r;
+
+function rellenaPersona(c, p, conLugar){
+  c.appendChild(cara(p));
+  const d = document.createElement('div');
+  d.className = 'texto';
+  c.appendChild(d);
+  titulo(d, p, conLugar);
+  // rol, org, comentarios y prv: un solo párrafo, seguidos y separados por " · "
+  const par = document.createElement('p');
+  const linea = (etiqueta, ...nodos) => {   // etiqueta (rol, org...) resaltada; sin etiqueta, solo el texto
+    if (par.childNodes.length) par.append(' · ');
+    if (etiqueta){
+      const b = document.createElement('b');
+      b.textContent = etiqueta + ': ';
+      par.append(b);
+    }
+    par.append(...nodos);
+  };
+  const roles = p.roles.filter(r => r != 'prs' && ROLES[r]);
+  const publicos = roles.filter(r => ROLES[r].publico), privados = roles.filter(r => !ROLES[r].publico);
+  if (p.tipoP && p.tipoP != 'person') linea('type', p.tipoP);
+  if (publicos.length) linea('rol', publicos.map(textoRol).join(', '));
+  if (privados.length) linea('pr', privados.map(textoRol).join(', '));
+  const eventos = organiza.get(p.nombre) || [];
+  if (eventos.length)
+    linea('org', ...eventos.flatMap((ev, i) => [...(i ? [', '] : []), ev.url ? enlace(ev.url, ev.nombre) : ev.nombre]));
+  const coments = [];
+  for (const n of p.coment) for (const t of n.split(/,/).map(x => x.trim()))
+    if (t && !coments.includes(t)) coments.push(t);
+  if (coments.length) linea('', coments.join(', '));
+  const urls = [], textos = [];
+  for (const n of p.notas) for (const linea of n.split(/\s+\/\s+|,(?!\s)/)){
+    let texto = '';
+    for (const trozo of linea.split(/(https?:\/\/[^\s,]+)/)){
+      if (/^https?:\/\//.test(trozo)){ if (!urls.includes(trozo)) urls.push(trozo); }
+      else texto += trozo;
+    }
+    texto = texto.replace(/^[\s,]+|[\s,]+$/g, '');
+    if (texto && !textos.includes(texto) && !coments.includes(texto)) textos.push(texto);
+  }
+  if (textos.length) linea('prv', textos.join(', '));
+  if (par.childNodes.length) d.appendChild(par);
+  const enlaces = [...urls.filter(u => /youtu/.test(u)).map(v => enlace(v, 'video', 'img/yt.svg')),
+                   ...urls.filter(u => !/youtu/.test(u)).map(u => enlace(u, u.replace(/^https?:\/\/(www\.)?/, '').split('/')[0], 'img/web.svg')),
+                   ...(p.fb ? [enlace(p.fb, 'perfil', 'img/perfil.svg')] : [])];
+  if (enlaces.length){
+    const par = document.createElement('p');
+    par.className = 'enlaces';
+    for (const e of enlaces) par.appendChild(e);
+    d.appendChild(par);
+  }
+}
+
+function rellenaLista(c, p, conLugar){
+  const img = cara(p);
+  if (p.foto) img.className = p.logo ? 'portada logo' : 'portada';
+  c.appendChild(img);
+  const d = document.createElement('div');
+  d.className = 'texto';
+  c.appendChild(d);
+  titulo(d, p, conLugar);
+  if (!p.fb) return;
+  const par = document.createElement('p');
+  par.className = 'enlaces';
+  par.appendChild(enlace(p.fb, esFb(p.fb) ? 'facebook' : p.fb.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''), iconoUrl(p.fb)));
+  d.appendChild(par);
+}
+
+function rellena(c, p, conLugar){ (p.lista ? rellenaLista : p.evento ? rellenaEvento : rellenaPersona)(c, p, conLugar); }
+
+let fichaAbierta = null;
+function marcaAbierta(){
+  for (const f of document.querySelectorAll('.fila.abierta')) f.classList.remove('abierta');
+  if (fichaAbierta) for (const f of document.querySelectorAll('.fila[data-p="' + fichaAbierta.id + '"]')) f.classList.add('abierta');
+}
+function abreFicha(p, fila){   // fila: la pulsada (una milonga puede salir en varios días)
+  fichaAbierta = p;
+  marcaAbierta();
+  $('dCuerpo').innerHTML = '';
+  rellena($('dCuerpo'), p, true);
+  iluminaFicha(p);
+  if (mapa && mapaAbierto && vistaMapa) mapa.flyTo(...vistaMapa, {duration: .8});   // vuelve al centro y zoom del último encuadre
+  const d = $('detalle');
+  d.classList.toggle('filas', ESTILO_LISTADO == 'filas');
+  d.classList.remove('oculto');
+  const f = fila || document.getElementById('f' + p.id);
+  if (f && f.classList.contains('fila')){
+    const tapa = d.getBoundingClientRect().bottom + 16 - f.getBoundingClientRect().top;
+    if (tapa > 0) window.scrollBy({top: -tapa, behavior: 'smooth'});
+  }
+}
+const midoBarra = new ResizeObserver(() => {
+  const css = document.documentElement.style;
+  css.setProperty('--altoBarra', document.querySelector('.filtros').offsetHeight + 'px');
+  css.setProperty('--anchoCab', document.querySelector('.cabecera').offsetWidth + 'px');
+});
+midoBarra.observe(document.querySelector('.filtros'));
+midoBarra.observe(document.querySelector('.cabecera'));
+
+function desdeHoy(p){
+  if (isNaN(p.mes)) return 9999;
+  const hoy = new Date(), n = (m, d) => m * 31 + d;
+  return (n(p.mes, p.dia) - n(hoy.getMonth(), hoy.getDate()) + 372) % 372;
+}
+
+const HOY = new Date(), ANYO = HOY.getFullYear();
+const MESES = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+const DOCE = MESES.map((m, k) => { const d = new Date(ANYO, HOY.getMonth() + k, 1); return {anyo: d.getFullYear(), mes: d.getMonth()}; });
+const ordenDe = f => f.anyo * 100 + f.mes;
+const FECHAS = [{anyo: ANYO}, {doce: true}, ...DOCE, {anyo: ANYO + 1}];
+const F_DOCE = 1;
+let fechaSel = F_DOCE;
+const anyoDe = p => Math.floor(p.orden / 100);
+const enFecha = (p, i) => i === null || !p.evento || sinFecha(p.roles[0]) ||
+                          (FECHAS[i].doce ? p.orden >= ordenDe(DOCE[0]) && p.orden <= ordenDe(DOCE[11])
+                                          : anyoDe(p) == FECHAS[i].anyo && (FECHAS[i].mes === undefined || p.mes == FECHAS[i].mes));
+function pintaFechas(cuenta, oculto){
+  const div = $('fBotones');
+  div.innerHTML = '';
+  FECHAS.forEach((f, i) => {
+    const b = document.createElement('button');
+    b.textContent = f.doce ? 'YEAR' : f.mes === undefined ? f.anyo : MESES[f.mes];
+    if (f.mes !== undefined) b.title = MESES[f.mes] + ' ' + f.anyo;
+    const n = document.createElement('small'), cuantos = cuenta(i);
+    n.textContent = cuantos;
+    b.appendChild(n);
+    b.classList.toggle('activo', i == fechaSel);
+    b.classList.toggle('vacio', !cuantos);
+    if (cuantos) b.onclick = () => { fechaSel = i; lugarSel = ciudadSel = null; soloBuscado = false; pinta(); };
+    div.appendChild(b);
+  });
+  if (!oculto) div.children[fechaSel].scrollIntoView({block: 'nearest', inline: 'nearest'});
+}
+
+let mapa = null, capaMapa = null, capaPaises = null, paisSel = null, areaMapa = null, posMapa = [];
+const marcadores = new Map();
+let marcaFicha = null;
+let tipMapa = null, etiquetaDe = null, relojEtiqueta = null;
+const ETIQUETA_MS = 4000;
+function etiqueta(latlng, texto, de){
+  if (!tipMapa) tipMapa = L.tooltip({permanent: true, direction: 'top', offset: [0, -8]});
+  tipMapa.setLatLng(latlng).setContent(texto);
+  mapa.openTooltip(tipMapa);
+  etiquetaDe = de;
+  clearTimeout(relojEtiqueta);
+  relojEtiqueta = setTimeout(() => { if (mapa) mapa.closeTooltip(tipMapa); }, ETIQUETA_MS);
+}
+function iluminaFicha(p){
+  const antes = marcadores.get(marcaFicha);
+  if (antes) antes.setStyle(deCiudadSel(marcaFicha) ? ESTILO_LUGAR
+                                                    : {color: BORDE_MARCA, fillColor: COLOR_MARCA, fillOpacity: 0, weight: 2});
+  marcaFicha = p && p.pos ? clavePos(p.pos) : null;
+  const m = marcadores.get(marcaFicha);
+  if (m){ m.setStyle(ESTILO_CIUDAD); m.bringToFront(); }
+}
+function cierraFicha(){
+  $('detalle').classList.add('oculto');
+  iluminaFicha(null);
+  fichaAbierta = null;
+  marcaAbierta();
+}
+let ciudadSel = null, porLugarMapa = new Map();
+const ciudadDe = p => p.pais + '|' + (p.ciudad || '');
+let lugarSel = null, sinEncuadre = false, areaPrevia = null;
+let mapaAbierto = true;
+let mapaPendiente = null;
+function abreCierraMapa(){
+  mapaAbierto = !mapaAbierto;
+  if (!mapaAbierto && (lugarSel || ciudadSel || paisSel)){
+    lugarSel = ciudadSel = paisSel = null;
+    soloBuscado = false;
+    return pinta();
+  }
+  $('mapaCaja').classList.toggle('cerrado', !mapaAbierto);
+  $('mapa').classList.toggle('oculto', !mapaAbierto);
+  $('bMapa').textContent = (mapaAbierto ? '▴' : '▾') + ' map';
+  if (!mapaAbierto) return;
+  if (!mapa || mapaPendiente){
+    const [lista, area] = mapaPendiente || [posMapa, areaMapa || TODOS];
+    mapaPendiente = null;
+    pintaMapa(lista, area);
+  } else mapa.invalidateSize();
+}
+const COLOR_MARCA = '#ffd8b0';
+const BORDE_MARCA = '#ffd500';
+const COLOR_CIUDAD = '#e53935';
+const ESTILO_CIUDAD = {color: COLOR_CIUDAD, fillColor: COLOR_CIUDAD, fillOpacity: 1, weight: 4};
+const ESTILO_LUGAR = {color: BORDE_MARCA, fillColor: BORDE_MARCA, fillOpacity: 1, weight: 4};
+const deCiudadSel = k => k == lugarSel || (ciudadSel && (porLugarMapa.get(k) || []).some(p => ciudadDe(p) == ciudadSel));
+let _centros = null;
+function centroPos(pos){
+  if (!_centros){
+    _centros = new Map();
+    for (const c of Object.values(typeof CIUDADES_COORD == 'undefined' ? {} : CIUDADES_COORD)){
+      if (!c) continue;
+      const k = Math.round(c[0] * 100) + ',' + Math.round(c[1] * 100);
+      if (!_centros.has(k)) _centros.set(k, []);
+      _centros.get(k).push(c);
+    }
+  }
+  const la = Math.round(pos[0] * 100), lo = Math.round(pos[1] * 100), cos = Math.cos(pos[0] * Math.PI / 180);
+  let mejor = null, dMejor = 1;
+  for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++)
+    for (const c of _centros.get((la + i) + ',' + (lo + j)) || []){
+      const d = 111.2 * Math.hypot(c[0] - pos[0], (c[1] - pos[1]) * cos);
+      if (d <= dMejor){ mejor = c; dMejor = d; }
+    }
+  return mejor || pos;
+}
+const clavePos = pos => centroPos(pos).map(x => x.toFixed(3)).join(',');
+let MarcaCuadrada = null;
+function marcaCuadrada(pos, opciones){
+  MarcaCuadrada = MarcaCuadrada || L.CircleMarker.extend({_updatePath(){
+    const p = this._point, r = Math.max(Math.round(this._radius), 1);
+    this._renderer._setPath(this, this._empty() ? 'M0 0' : `M${p.x - r},${p.y - r}h${2 * r}v${2 * r}h${-2 * r}z`);
+  }});
+  return new MarcaCuadrada(pos, opciones);
+}
+const RADIOS = [[1, 4.5], [2, 6.75], [4, 9], [8, 11.25], [16, 13.5], [32, 15.75]];
+function radioDe(n){
+  for (let i = 1; i < RADIOS.length; i++){
+    const [n0, r0] = RADIOS[i - 1], [n1, r1] = RADIOS[i];
+    if (n <= n1) return r0 + (r1 - r0) * (n - n0) / (n1 - n0);
+  }
+  return RADIOS[RADIOS.length - 1][1];
+}
+const ESTILO_PAIS = {fill: true, fillOpacity: 1, fillColor: '#22406a', weight: .6, color: '#888', opacity: 1};
+const ESTILO_AREA = {fill: true, fillOpacity: 1, fillColor: '#2f5a8f', weight: .6, color: '#fff', opacity: 1};
+const ESTILO_SEL  = {fill: true, fillOpacity: .15, fillColor: '#f5c211', weight: 2, color: '#fff', opacity: .5};
+let _paisesEv = null;
+function paisesConEventos(){
+  if (_paisesEv) return _paisesEv;
+  const hoy = new Date(), fin = new Date(hoy.getFullYear() + 1, hoy.getMonth(), hoy.getDate());
+  hoy.setHours(0, 0, 0, 0);
+  _paisesEv = new Set(personas.filter(p => p.evento && !isNaN(p.mes) && p.orden < 999999)
+                              .filter(p => { const d = new Date(anyoDe(p), p.mes, p.dia); return d >= hoy && d <= fin; })
+                              .map(p => p.pais));
+  return _paisesEv;
+}
+function estiloPaises(){
+  if (!capaPaises) return;
+  const conMarcas = paisesConEventos();
+  capaPaises.eachLayer(l => {
+    const enArea = areaMapa && l.feature.properties.area == areaMapa;
+    l.setStyle(l === paisSel ? ESTILO_SEL : enArea ? ESTILO_AREA : ESTILO_PAIS);
+    if (enArea) l.bringToFront();
+    const el = l.getElement();
+    if (el) el.style.pointerEvents = l.feature.properties.nombres.some(n => conMarcas.has(n)) ? '' : 'none';
+  });
+  if (paisSel) paisSel.bringToFront();
+}
+function boundsPais(l){
+  const partes = l.getLatLngs().map(p => L.latLngBounds(p[0]));
+  const tam = b => (b.getNorth() - b.getSouth()) * (b.getEast() - b.getWest());
+  const mayor = Math.max(...partes.map(tam));
+  return partes.filter(b => tam(b) >= mayor / 4)
+               .reduce((a, b) => a ? a.extend(b) : L.latLngBounds(b.getSouthWest(), b.getNorthEast()), null);
+}
+const VISTA_AREA = {Europe: [[34, -25], [71, 45]], Asia: [[-11, 60], [55, 150]], America: [[-56, -130], [60, -34]],
+                    Africa: [[-35, -18], [38, 52]], Oceania: [[-48, 110], [0, 180]]};
+function encuadra(conPos){
+  const locales = conPos.filter(p => !p.zona);
+  if (locales.length) conPos = locales;
+  if (paisSel){
+    const suyos = conPos.filter(p => paisSel.feature.properties.nombres.includes(p.pais));
+    const bp = boundsPais(paisSel);
+    return vuela(suyos.length ? L.latLngBounds(suyos.map(p => p.pos)) : bp, bp);
+  }
+  if (areaMapa && VISTA_AREA[areaMapa]){
+    const b = L.latLngBounds(VISTA_AREA[areaMapa]);
+    for (const p of conPos) b.extend(p.pos);
+    return vuela(b, null, MAS_AREA);
+  }
+  if (!conPos.length) return;
+  const paises = new Set(conPos.map(p => p.pais));
+  let tope = null;
+  if (capaPaises) capaPaises.eachLayer(l => {
+    if (!l.feature.properties.nombres.some(n => paises.has(n))) return;
+    const bp = boundsPais(l);
+    tope = tope ? tope.extend(bp) : bp;
+  });
+  vuela(L.latLngBounds(conPos.map(p => p.pos)), tope);
+}
+const MAS_PAIS = .5;
+const MAS_AREA = .5;
+let vistaMapa = null;   // [centro, zoom] del último encuadre (vuela)
+function vuela(b, tope, mas = 0){
+  const PAD = Math.ceil(RADIOS[RADIOS.length - 1][1]) + 4, VERT = PAD + 26;
+  const z = x => mapa.getBoundsZoom(x, false, L.point(2 * PAD, 2 * VERT));
+  let zoom = Math.min(z(b) + mas, 10);
+  if (tope) zoom = Math.min(zoom, z(tope.extend(b)) + MAS_PAIS);
+  const centro = mapa.unproject(mapa.project(b.getNorthWest(), zoom).add(mapa.project(b.getSouthEast(), zoom)).divideBy(2), zoom);
+  vistaMapa = [centro, zoom];
+  if (mapa._loaded) mapa.flyTo(centro, zoom, {duration: .8});
+  else mapa.setView(centro, zoom);
+}
+function pintaMapa(lista, area){
+  $('mapaAviso').classList.add('oculto');
+  try { pintaMapa0(lista, area); }
+  catch (e){ avisoMapa('error en el mapa: ' + e.message); console.error(e); }
+  finally { sinEncuadre = false; }
+}
+function avisoMapa(texto){
+  $('mapaCaja').classList.add('oculto');
+  $('bMapa').disabled = true;
+  $('bMapa').textContent = '• map';
+  $('bMapa').title = 'map: not available';
+  $('mapaAviso').textContent = texto;
+  $('mapaAviso').classList.remove('oculto');
+}
+function pintaMapa0(lista, area){
+  const div = $('mapa'), caja = $('mapaCaja'), conPos = posMapa = lista.filter(p => p.pos);
+  $('bMapa').disabled = !conPos.length;
+  $('bMapa').textContent = (!conPos.length ? '•' : mapaAbierto ? '▴' : '▾') + ' map';
+  $('bMapa').title = !conPos.length ? 'map: not applicable here' : 'show / hide the map';
+  caja.classList.toggle('cerrado', !mapaAbierto);
+  div.classList.toggle('oculto', !mapaAbierto);
+  if (!mapaAbierto){ mapaPendiente = [lista, area]; return; }
+  mapaPendiente = null;
+  areaMapa = area == TODOS ? null : area;
+  if (typeof L == 'undefined') return avisoMapa('no se ha podido cargar Leaflet (wwt/leaflet/leaflet.js)');
+  caja.classList.toggle('oculto', !conPos.length);
+  if (!conPos.length) return;
+  if (!mapa){
+    mapa = L.map(div, {worldCopyJump: true, zoomSnap: .25});
+    mapa.attributionControl.setPrefix(false);
+    const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/';
+    L.tileLayer(ESRI + 'World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+                {maxZoom: 16, className: 'teselaBase', attribution: '&copy; Esri, OpenStreetMap'}).addTo(mapa);
+    const paises = mapa.createPane('paises');
+    paises.style.zIndex = 250;
+    paises.style.transition = 'opacity .3s';
+    const atenua = () => paises.style.opacity = Math.max(.1, Math.min(1, 1 - (mapa.getZoom() - 7) * .45));
+    mapa.on('zoomend', atenua);
+    const nombres = mapa.createPane('nombres');
+    nombres.style.zIndex = 260;
+    nombres.style.pointerEvents = 'none';
+    L.tileLayer(ESRI + 'World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {maxZoom: 16, className: 'teselaNombres', pane: 'nombres'}).addTo(mapa);
+    if (typeof PAISES_GEO != 'undefined'){
+      capaPaises = L.geoJSON(PAISES_GEO, {pane: 'paises', style: ESTILO_PAIS, onEachFeature: (f, l) => l.on('click', e => {
+        paisSel = paisSel === l ? null : l;
+        lugarSel = ciudadSel = null;
+        soloBuscado = false;
+        if (paisSel) etiqueta(e.latlng, f.properties.pais, 'pais');
+        pinta();
+      })}).addTo(mapa);
+    }
+    capaMapa = L.layerGroup().addTo(mapa);
+  }
+  mapa.invalidateSize();
+  capaMapa.clearLayers();
+  const porLugar = new Map();
+  for (const p of conPos){
+    const k = clavePos(p.pos);
+    if (!porLugar.has(k)) porLugar.set(k, []);
+    porLugar.get(k).push(p);
+  }
+  marcadores.clear();
+  porLugarMapa = porLugar;
+  for (const [k, ps] of porLugar){
+    const ciudad = deCiudadSel(k) || k == marcaFicha;
+    const estilo = k == marcaFicha ? ESTILO_CIUDAD : ciudad ? ESTILO_LUGAR : {color: BORDE_MARCA, fillColor: COLOR_MARCA, weight: 2, fillOpacity: 0};
+    const m = (ps.some(p => p.zona) ? marcaCuadrada : L.circleMarker)(centroPos(ps[0].pos), {radius: radioDe(ps.length), opacity: 1, ...estilo});
+    m.on('click', () => {
+      lugarSel = lugarSel == k ? null : k;
+      ciudadSel = null;
+      soloBuscado = false;
+      const salas = new Set(ps.map(p => p.sala || '')), sala = salas.size == 1 ? [...salas][0] : '';
+      if (lugarSel) etiqueta(centroPos(ps[0].pos), (sala || ps[0].ciudad || (ps[0].lugar || '').split(',')[0]) + (ps.length > 1 ? ' (' + ps.length + ')' : ''), 'lugar');
+      sinEncuadre = true;
+      pinta();
+    });
+    capaMapa.addLayer(m);
+    marcadores.set(k, m);
+    if (ciudad) m.bringToFront();
+  }
+  estiloPaises();
+  if (etiquetaDe && !{pais: paisSel, lugar: lugarSel, ciudad: ciudadSel}[etiquetaDe]) mapa.closeTooltip(tipMapa);
+  if (!sinEncuadre) encuadra(conPos);
+  sinEncuadre = false;
+}
+
+const totalesArea = new Map();
+function totalArea(v){
+  if (!totalesArea.has(v)) totalesArea.set(v, personas.filter(p => enArea(p, v)).length);
+  return totalesArea.get(v);
+}
+
+function pinta(){
+  cierraFicha();
+  const val = sel => sel.value || sel.dataset.inicial || TODOS;
+  const sa = $('selArea');
+  if (paisSel){ if (sa.value) areaPrevia = sa.value; }
+  else if (areaPrevia !== null){ if (!sa.value) sa.value = areaPrevia; areaPrevia = null; }
+  const a = paisSel ? TODOS : val(sa), r = val($('selRol'));
+  const areaCuenta = paisSel ? (areaPrevia || TODOS) : a;
+  const deListado = personas;   // también las personas sin foto (recuadro gris): el listado cuadra con el selector
+  const visibles = personas;
+  const areas = [...new Set(personas.map(p => p.area))].filter(x => x != MUNDIAL)
+                  .sort((x, y) => (x == '-') - (y == '-') || x.localeCompare(y));
+  opciones(sa, areas, v => v == '-' ? 'no area' : v, v => totalArea(v), 'World');
+  if (paisSel) sa.selectedIndex = -1;
+  const PRIMEROS = {[LIS]: 'list', [EVT]: 'event', [SEM]: 'seminar', [ACA]: 'academy', [MIL]: 'milonga', [PRA]: 'practica', [PEO]: 'person', org: 'organizer', art: 'artist'};
+  opciones($('selRol'), [{grupo: 'events', valores: [LIS, EVT, SEM, ACA, MIL, PRA]},
+                         {grupo: 'people', valores: [PEO, ...TIPOS_P]}],
+           v => PRIMEROS[v] || textoRol(v),
+           v => personas.filter(p => enArea(p, areaCuenta) && enRol(p, v)).length);
+  const conFechas = deEventos(r) && !sinFecha(r), conDias = regular(r), conRoles = r == PEO;
+  const fs = conFechas && !soloBuscado ? fechaSel : null;
+  const dias = conDias && diasSel.size && !soloBuscado ? [...diasSel] : null;
+  const enDias = p => !dias || !!proximaEn(p, dias);
+  const enTiras = p => enDias(p) && (!conRoles || soloBuscado || enRoles(p));
+  $('fechas').classList.remove('oculto');
+  $('fechas').classList.toggle('sinFechas', !conFechas && !conDias && !conRoles);
+  $('rBotones').classList.toggle('oculto', !conRoles);
+  const enSel = p => (!lugarSel || (p.pos && clavePos(p.pos) == lugarSel))
+                  && (!ciudadSel || ciudadDe(p) == ciudadSel)
+                  && (!paisSel || paisSel.feature.properties.nombres.includes(p.pais));
+  const rFechas = conFechas ? r : EVT;
+  if (conDias) pintaDias(d => deListado.filter(p => enArea(p, a) && enRol(p, r) && enSel(p) && (d === null || proximaEn(p, [d]))).length);
+  else if (conRoles) pintaRoles(k => deListado.filter(p => enArea(p, a) && enRol(p, PEO) && enSel(p) && (k === null || conRol(p, k))).length);
+  else pintaFechas(i => deListado.filter(p => enArea(p, a) && enRol(p, rFechas) && enFecha(p, i) && enSel(p)).length, !conFechas);
+
+  const base = visibles.filter(p => enArea(p, a) && enRol(p, r) && enFecha(p, fs) && enTiras(p));
+  const areaPais = paisSel && paisSel.feature.properties.area, aMapa = areaPais && areaPais != '-' ? areaPais : a;
+  const baseMapa = deListado.filter(p => enArea(p, aMapa) && enRol(p, r) && enFecha(p, fs) && enTiras(p)
+                                         && (!paisSel || paisSel.feature.properties.nombres.includes(p.pais))
+                                         && (p.area != MUNDIAL || aMapa == TODOS));
+  const lista = (soloBuscado && buscado ? base.filter(p => p === buscado)
+                                        : base.filter(enSel))
+                        .sort((x, y) => !deEventos(r) ? x.nombre.localeCompare(y.nombre)
+                                      : desdeHoy(x) - desdeHoy(y) || x.nombre.localeCompare(y.nombre));
+  const filas = conDias && !soloBuscado ? filasMilongas(lista) : lista.map(p => ({p, dia: conDias ? proximaEn(p) : null}));
+  pintaMapa(baseMapa, a);
+  const div = $('listado');
+  div.innerHTML = '';
+  div.classList.toggle('filas', ESTILO_LISTADO == 'filas');
+  const conFecha = filas.some(({p}) => p.evento);   // con fecha: su columna al principio (vacía en las filas sin fecha)
+  div.classList.toggle('conFecha', conFecha);
+  const vistos = new Set();
+  for (const {p, dia} of filas){
+    const c = document.createElement('div');
+    if (!vistos.has(p.id)) c.id = 'f' + p.id;
+    vistos.add(p.id);
+    c.dataset.p = p.id;
+    if (ESTILO_LISTADO == 'filas'){
+      c.className = 'fila';
+      const span = (clase, texto) => {
+        const s = document.createElement('span');
+        s.className = clase;
+        s.textContent = texto || '';
+        c.appendChild(s);
+      };
+      if (conFecha) span('fFecha', p.evento ? (dia ? textoDia(dia) : fechaListado(p)) : '');   // la fecha, el icono y el nombre
+      c.appendChild(iconoFila(p));
+      span('fNombre', p.nombre);
+      span('fLugar', p.ciudad || p.lugar);   // solo la ciudad (la sala va en la ficha)
+      const mini = cara(p);   // la miniatura al final, de la altura de la línea
+      mini.classList.add('fMini');
+      c.appendChild(mini);
+    } else {
+      c.className = 'cuerpo linea';
+      titulo(c, p, true);
+    }
+    c.onclick = () => abreFicha(p, c);
+    div.appendChild(c);
+  }
+  marcaAbierta();
+}
+
+let buscado = null, encontradas = [], activa = -1;
+let soloBuscado = false;
+const MAX_SUGS = 50;
+const tipoSug = p => p.geo || String(p.tipoP && p.tipoP != 'person' ? p.tipoP : p.roles[0] || PEO).slice(0, 3).toUpperCase();
+let geos = null;
+function lugaresSug(){
+  if (geos) return geos;
+  const areas = new Set(), paises = new Map(), ciudades = new Map();
+  for (const p of personas){
+    if (p.area && p.area != '-' && p.area != MUNDIAL) areas.add(p.area);
+    if (p.pais && p.pais != '-' && p.pais[0] == p.pais[0].toUpperCase()){
+      paises.set(p.pais, p.area);
+      if (p.ciudad && !p.ciudad.startsWith('*')) ciudades.set(ciudadDe(p), {nombre: p.ciudad, pais: p.pais});
+    }
+  }
+  geos = [...[...areas].map(a => ({geo: 'ARE', nombre: a})), ...[...paises].map(([n, a]) => ({geo: 'CON', nombre: n, area: a})),
+          ...[...ciudades].map(([k, c]) => ({geo: 'CIT', nombre: c.nombre, pais: c.pais, ciudad: k}))];
+  const n = new Map();
+  for (const p of personas) for (const k of ['ARE|' + p.area, 'CON|' + p.pais, 'CIT|' + ciudadDe(p)]) n.set(k, (n.get(k) || 0) + 1);
+  geos.forEach(g => { g.clave = normaliza(g.nombre); g.n = n.get(g.geo + '|' + (g.geo == 'CIT' ? g.ciudad : g.nombre)) || 0; });
+  return geos;
+}
+const detalle = p => p.geo == 'ARE' ? 'area' : p.geo == 'CON' ? p.area : p.geo == 'CIT' ? p.pais : p.lista ? p.lugar || 'list' : p.evento ? [p.fecha, p.lugar].filter(Boolean).join(' ') || p.tipo : p.lugar || 'people';
+const normaliza = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+function sugerencias(){ personas.forEach(p => p.clave = normaliza(p.nombre)); }
+function muestra(){
+  const q = normaliza($('buscar').value.trim()), d = $('sugs');
+  const orden = (x, y) => x.clave.startsWith(q) == y.clave.startsWith(q) ? x.nombre.localeCompare(y.nombre) : x.clave.startsWith(q) ? -1 : 1;
+  const ordenGeo = (x, y) => x.clave.startsWith(q) == y.clave.startsWith(q) ? y.n - x.n || x.nombre.localeCompare(y.nombre) : x.clave.startsWith(q) ? -1 : 1;
+  encontradas = !q ? [] : [...lugaresSug().filter(g => g.clave.includes(q)).sort(ordenGeo),
+                           ...personas.filter(p => p.clave.includes(q)).sort(orden)].slice(0, MAX_SUGS);
+  activa = encontradas.length ? 0 : -1;
+  d.innerHTML = '';
+  encontradas.forEach((p, i) => {
+    const o = document.createElement('div');
+    o.innerHTML = '';
+    const tipo = document.createElement('span');
+    tipo.className = 'tipo' + (p.geo ? ' geo' + p.geo : !p.evento && !p.lista && p.tipoP == 'person' ? ' gente' : '');
+    tipo.textContent = tipoSug(p);
+    o.appendChild(tipo);
+    o.append(p.nombre + ' ');
+    const s = document.createElement('small');
+    s.textContent = '— ' + detalle(p);
+    o.appendChild(s);
+    if (i == activa) o.className = 'activa';
+    o.onmousedown = e => { e.preventDefault(); ir(p); };
+    d.appendChild(o);
+  });
+  d.classList.toggle('oculto', !encontradas.length);
+}
+function marca(i){
+  activa = (i + encontradas.length) % encontradas.length;
+  [...$('sugs').children].forEach((o, k) => o.classList.toggle('activa', k == activa));
+  $('sugs').children[activa].scrollIntoView({block: 'nearest'});
+}
+function irGeo(g){
+  soloBuscado = false;
+  lugarSel = ciudadSel = paisSel = buscado = null;
+  if (g.geo == 'ARE'){
+    $('selArea').value = g.nombre;
+    pinta();
+  } else {
+    mapaAbierto = true;
+    sinEncuadre = true;
+    pinta();
+    const pais = g.geo == 'CIT' ? g.pais : g.nombre;
+    if (capaPaises) capaPaises.eachLayer(l => { if (!paisSel && l.feature.properties.nombres.includes(pais)) paisSel = l; });
+    if (g.geo == 'CIT') ciudadSel = g.ciudad;
+    pinta();
+    if (g.geo == 'CIT'){
+      const conPos = personas.find(p => ciudadDe(p) == g.ciudad && p.pos);
+      if (conPos) etiqueta(conPos.pos, g.nombre, 'ciudad');
+    } else if (paisSel) etiqueta(boundsPais(paisSel).getCenter(), g.nombre, 'pais');
+  }
+  $('buscar').value = '';
+  $('sugs').classList.add('oculto');
+  $('buscar').blur();
+}
+function ir(p){
+  if (p.geo) return irGeo(p);
+  buscado = p;
+  soloBuscado = true;
+  $('selRol').value = p.evento || p.lista ? p.roles[0] : PEO;
+  $('selArea').value = p.area == MUNDIAL ? TODOS : p.area;
+  fechaSel = F_DOCE;
+  lugarSel = ciudadSel = paisSel = null;
+  if (capaPaises && mapaAbierto) capaPaises.eachLayer(l => { if (!paisSel && l.feature.properties.nombres.includes(p.pais)) paisSel = l; });
+  pinta();
+  if (paisSel) etiqueta(p.pos || paisSel.getBounds().getCenter(), paisSel.feature.properties.pais, 'pais');
+  iluminaFicha(p);
+  const c = document.getElementById('f' + p.id);
+  if (c){
+    c.classList.add('encontrado');
+    c.scrollIntoView({block: 'center'});
+  }
+  $('buscar').value = '';
+  $('sugs').classList.add('oculto');
+  $('buscar').blur();
+}
+function teclaBuscar(e){
+  if (!encontradas.length) return;
+  if (e.key == 'ArrowDown'){ marca(activa + 1); e.preventDefault(); }
+  else if (e.key == 'ArrowUp'){ marca(activa - 1); e.preventDefault(); }
+  else if (e.key == 'Enter') ir(encontradas[activa]);
+  else if (e.key == 'Escape') $('sugs').classList.add('oculto');
+}
+
+function muestraInfo(){
+  $('fCuerpo').innerHTML = '';
+  const d = document.createElement('div');
+  d.className = 'texto';
+  const FB = 'https://www.facebook.com/profile.php?id=100093497583670';
+  d.innerHTML = '<p><a href="' + FB + '" target="_blank" rel="noopener">by KoKoTango</a> (public version)</p>' +
+                '<p class="enlaces"><a href="' + FB + '" target="_blank" rel="noopener"><img src="img/mensaje.svg" alt="" class="icono">send me a message with your urls</a></p>' +
+                '<p>powered by Opus 5.5</p>' +
+                '<p class="creditos">map: tiles &copy; <a href="https://www.esri.com/" target="_blank" rel="noopener">Esri</a>, HERE, Garmin, ' +
+                '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors; ' +
+                'countries: <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a>; ' +
+                '<a href="https://leafletjs.com/" target="_blank" rel="noopener">Leaflet</a></p>';
+  $('fCuerpo').appendChild(d);
+  $('ficha').showModal();
+  return false;
+}
+
+function conecta(){
+  $('buscar').oninput = muestra;
+  $('buscar').onfocus = muestra;
+  $('buscar').onblur = () => $('sugs').classList.add('oculto');
+  $('buscar').onkeydown = teclaBuscar;
+  $('info').onclick = muestraInfo;
+  $('fCerrar').onclick = () => $('ficha').close();
+  $('ficha').onclick = e => { if (e.target == $('ficha')) $('ficha').close(); };
+  $('dCerrar').onclick = cierraFicha;
+  $('bMapa').onclick = abreCierraMapa;
+  document.addEventListener('keydown', e => { if (e.key == 'Escape') cierraFicha(); });
+  $('selArea').onchange = () => { lugarSel = ciudadSel = paisSel = null; soloBuscado = false; pinta(); };
+  $('selRol').onchange = () => { lugarSel = ciudadSel = null; soloBuscado = false; pinta(); };
+  let areaAntes = null;
+  $('selArea').addEventListener('pointerdown', () => {
+    if ($('selArea').selectedIndex < 0) return;
+    areaAntes = $('selArea').value;
+    $('selArea').selectedIndex = -1;
+  });
+  $('selArea').addEventListener('blur', () => {
+    if ($('selArea').selectedIndex < 0 && areaAntes !== null) $('selArea').value = areaAntes;
+    areaAntes = null;
+  });
+}
+
+function deUrl(){
+  const q = new URLSearchParams(location.search);
+  if (q.get('a')) $('selArea').dataset.inicial = q.get('a');
+  if (q.get('b')) $('selRol').dataset.inicial = q.get('b');
+  if (q.has('d')) mapaAbierto = !/^(off|0|no)$/i.test(q.get('d'));
+}
+
+// los datos, en GitHub cifrados (cmd.publicar/cifra.py: datajs/datos.cifrados.js, AES-GCM): se
+// descifran con la clave de la url, wwt/#k=<clave> (el # no llega al servidor); en local, sin cifrar
+async function descifra(){
+  if (typeof DATOS_CIFRADOS == 'undefined') return true;
+  const k = new URLSearchParams(location.hash.slice(1)).get('k') || '';
+  try {
+    const bytes = t => Uint8Array.from(atob(t), c => c.charCodeAt(0));
+    const datos = bytes(DATOS_CIFRADOS);
+    const clave = await crypto.subtle.importKey('raw', bytes(k.replace(/-/g, '+').replace(/_/g, '/')), 'AES-GCM', false, ['decrypt']);
+    const texto = await crypto.subtle.decrypt({name: 'AES-GCM', iv: datos.slice(0, 12)}, clave, datos.slice(12));
+    (0, eval)(new TextDecoder().decode(texto));   // var publicPeople=[...]; var publicEvent=[...]
+    return true;
+  } catch (e){
+    $('listado').textContent = k ? 'la clave de la url no es válida' : 'falta la clave en la url (#k=...)';
+    return false;
+  }
+}
+
+async function arranca(){
+  if (!await descifra()) return;
+  deUrl();
+  conecta();
+  cargaFilas([...(typeof publicPeople == 'undefined' ? [] : publicPeople),
+              ...(typeof privatePeople == 'undefined' ? [] : privatePeople)]);
+}
+
+arranca();
+</script>
+</body>
+</html>
