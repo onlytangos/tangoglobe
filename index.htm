@@ -1072,7 +1072,9 @@ function pinta(){
   const enTiras = p => enDias(p) && (!conRoles || soloBuscado || enRoles(p));
   $('fechas').classList.remove('oculto');
   $('fechas').classList.toggle('sinFechas', !conFechas && !conDias && !conRoles);
-  $('rBotones').classList.toggle('oculto', !conRoles);
+  // la tira de roles privados, solo si hay datos privados (la local; en la publicada nadie los tiene)
+  const hayPrivados = personas.some(p => !p.evento && p.roles.some(x => ROLES[x] && !ROLES[x].publico));
+  $('rBotones').classList.toggle('oculto', !conRoles || !hayPrivados);
   const enSel = p => (!lugarSel || (p.pos && clavePos(p.pos) == lugarSel))
                   && (!ciudadSel || ciudadDe(p) == ciudadSel)
                   && (!paisSel || paisSel.feature.properties.nombres.includes(p.pais));
