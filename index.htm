@@ -1111,8 +1111,8 @@ function pinta(){
         s.textContent = texto || '';
         c.appendChild(s);
       };
-      if (conFecha) span('fFecha', p.evento ? (dia ? textoDia(dia) : fechaListado(p)) : '');   // la fecha, el icono y el nombre
-      c.appendChild(iconoFila(p));
+      c.appendChild(iconoFila(p));   // el logo siempre al inicio de la línea; luego la fecha y el nombre
+      if (conFecha) span('fFecha', p.evento ? (dia ? textoDia(dia) : fechaListado(p)) : '');
       span('fNombre', p.nombre);
       span('fLugar', p.ciudad || p.lugar);   // solo la ciudad (la sala va en la ficha)
       const mini = cara(p);   // la miniatura al final, de la altura de la línea
