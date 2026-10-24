@@ -246,7 +246,7 @@ let _venues = null;
 function venueDe(e){
   const loc = (leeVarios(e).loc || [])[0];
   if (!loc) return null;
-  _venues = _venues || new Map((typeof publicEvent == 'undefined' ? [] : publicEvent).filter(x => x[CAMPO.tipo] == 'venue')
+  _venues = _venues || new Map(eventosTango().filter(x => x[CAMPO.tipo] == 'venue')
                                  .map(x => [x[CAMPO.country] + '|' + x[CAMPO.city] + '|' + x[CAMPO.name], x]));
   return _venues.get(e[CAMPO.country] + '|' + e[CAMPO.city] + '|' + loc) || null;
 }
@@ -353,7 +353,7 @@ function mapaDe(e){
 }
 function eventos(){
   const porClave = new Map(), lista = [];
-  for (const e of (typeof publicEvent == 'undefined' ? [] : publicEvent)){
+  for (const e of eventosTango()){
     if (!String(e[CAMPO.tipo]).startsWith('event') && !sinFecha(rolEvento(e[CAMPO.tipo]))) continue;
     const url = /^https?:\/\//.test(e[CAMPO.urlfb] || '') ? e[CAMPO.urlfb] : '';
     const n = inicio(fechaDe(e));
@@ -429,7 +429,7 @@ const deRaiz = u => /^img\//.test(String(u)) ? RAIZ + u : u;
 const esEnlace = u => /^https?:\/\//.test(u || '') || /^(\.\.\/)?img\//.test(u || '');
 const urlLista = e => deRaiz([e[CAMPO.urlfb], ...(leeVarios(e).www || [])].find(u => esEnlace(u)) || '');
 function listas(){
-  return (typeof publicEvent == 'undefined' ? [] : publicEvent).filter(e => e[CAMPO.tipo] == 'list').map(e => ({
+  return eventosTango().filter(e => e[CAMPO.tipo] == 'list').map(e => ({
     lista: true, area: e[CAMPO.area] && e[CAMPO.area] != '-' ? e[CAMPO.area] : '-', pais: e[CAMPO.country] && e[CAMPO.country] != '-' ? e[CAMPO.country] : '-', roles: [LIS], nombre: e[CAMPO.name], pos: posLista(e), zona: deZona(e),
     fb: urlLista(e), lugar: lugarLista(e), ciudad: /^[^*-]/.test(String(e[CAMPO.city] || '').trim()) ? String(e[CAMPO.city]).trim() : '', www: (leeVarios(e).www || []).map(deRaiz),
     foto: foto(e[CAMPO.idfoto], true) || deRaiz((leeVarios(e).www || []).find(u => /^img\//.test(u)) || ''), video: '', notas: [], coment: []}));   // sin foto: su imagen (img/...)
@@ -467,7 +467,7 @@ function opciones(sel, valores, etiqueta, cuenta, todos = 'all'){
 
 function organizadores(){
   const organiza = new Map();
-  for (const e of (typeof publicEvent == 'undefined' ? [] : publicEvent)){
+  for (const e of eventosTango()){
     if (e[CAMPO.tipo] == 'venue') continue;
     const url = /^https?:\/\//.test(e[CAMPO.urlfb] || '') ? e[CAMPO.urlfb] : '';
     for (const o of orgsDe(e)){
@@ -1296,7 +1296,7 @@ async function descifra(){
     const datos = bytes(DATOS_CIFRADOS);
     const clave = await crypto.subtle.importKey('raw', bytes(k.replace(/-/g, '+').replace(/_/g, '/')), 'AES-GCM', false, ['decrypt']);
     const texto = await crypto.subtle.decrypt({name: 'AES-GCM', iv: datos.slice(0, 12)}, clave, datos.slice(12));
-    (0, eval)(new TextDecoder().decode(texto));   // var publicPeople=[...]; var publicEvent=[...]
+    (0, eval)(new TextDecoder().decode(texto));   // var publictango=[...]
     return true;
   } catch (e){
     $('listado').textContent = k ? 'la clave de la url no es válida' : 'falta la clave en la url (#k=...)';
@@ -1308,8 +1308,7 @@ async function arranca(){
   if (!await descifra()) return;
   deUrl();
   conecta();
-  cargaFilas([...(typeof publicPeople == 'undefined' ? [] : publicPeople),
-              ...(typeof privatePeople == 'undefined' ? [] : privatePeople)]);
+  cargaFilas(personasTango());
 }
 
 arranca();
