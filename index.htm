@@ -246,7 +246,7 @@ let _venues = null;
 function venueDe(e){
   const loc = (leeVarios(e).loc || [])[0];
   if (!loc) return null;
-  _venues = _venues || new Map(eventosTango().filter(x => x[CAMPO.tipo] == 'venue')
+  if (!_venues || !_venues.size) _venues = new Map(eventosTango().filter(x => x[CAMPO.tipo] == 'venue')
                                  .map(x => [x[CAMPO.country] + '|' + x[CAMPO.city] + '|' + x[CAMPO.name], x]));
   return _venues.get(e[CAMPO.country] + '|' + e[CAMPO.city] + '|' + loc) || null;
 }
