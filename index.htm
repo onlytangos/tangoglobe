@@ -291,7 +291,8 @@ function cargaFilas(filas){
     const pos = coordDe(c);
     const tipoP = String(c[CAMPO.tipo] || '').trim() in TIPOS_PERSONA ? String(c[CAMPO.tipo]).trim() : 'person';
     if (!p){ porClave.set(clave, {area, pais, lugar, ciudad, pos, roles, tipoP, nombre: c[CAMPO.name], video, foto: f, fb, notas: notas ? [notas] : [],
-                                     coment: coments}); continue; }
+                                     coment: coments, ids: [idDe(c)].filter(Boolean)}); continue; }
+    if (idDe(c)) p.ids.push(idDe(c));
     if (!p.pos) p.pos = pos;
     if (!p.fb) p.fb = fb;
     if (p.tipoP == 'person') p.tipoP = tipoP;
@@ -360,6 +361,7 @@ function eventos(){
     const claves = d => [...[url, wwwDe(e)].filter(Boolean).map(u => 'u:' + claveUrl(u) + '#' + (n == null ? fechaDe(e) : n + d)), n != null && 'n:' + claveNom(e[CAMPO.name], n + d)].filter(Boolean);
     const ya = [0, -1, 1].flatMap(d => n == null && d ? [] : claves(d)).map(k => porClave.get(k)).find(Boolean);
     if (ya){
+      if (idDe(e)) ya.ids.push(idDe(e));
       if (!ya.fb && url) ya.fb = url;
       if (!ya.foto) ya.foto = fotoEvento(e);
       if (!ya.pos) ya.pos = posEvento(e);
@@ -384,7 +386,7 @@ function eventos(){
                          lugar: e[CAMPO.city] && e[CAMPO.city] != '-' ? String(e[CAMPO.city]).trim() : '',
                          sala: (leeVarios(e).loc || [''])[0], venue: (venueDe(e) || [])[CAMPO.name] || '', salaFb: urlSala(e), salaDir: dirSala(e), fecha, reg, orden, fechaOrig: fechaDe(e),
                          mapa: regular(rolEvento(e[CAMPO.tipo])) ? mapaDe(e) : '', mes, dia, orgs, www: wwwDe(e) ? [wwwDe(e)] : [],
-                         video: (leeVarios(e).vid || [''])[0], notas: [], coment: []};
+                         video: (leeVarios(e).vid || [''])[0], notas: [], coment: [], ids: [idDe(e)].filter(Boolean)};
     for (const k of claves(0)) porClave.set(k, ev);
     lista.push(ev);
   }
@@ -432,7 +434,7 @@ function listas(){
   return eventosTango().filter(e => e[CAMPO.tipo] == 'list').map(e => ({
     lista: true, area: e[CAMPO.area] && e[CAMPO.area] != '-' ? e[CAMPO.area] : '-', pais: e[CAMPO.country] && e[CAMPO.country] != '-' ? e[CAMPO.country] : '-', roles: [LIS], nombre: e[CAMPO.name], pos: posLista(e), zona: deZona(e),
     fb: urlLista(e), lugar: lugarLista(e), ciudad: /^[^*-]/.test(String(e[CAMPO.city] || '').trim()) ? String(e[CAMPO.city]).trim() : '', www: (leeVarios(e).www || []).map(deRaiz),
-    foto: foto(e[CAMPO.idfoto], true) || deRaiz((leeVarios(e).www || []).find(u => /^img\//.test(u)) || ''), video: '', notas: [], coment: []}));   // sin foto: su imagen (img/...)
+    foto: foto(e[CAMPO.idfoto], true) || deRaiz((leeVarios(e).www || []).find(u => /^img\//.test(u)) || ''), video: '', notas: [], coment: [], ids: [idDe(e)].filter(Boolean)}));   // sin foto: su imagen (img/...)
 }
 
 const enArea = (p, a) => a == TODOS || p.area == a || p.area == MUNDIAL;
@@ -1061,7 +1063,7 @@ function pinta(){
   opciones(sa, areas, v => v == '-' ? 'no area' : v, v => totalArea(v), 'World');
   if (paisSel) sa.selectedIndex = -1;
   const PRIMEROS = {[LIS]: 'list', [EVT]: 'event', [SEM]: 'seminar', [ACA]: 'academy', [MIL]: 'milonga', [PRA]: 'practica', [PEO]: 'person', org: 'organizer', art: 'artist'};
-  opciones($('selRol'), [{grupo: 'events', valores: [LIS, EVT, SEM, ACA, MIL, PRA]},
+  opciones($('selRol'), [{grupo: 'events', valores: [LIS, ACA, EVT, SEM, MIL, PRA]},
                          {grupo: 'people', valores: [PEO, ...TIPOS_P]}],
            v => PRIMEROS[v] || textoRol(v),
            v => personas.filter(p => enArea(p, areaCuenta) && enRol(p, v)).length);
@@ -1284,6 +1286,15 @@ function deUrl(){
   if (q.get('a')) $('selArea').dataset.inicial = q.get('a');
   if (q.get('b')) $('selRol').dataset.inicial = q.get('b');
   if (q.has('d')) mapaAbierto = !/^(off|0|no)$/i.test(q.get('d'));
+  idInicial = (q.get('id') || '').trim();
+}
+// ?id=<id del registro> (campo 10): abre esa ficha (evento, persona o lista) sola en el listado, como el buscador
+let idInicial = '';
+function abreId(){
+  const p = idInicial && personas.find(x => (x.ids || []).includes(idInicial));
+  if (!p) return;
+  ir(p);
+  abreFicha(p);
 }
 
 // los datos, en GitHub cifrados (cmd.publicar/cifra.py: datajs/datos.cifrados.js, AES-GCM): se
@@ -1309,6 +1320,7 @@ async function arranca(){
   deUrl();
   conecta();
   cargaFilas(personasTango());
+  abreId();
 }
 
 arranca();
