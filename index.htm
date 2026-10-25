@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="leaflet/leaflet.css">
 <script src="leaflet/leaflet.js"></script>
 <style>
-  :root { --maxFoto: 110px;   /* tamaño máximo de las fotos */ color-scheme: dark;
+  :root { --maxFoto: 110px;   /* tamaño máximo de las fotos (= ANCHO_CARA) */ color-scheme: dark;
           --fondo: #222; --barra: #444; --tarjeta: #3a3a3a; --sinfoto: #474747;
           --texto: #eee; --suave: #999; --enlace: #8ab4f8; --borde: #555;
           --acento: #ffd8b0; }
@@ -66,11 +66,27 @@
   #info img { width: 26px; height: 26px; opacity: .8; }
   #info:hover img { opacity: 1; }
 
-  .cuerpo > img.sinfoto { background: var(--sinfoto); }
+  .parrilla { --cols: 8; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; align-items: stretch; }
+  .parrilla .cara { flex: 0 0 calc((100% - (var(--cols) - 1) * 6px) / var(--cols)); max-width: var(--maxFoto); }
+  .cara { position: relative; margin: 0; background: #000; display: flex; flex-direction: column;
+           border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.5); }
+  .cara img, .cara .sinfoto { display: block; flex: none; width: 100%; aspect-ratio: 1; object-fit: contain; background: #000; }
+  .cara img.sinfoto, .cuerpo > img.sinfoto { background: var(--sinfoto); }
+
+  .parrilla:not(.evts) .cara.evt { flex-basis: calc(2 * (100% - (var(--cols) - 1) * 6px) / var(--cols) + 6px); }
+  .parrilla .cara.evt { max-width: calc(2 * var(--maxFoto) + 6px); }   /* un evento ocupa dos caras */
+  .cara.evt img, .cara.evt .sinfoto { aspect-ratio: 16 / 9; object-fit: cover; }
+  .cara figcaption { flex: none; height: calc(2.5em + 6px); box-sizing: border-box; padding: 3px; background: var(--barra); color: var(--texto);
+                     font-size: .7em; line-height: 1.25; display: flex; align-items: center; justify-content: center;
+                     text-align: center; overflow-wrap: anywhere; }
+  .cara figcaption span { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+  .yt { position: absolute; top: 3px; right: 3px; display: flex; filter: drop-shadow(0 1px 2px rgba(0,0,0,.6)); }
+  .yt img { width: 20px; height: 14px; }
+  .cara img, .cara figcaption { cursor: pointer; }
 
   .cuerpo > img.conEnlace { cursor: pointer; }
 
-  .cuerpo > img.logo { object-fit: contain; background: #fff; padding: 6%; box-sizing: border-box; }
+  .cara.evt img.logo, .cuerpo > img.logo { object-fit: contain; background: #fff; padding: 6%; box-sizing: border-box; }
 
   .cuerpo > img.portada { flex: none; align-self: stretch; width: auto; height: auto; min-height: 90px;
                            max-width: min(50%, var(--maxFoto)); max-height: var(--maxFoto); aspect-ratio: 16 / 9; object-fit: cover; contain: size; }
@@ -105,7 +121,7 @@
 
   .fechas.sinFechas { visibility: hidden; height: 0; overflow: hidden; margin-top: -12px; }
   .tira { display: flex; min-width: 0; overflow-x: auto; scrollbar-width: thin; }
-  .fechas button, #bMapa { flex: none; font-size: .85em; padding: 3px 7px; white-space: nowrap; cursor: pointer;
+  .fechas button, #bMapa, #bListado { flex: none; font-size: .85em; padding: 3px 7px; white-space: nowrap; cursor: pointer;
                    background: var(--tarjeta); color: var(--texto); border: 1px solid var(--borde); border-radius: 4px; }
   .tira button { border-radius: 0; margin-left: -1px; }
   .tira button:first-child { border-radius: 4px 0 0 4px; margin-left: 0; }
@@ -159,7 +175,8 @@
   .mapaCaja.cerrado { display: none; }
   .mapa { height: 202px; max-height: 28.8vh; border: 1px solid var(--borde); border-radius: 6px; }
   #bMapa:disabled { opacity: .45; cursor: default; }
-  .linea1 #bMapa { font-size: 1em; padding: 4px 6px; width: 4.8em; box-sizing: border-box; text-align: center; }
+  .linea1 #bMapa, .linea1 #bListado { font-size: 1em; padding: 4px 6px; width: 4.8em; box-sizing: border-box; text-align: center; }
+  .iParrilla { position: relative; top: -2px; }
   @media (max-width: 600px) { .mapa { height: 144px; } }
   .aviso { color: var(--suave); }
   .oculto { display: none !important; }
@@ -196,6 +213,7 @@
     <label><select id="selArea" data-inicial="Asia"></select></label>
     <label><select id="selRol" data-inicial="evt"></select></label>
     <button id="bMapa" title="show / hide the map">map</button>
+    <button id="bListado" title="grid / list">list</button>
   </div>
   <div id="mapaCaja" class="mapaCaja oculto">
     <div id="mapa" class="mapa"></div>
@@ -208,6 +226,7 @@
  </div>
 </div>
 <div id="detalle" class="detalle oculto"><button id="dCerrar" title="close">&times;</button><div id="dCuerpo" class="cuerpo"></div></div>
+<div id="parrilla" class="parrilla oculto"></div>
 <div id="listado" class="listado"></div>
 <dialog id="ficha"><button id="fCerrar" title="close">&times;</button><div id="fCuerpo" class="cuerpo"></div></dialog>
 
@@ -215,6 +234,15 @@
 const FOTOS = 'foto';
 const TODOS = '*';
 const ESTILO_LISTADO = 'filas';
+let enListado = true;   // listado o parrilla de caras (botón list; ?c=grid / ?c=list)
+const ANCHO_CARA = 110;   // = --maxFoto del CSS: tamaño máximo de las fotos
+let soloEventos = false;
+function columnasParrilla(evts){
+  soloEventos = evts;
+  const div = $('parrilla'), w = div.clientWidth || window.innerWidth, ancho = evts ? 2 * ANCHO_CARA : ANCHO_CARA;
+  div.style.setProperty('--cols', Math.max(4, Math.floor((w + 6) / (ancho + 6))));   // sin tope: cada cara, ANCHO_CARA como mucho (--maxFoto)
+  div.classList.toggle('evts', evts);
+}
 const EVT = 'evt';
 const SEM = 'sem';
 const ACA = 'aca';
@@ -1096,6 +1124,10 @@ function pinta(){
                                       : desdeHoy(x) - desdeHoy(y) || x.nombre.localeCompare(y.nombre));
   const filas = conDias && !soloBuscado ? filasMilongas(lista) : lista.map(p => ({p, dia: conDias ? proximaEn(p) : null}));
   pintaMapa(baseMapa, a);
+  $('bListado').innerHTML = (enListado ? '☰' : '<span class="iParrilla">▦</span>') + ' list';
+  $('parrilla').classList.toggle('oculto', enListado);
+  $('listado').classList.toggle('oculto', !enListado);
+  if (!enListado) return pintaParrilla(lista, deEventos(r) || r == LIS);
   const div = $('listado');
   div.innerHTML = '';
   div.classList.toggle('filas', ESTILO_LISTADO == 'filas');
@@ -1130,6 +1162,35 @@ function pinta(){
     div.appendChild(c);
   }
   marcaAbierta();
+}
+function pintaParrilla(lista, evts){
+  const div = $('parrilla');
+  columnasParrilla(evts);
+  div.innerHTML = '';
+  for (const p of lista){
+    const fig = document.createElement('figure');
+    fig.className = p.evento || p.lista ? 'cara evt' : 'cara';
+    const img = cara(p);
+    img.onclick = () => abreFicha(p);
+    fig.appendChild(img);
+    if (p.video){
+      const yt = document.createElement('a');
+      yt.className = 'yt';
+      yt.href = p.video;
+      yt.target = '_blank';
+      yt.rel = 'noopener';
+      yt.title = 'video on YouTube';
+      yt.innerHTML = '<img src="img/yt.svg" alt="YouTube">';
+      fig.appendChild(yt);
+    }
+    const pie = document.createElement('figcaption');
+    const nom = document.createElement('span');
+    nom.textContent = p.nombre;
+    pie.appendChild(nom);
+    pie.onclick = () => abreFicha(p);
+    fig.appendChild(pie);
+    div.appendChild(fig);
+  }
 }
 
 let buscado = null, encontradas = [], activa = -1;
@@ -1190,6 +1251,7 @@ function marca(i){
 function irGeo(g){
   soloBuscado = false;
   lugarSel = ciudadSel = paisSel = buscado = null;
+  enListado = true;
   if (g.geo == 'ARE'){
     $('selArea').value = g.nombre;
     pinta();
@@ -1214,6 +1276,7 @@ function ir(p){
   if (p.geo) return irGeo(p);
   buscado = p;
   soloBuscado = true;
+  enListado = true;
   $('selRol').value = p.evento || p.lista ? p.roles[0] : PEO;
   $('selArea').value = p.area == MUNDIAL ? TODOS : p.area;
   fechaSel = F_DOCE;
@@ -1266,6 +1329,8 @@ function conecta(){
   $('ficha').onclick = e => { if (e.target == $('ficha')) $('ficha').close(); };
   $('dCerrar').onclick = cierraFicha;
   $('bMapa').onclick = abreCierraMapa;
+  $('bListado').onclick = () => { enListado = !enListado; sinEncuadre = true; pinta(); };
+  window.addEventListener('resize', () => { if (!enListado) columnasParrilla(soloEventos); });
   document.addEventListener('keydown', e => { if (e.key == 'Escape') cierraFicha(); });
   $('selArea').onchange = () => { lugarSel = ciudadSel = paisSel = null; soloBuscado = false; pinta(); };
   $('selRol').onchange = () => { lugarSel = ciudadSel = null; soloBuscado = false; pinta(); };
@@ -1285,6 +1350,7 @@ function deUrl(){
   const q = new URLSearchParams(location.search);
   if (q.get('a')) $('selArea').dataset.inicial = q.get('a');
   if (q.get('b')) $('selRol').dataset.inicial = q.get('b');
+  if (q.has('c')) enListado = !/^(grid|0|off|no)$/i.test(q.get('c'));
   if (q.has('d')) mapaAbierto = !/^(off|0|no)$/i.test(q.get('d'));
   idInicial = (q.get('id') || '').trim();
 }
