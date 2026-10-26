@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="leaflet/leaflet.css">
 <script src="leaflet/leaflet.js"></script>
 <style>
-  :root { --maxFoto: 110px;   /* tamaño máximo de las fotos (= ANCHO_CARA) */ color-scheme: dark;
+  :root { --maxFoto: 110px;   /* tamaño máximo de las fotos (= ANCHO_CARA) */ --altoTira: 27px; color-scheme: dark;
           --fondo: #222; --barra: #444; --tarjeta: #3a3a3a; --sinfoto: #474747;
           --texto: #eee; --suave: #999; --enlace: #8ab4f8; --borde: #555;
           --acento: #ffd8b0; }
@@ -41,7 +41,7 @@
   .cuerpo p.enlaces { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 10px; }
   .cuerpo p.enlaces a { display: inline-flex; align-items: center; gap: 5px; }
   .cuerpo .icono { height: 16px; width: auto; }
-  .filtros { display: flex; justify-content: center; margin: -16px -16px 16px; padding: 12px 16px;
+  .filtros { display: flex; justify-content: center; margin: -16px -16px 16px; padding: 4px 16px;
              position: sticky; top: 0; z-index: 2; background: var(--barra); box-shadow: 0 1px 6px rgba(0,0,0,.6); }
   select { font-size: 1em; padding: 4px 6px; background: var(--tarjeta); color: var(--texto); border: 1px solid var(--borde); border-radius: 4px; }
   #buscar { font-size: 1em; padding: 4px 6px; width: 100%; box-sizing: border-box;
@@ -63,7 +63,7 @@
   #sugs .tipo.geoCON { background: #fff3b8; border-color: #fff3b8; color: #333; }
   #sugs .tipo.geoCIT { background: #ffe680; border-color: #ffe680; color: #333; }
   #sugs .tipo.gente { background: #9be39b; border-color: #9be39b; color: #333; }   /* personas de tipo people */
-  #info img { width: 26px; height: 26px; opacity: .8; }
+  #info img { width: 28px; height: 28px; opacity: .8; }
   #info:hover img { opacity: 1; }
 
   .parrilla { --cols: 8; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; align-items: stretch; }
@@ -110,8 +110,8 @@
   .listado .cuerpo { padding: 12px; background: var(--barra); border: 1px solid var(--borde); border-radius: 8px; }
   .listado .cuerpo > img, .listado .cuerpo > .sinfoto { aspect-ratio: 16 / 9; }
 
-  .cabecera { display: flex; flex-direction: column; gap: 12px; width: 41em; max-width: 100%; min-width: 0; }
-  .linea1 { display: flex; flex-wrap: wrap; gap: 2px; align-items: center; justify-content: center; }
+  .cabecera { display: flex; flex-direction: column; gap: 4px; width: 41em; max-width: 100%; min-width: 0; }
+  .linea1 { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; justify-content: center; }
 
   .cabecera:has(#fechas:not(.oculto)) .linea1 { width: 0; min-width: 100%; flex-wrap: nowrap; }
   .cabecera:has(#fechas:not(.oculto)) .linea1 > label { flex: 0 1 9.5em; min-width: 4.5em; }
@@ -119,20 +119,19 @@
   .cabecera:has(#fechas:not(.oculto)) .busca { flex-basis: 5em; min-width: 5em; }
   .fechas { display: flex; flex-direction: column; gap: 4px; align-items: stretch; justify-content: center; min-width: 0; }
 
-  .fechas.sinFechas { visibility: hidden; height: 0; overflow: hidden; margin-top: -12px; }
+  .fechas.sinFechas { visibility: hidden; height: 0; overflow: hidden; margin-top: -4px; }
   .tira { display: flex; min-width: 0; overflow-x: auto; scrollbar-width: thin; }
   .fechas button, #bMapa, #bListado { flex: none; font-size: .85em; padding: 3px 7px; white-space: nowrap; cursor: pointer;
                    background: var(--tarjeta); color: var(--texto); border: 1px solid var(--borde); border-radius: 4px; }
   .tira button { border-radius: 0; margin-left: -1px; }
   .tira button:first-child { border-radius: 4px 0 0 4px; margin-left: 0; }
   .tira button:last-child { border-radius: 0 4px 4px 0; }
-  .tira button { display: flex; flex-direction: column; align-items: center; line-height: 1.25; padding: 4px 7px; }
+  .tira button { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.25; padding: 0 7px;
+                 height: var(--altoTira); box-sizing: border-box; }   /* los meses y la ruta, de la misma altura */
 
   .tira { flex: 1 1 auto; }
   .tira button { flex: 1 0 auto; }
-  .tira button small { font-size: .85em; color: var(--suave); }
   .tira button.vacio { cursor: default; }
-  .tira button.activo small { color: #333; }
   .fechas button.activo { background: var(--acento); border-color: var(--acento); color: #000; position: relative; }
 
   .listado .cuerpo.linea { padding: 6px 12px; cursor: pointer; }
@@ -147,6 +146,11 @@
   .listado .fila.abierta { background: var(--acento); color: #000; }
   .listado .fila.abierta .fFecha, .listado .fila.abierta .fLugar { color: #5c4a38; }
   .listado .fila.encontrado { outline: 0; border-left-color: var(--enlace); }
+  .ruta { height: var(--altoTira); box-sizing: border-box; padding: 0 10px; line-height: calc(var(--altoTira) - 1px); font-size: .85em;   /* la de los botones de meses y días */ background: #333; color: var(--suave); border-bottom: 1px solid var(--borde);
+                   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ruta .icono { height: 16px; width: auto; vertical-align: -3px; }
+  .ruta .paso { color: var(--enlace); cursor: pointer; }
+  .ruta .paso:hover { text-decoration: underline; }
   .fila span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .fila .fFecha, .fila .fLugar { color: var(--suave); font-size: .85em; font-variant-numeric: tabular-nums; }
   .fila .fNombre { font-weight: 500; }
@@ -171,6 +175,10 @@
     .conFecha .fila .fMini { grid-column: 4; }
   }
 
+  .leaflet-tooltip.tipNombre { background: #444; color: var(--texto); border: 1px solid var(--borde); box-shadow: 0 1px 4px rgba(0,0,0,.6); }
+  .leaflet-tooltip-top.tipNombre::before { border-top-color: #444; }
+  .marcaLista { box-sizing: border-box; border-radius: 2px; background: var(--acento); color: #000; }
+  .marcaLista > div { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 8px; line-height: 1; }
   .mapaCaja { position: relative; z-index: 0; }
   .mapaCaja.cerrado { display: none; }
   .mapa { height: 202px; max-height: 28.8vh; border: 1px solid var(--borde); border-radius: 6px; }
@@ -223,6 +231,7 @@
     <div id="fBotones" class="tira"></div>
     <div id="rBotones" class="tira oculto"></div>
   </div>
+  <div id="ruta" class="ruta"></div>
  </div>
 </div>
 <div id="detalle" class="detalle oculto"><button id="dCerrar" title="close">&times;</button><div id="dCuerpo" class="cuerpo"></div></div>
@@ -234,6 +243,7 @@
 const FOTOS = 'foto';
 const TODOS = '*';
 const ESTILO_LISTADO = 'filas';
+history.scrollRestoration = 'manual';   // al cargar (o recargar), arriba: a la vista la primera línea del listado
 let enListado = true;   // listado o parrilla de caras (botón list; ?c=grid / ?c=list)
 const ANCHO_CARA = 110;   // = --maxFoto del CSS: tamaño máximo de las fotos
 let soloEventos = false;
@@ -466,9 +476,9 @@ function listas(){
 }
 
 const enArea = (p, a) => a == TODOS || p.area == a || p.area == MUNDIAL;
-const enRol  = (p, r) => r == LIS ? !!p.lista
+const enRol  = (p, r) => r == TODOS ? true   // all: todo, también las listas
+                       : r == LIS ? !!p.lista
                        : p.lista ? false
-                       : r == TODOS ? true
                        : r == PEO ? !p.evento && p.tipoP == 'person'
                        : TIPOS_P.includes(r) ? !p.evento && p.tipoP == r
                        : deEventos(r) ? !!p.evento && p.roles.includes(r)
@@ -604,10 +614,9 @@ function pintaRoles(cuenta){
     for (const k of claves){
       const b = document.createElement('button');
       b.textContent = k === null ? 'ALL' : k == PTC ? 'PTC' : textoRol(k);
-      b.title = k === null ? 'all people' : k == PTC ? PTCS.map(textoRol).join(', ') : (ROLES[k] || {}).desc || '';
-      const n = document.createElement('small'), cuantos = cuenta(k);
-      n.textContent = cuantos;
-      b.appendChild(n);
+      const cuantos = cuenta(k);   // el contador, solo en el hover
+      b.title = (k === null ? 'all people' : k == PTC ? PTCS.map(textoRol).join(', ') : (ROLES[k] || {}).desc || b.textContent)
+                + ' (' + cuantos + ')';
       b.classList.toggle('activo', k === null ? !rolesSel.size : rolesSel.has(k));
       b.classList.toggle('vacio', !cuantos);
       if (cuantos) b.onclick = () => {
@@ -630,10 +639,8 @@ function pintaDias(cuenta){
   [null, ...[0, 1, 2, 3, 4, 5, 6].map(k => (hoy + k) % 7)].forEach(d => {
     const b = document.createElement('button');
     b.textContent = d === null ? 'WEEK' : DIAS_SEM[d];
-    b.title = d === null ? 'all days' : d == hoy ? 'today' : '';
-    const n = document.createElement('small'), cuantos = cuenta(d);
-    n.textContent = cuantos;
-    b.appendChild(n);
+    const cuantos = cuenta(d);   // el contador, solo en el hover
+    b.title = (d === null ? 'all days' : d == hoy ? 'today' : DIAS_SEM[d]) + ' (' + cuantos + ')';
     b.classList.toggle('activo', d === null ? !diasSel.size : diasSel.has(d));
     b.classList.toggle('vacio', !cuantos);
     if (cuantos) b.onclick = () => {
@@ -810,10 +817,8 @@ function pintaFechas(cuenta, oculto){
   FECHAS.forEach((f, i) => {
     const b = document.createElement('button');
     b.textContent = f.doce ? 'YEAR' : f.mes === undefined ? f.anyo : MESES[f.mes];
-    if (f.mes !== undefined) b.title = MESES[f.mes] + ' ' + f.anyo;
-    const n = document.createElement('small'), cuantos = cuenta(i);
-    n.textContent = cuantos;
-    b.appendChild(n);
+    const cuantos = cuenta(i);   // el contador, solo en el hover
+    b.title = (f.mes !== undefined ? MESES[f.mes] + ' ' + f.anyo : b.textContent) + ' (' + cuantos + ')';
     b.classList.toggle('activo', i == fechaSel);
     b.classList.toggle('vacio', !cuantos);
     if (cuantos) b.onclick = () => { fechaSel = i; lugarSel = ciudadSel = null; soloBuscado = false; pinta(); };
@@ -839,7 +844,7 @@ function iluminaFicha(p){
   const antes = marcadores.get(marcaFicha);
   if (antes) antes.setStyle(deCiudadSel(marcaFicha) ? ESTILO_LUGAR
                                                     : {color: BORDE_MARCA, fillColor: COLOR_MARCA, fillOpacity: 0, weight: 2});
-  marcaFicha = p && p.pos ? clavePos(p.pos) : null;
+  marcaFicha = p && p.pos ? claveMarca(p) : null;
   const m = marcadores.get(marcaFicha);
   if (m){ m.setStyle(ESTILO_CIUDAD); m.bringToFront(); }
 }
@@ -898,6 +903,7 @@ function centroPos(pos){
   return mejor || pos;
 }
 const clavePos = pos => centroPos(pos).map(x => x.toFixed(3)).join(',');
+const claveMarca = p => clavePos(p.pos) + (p.lista ? '|lis' : '');   // las listas, en su propia marca (su logo) aunque compartan sitio
 let MarcaCuadrada = null;
 function marcaCuadrada(pos, opciones){
   MarcaCuadrada = MarcaCuadrada || L.CircleMarker.extend({_updatePath(){
@@ -905,6 +911,18 @@ function marcaCuadrada(pos, opciones){
     this._renderer._setPath(this, this._empty() ? 'M0 0' : `M${p.x - r},${p.y - r}h${2 * r}v${2 * r}h${-2 * r}z`);
   }});
   return new MarcaCuadrada(pos, opciones);
+}
+// el nombre de una marca del mapa: su ciudad o, si no la tiene, su país (los eventos se distinguen en el listado)
+const nombreMarca = ps => { const p = ps.find(p => p.ciudad) || ps[0]; return p.ciudad || (p.pais != '-' ? p.pais : '') || p.lugar || ''; };
+function marcaLista(pos, opciones){   // las listas: en el mapa el logo de lista (☰, como el botón list) en vez del punto
+  const div = document.createElement('div');
+  div.textContent = '☰';
+  const m = L.marker(pos, {icon: L.divIcon({className: 'marcaLista', html: div, iconSize: [13, 13]})});
+  m.setStyle = e => { m.estilo = e; const el = m.getElement(); if (el) el.style.border = e.weight / 2 + 'px solid ' + e.color; };   // borde a la mitad, como la marca
+  m.bringToFront = () => m.setZIndexOffset(1000);
+  m.on('add', () => m.setStyle(m.estilo));
+  m.estilo = opciones;
+  return m;
 }
 const RADIOS = [[1, 4.5], [2, 6.75], [4, 9], [8, 11.25], [16, 13.5], [32, 15.75]];
 function radioDe(n){
@@ -1041,7 +1059,7 @@ function pintaMapa0(lista, area){
   capaMapa.clearLayers();
   const porLugar = new Map();
   for (const p of conPos){
-    const k = clavePos(p.pos);
+    const k = claveMarca(p);
     if (!porLugar.has(k)) porLugar.set(k, []);
     porLugar.get(k).push(p);
   }
@@ -1050,14 +1068,19 @@ function pintaMapa0(lista, area){
   for (const [k, ps] of porLugar){
     const ciudad = deCiudadSel(k) || k == marcaFicha;
     const estilo = k == marcaFicha ? ESTILO_CIUDAD : ciudad ? ESTILO_LUGAR : {color: BORDE_MARCA, fillColor: COLOR_MARCA, weight: 2, fillOpacity: 0};
-    const m = (ps.some(p => p.zona) ? marcaCuadrada : L.circleMarker)(centroPos(ps[0].pos), {radius: radioDe(ps.length), opacity: 1, ...estilo});
+    const m = ps.every(p => p.lista) ? marcaLista(centroPos(ps[0].pos), estilo)
+            : (ps.some(p => p.zona) ? marcaCuadrada : L.circleMarker)(centroPos(ps[0].pos), {radius: radioDe(ps.length), opacity: 1, ...estilo});
+    const nombre = nombreMarca(ps);
+    if (nombre) m.bindTooltip(nombre + ' (' + ps.length + ')', {direction: 'top', offset: [0, -6], className: 'tipNombre'});   // al pasar por encima: su ciudad o país (cuántos)
     m.on('click', () => {
       lugarSel = lugarSel == k ? null : k;
       ciudadSel = null;
       soloBuscado = false;
-      const salas = new Set(ps.map(p => p.sala || '')), sala = salas.size == 1 ? [...salas][0] : '';
-      if (lugarSel) etiqueta(centroPos(ps[0].pos), (sala || ps[0].ciudad || (ps[0].lugar || '').split(',')[0]) + (ps.length > 1 ? ' (' + ps.length + ')' : ''), 'lugar');
-      sinEncuadre = true;
+      // con la ciudad, su país: en el mapa el país con sus ciudades (encuadrado si cambia) y la elegida resaltada
+      const antes = paisSel;
+      if (lugarSel && capaPaises) capaPaises.eachLayer(l => { if (l.feature.properties.nombres.includes(ps[0].pais)) paisSel = l; });
+      if (lugarSel) etiqueta(centroPos(ps[0].pos), nombre, 'lugar');   // al pulsar: solo el nombre (su ciudad o país)
+      sinEncuadre = paisSel === antes;
       pinta();
     });
     capaMapa.addLayer(m);
@@ -1076,6 +1099,41 @@ function totalArea(v){
   return totalesArea.get(v);
 }
 
+const PRIMEROS = {[LIS]: 'list', [EVT]: 'event', [SEM]: 'seminar', [ACA]: 'academy', [MIL]: 'milonga', [PRA]: 'practica', [PEO]: 'person', org: 'organizer', art: 'artist'};
+function rutaListado(a, r, fs, dias, conRoles, n){   // la última línea de la cabecera: área > tipo > país > ciudad > resto de selecciones (n líneas)
+  const lugar = lugarSel && (porLugarMapa.get(lugarSel) || [])[0];
+  const [paisC, ciudadC] = (ciudadSel || '').split('|');
+  const f = fs !== null ? FECHAS[fs] : null;
+  // cada tramo, con lo que hace al pulsarlo: volver a ese nivel (quita lo que va detrás); sin acción, solo texto
+  const quitaResto = () => { fechaSel = F_DOCE; diasSel.clear(); rolesSel.clear(); soloBuscado = false; };
+  const quitaLugar = () => { lugarSel = ciudadSel = paisSel = null; quitaResto(); };
+  const partes = [[a == TODOS ? 'World' : a == '-' ? 'no area' : a, quitaLugar],
+                  [r == TODOS ? 'all' : PRIMEROS[r] || textoRol(r)],   // el tipo, sin clic: se cambia en su selector
+                  [paisSel ? paisSel.feature.properties.nombres[0] : '', () => { lugarSel = ciudadSel = null; quitaResto(); }],
+                  [ciudadSel ? ciudadC || paisC : lugar ? lugar.ciudad || lugar.lugar : '', quitaResto],
+                  ...(soloBuscado && buscado ? [buscado.nombre]
+                      : [!f ? '' : f.doce ? 'YEAR' : f.mes === undefined ? f.anyo : MESES[f.mes] + ' ' + f.anyo,
+                         ...(dias || []).map(d => DIAS_SEM[d]),
+                         ...(conRoles ? [...rolesSel].map(k => k == PTC ? 'PTC' : textoRol(k)) : [])]).map(t => [t])]
+                 .filter(([t]) => t);
+  const d = $('ruta');
+  d.replaceChildren();
+  partes.forEach(([texto, accion], i) => {
+    if (i) d.append(' › ');
+    const s = document.createElement('span');
+    s.textContent = texto;
+    if (accion && i < partes.length - 1){   // el último tramo es donde ya estamos
+      s.className = 'paso';
+      s.onclick = () => { accion(); pinta(); };
+    }
+    d.appendChild(s);
+  });
+  const ico = document.createElement('img');   // al final, tras otro ›, el contador con su icono
+  ico.src = 'img/estadistica.svg';
+  ico.className = 'icono';
+  d.append(' › ', ico, ' ' + n);
+}
+
 function pinta(){
   cierraFicha();
   const val = sel => sel.value || sel.dataset.inicial || TODOS;
@@ -1090,11 +1148,9 @@ function pinta(){
                   .sort((x, y) => (x == '-') - (y == '-') || x.localeCompare(y));
   opciones(sa, areas, v => v == '-' ? 'no area' : v, v => totalArea(v), 'World');
   if (paisSel) sa.selectedIndex = -1;
-  const PRIMEROS = {[LIS]: 'list', [EVT]: 'event', [SEM]: 'seminar', [ACA]: 'academy', [MIL]: 'milonga', [PRA]: 'practica', [PEO]: 'person', org: 'organizer', art: 'artist'};
   opciones($('selRol'), [{grupo: 'events', valores: [LIS, ACA, EVT, SEM, MIL, PRA]},
                          {grupo: 'people', valores: [PEO, ...TIPOS_P]}],
-           v => PRIMEROS[v] || textoRol(v),
-           v => personas.filter(p => enArea(p, areaCuenta) && enRol(p, v)).length);
+           v => PRIMEROS[v] || textoRol(v));   // sin contador: el número va al final de la ruta
   const conFechas = deEventos(r) && !sinFecha(r), conDias = regular(r), conRoles = r == PEO;
   const fs = conFechas && !soloBuscado ? fechaSel : null;
   const dias = conDias && diasSel.size && !soloBuscado ? [...diasSel] : null;
@@ -1105,7 +1161,7 @@ function pinta(){
   // la tira de roles privados, solo si hay datos privados (la local; en la publicada nadie los tiene)
   const hayPrivados = personas.some(p => !p.evento && p.roles.some(x => ROLES[x] && !ROLES[x].publico));
   $('rBotones').classList.toggle('oculto', !conRoles || !hayPrivados);
-  const enSel = p => (!lugarSel || (p.pos && clavePos(p.pos) == lugarSel))
+  const enSel = p => (!lugarSel || (p.pos && claveMarca(p) == lugarSel))
                   && (!ciudadSel || ciudadDe(p) == ciudadSel)
                   && (!paisSel || paisSel.feature.properties.nombres.includes(p.pais));
   const rFechas = conFechas ? r : EVT;
@@ -1127,12 +1183,15 @@ function pinta(){
   $('bListado').innerHTML = (enListado ? '☰' : '<span class="iParrilla">▦</span>') + ' list';
   $('parrilla').classList.toggle('oculto', enListado);
   $('listado').classList.toggle('oculto', !enListado);
+  $('ruta').classList.toggle('oculto', !enListado);   // la ruta, solo con el listado
+  window.scrollTo(0, 0);   // al cambiar el listado, arriba: a la vista su primera línea
   if (!enListado) return pintaParrilla(lista, deEventos(r) || r == LIS);
   const div = $('listado');
   div.innerHTML = '';
   div.classList.toggle('filas', ESTILO_LISTADO == 'filas');
   const conFecha = filas.some(({p}) => p.evento);   // con fecha: su columna al principio (vacía en las filas sin fecha)
   div.classList.toggle('conFecha', conFecha);
+  rutaListado(areaCuenta, r, fs, dias, conRoles, filas.length);
   const vistos = new Set();
   for (const {p, dia} of filas){
     const c = document.createElement('div');
@@ -1333,7 +1392,13 @@ function conecta(){
   window.addEventListener('resize', () => { if (!enListado) columnasParrilla(soloEventos); });
   document.addEventListener('keydown', e => { if (e.key == 'Escape') cierraFicha(); });
   $('selArea').onchange = () => { lugarSel = ciudadSel = paisSel = null; soloBuscado = false; pinta(); };
-  $('selRol').onchange = () => { lugarSel = ciudadSel = null; soloBuscado = false; pinta(); };
+  $('selRol').onchange = () => {   // la ciudad elegida se mantiene: el lugar pinchado en el mapa pasa a ser su ciudad
+    const p = lugarSel && (porLugarMapa.get(lugarSel) || []).find(p => p.ciudad);
+    if (p) ciudadSel = ciudadDe(p);
+    lugarSel = null;
+    soloBuscado = false;
+    pinta();
+  };
   let areaAntes = null;
   $('selArea').addEventListener('pointerdown', () => {
     if ($('selArea').selectedIndex < 0) return;
