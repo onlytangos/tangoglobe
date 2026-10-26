@@ -181,6 +181,13 @@
   .marcaLista > div { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 8px; line-height: 1; }
   .mapaCaja { position: relative; z-index: 0; }
   .mapaCaja.cerrado { display: none; }
+  /* las ciudades del mapa, a la izquierda en 1-2 columnas; en el hover, sus líneas del listado */
+  .ciudadesMapa { position: absolute; top: 4px; left: 6px; z-index: 1000;   /* sobre las capas de Leaflet (400-1000) */ display: grid; grid-auto-flow: column; column-gap: 10px;
+                  justify-items: start; font-size: 13px; line-height: 16px; pointer-events: none; }   /* 16px = ALTO_CIUDAD */
+  .tipCiudad { position: absolute; z-index: 1001; pointer-events: none; padding: 1px 6px; font-size: 12px; line-height: 16px; white-space: nowrap;
+               background: #444; color: var(--texto); border: 1px solid var(--borde); border-radius: 3px; box-shadow: 0 1px 4px rgba(0,0,0,.6); }
+  .ciudadesMapa span:hover { text-decoration: underline; }
+  .ciudadesMapa span { pointer-events: auto; cursor: pointer; white-space: nowrap; color: var(--texto); text-shadow: 0 0 3px #000, 0 0 3px #000; }
   .mapa { height: 202px; max-height: 28.8vh; border: 1px solid var(--borde); border-radius: 6px; }
   #bMapa:disabled { opacity: .45; cursor: default; }
   .linea1 #bMapa, .linea1 #bListado { font-size: 1em; padding: 4px 6px; width: 4.8em; box-sizing: border-box; text-align: center; }
@@ -225,6 +232,8 @@
   </div>
   <div id="mapaCaja" class="mapaCaja oculto">
     <div id="mapa" class="mapa"></div>
+    <div id="ciudadesMapa" class="ciudadesMapa"></div>
+    <div id="tipCiudad" class="tipCiudad oculto"></div>
   </div>
   <div id="mapaAviso" class="aviso oculto"></div>
   <div id="fechas" class="fechas oculto">
@@ -296,7 +305,8 @@ function dirSala(e){   // la dirección (dir) de la milonga o, si no la tiene, l
   const v = venueDe(e);
   return (leeVarios(e).dir || (v ? leeVarios(v).dir : null) || [''])[0];
 }
-function posEvento(e){
+function posEvento(e){   // de momento, un círculo por ciudad: el centro de su ciudad; sin él, su lat/lon o la de su sala
+  if (coordCiudad(e)) return coordCiudad(e);
   const v = leeVarios(e), la = parseFloat((v.lat || [])[0]), lo = parseFloat((v.lon || [])[0]);
   if (!isNaN(la) && !isNaN(lo)) return [la, lo];
   const venue = venueDe(e);
@@ -326,7 +336,7 @@ function cargaFilas(filas){
     const roles = String(c[CAMPO.roles] || '').split(',').map(r => r.trim()).filter(r => ROLES[r]);   // el import ya los deja con su nombre de ROLES
     const video = (v.vid || [''])[0];
     const p = porClave.get(clave);
-    const pos = coordDe(c);
+    const pos = coordCiudad(c) || coordDe(c);   // como los eventos: el centro de su ciudad (posEvento)
     const tipoP = String(c[CAMPO.tipo] || '').trim() in TIPOS_PERSONA ? String(c[CAMPO.tipo]).trim() : 'person';
     if (!p){ porClave.set(clave, {area, pais, lugar, ciudad, pos, roles, tipoP, nombre: c[CAMPO.name], video, foto: f, fb, notas: notas ? [notas] : [],
                                      coment: coments, ids: [idDe(c)].filter(Boolean)}); continue; }
@@ -831,6 +841,9 @@ let mapa = null, capaMapa = null, capaPaises = null, paisSel = null, areaMapa = 
 const marcadores = new Map();
 let marcaFicha = null;
 let tipMapa = null, etiquetaDe = null, relojEtiqueta = null;
+// tras pulsar una marca o una ciudad de la lista sale la etiqueta blanca: hasta que el ratón sale de ella (o se
+// cierra la etiqueta), sin su hover (al repintar, la marca o la ciudad nueva queda bajo el ratón y lo abriría)
+let trasClic = false;
 const ETIQUETA_MS = 4000;
 function etiqueta(latlng, texto, de){
   if (!tipMapa) tipMapa = L.tooltip({permanent: true, direction: 'top', offset: [0, -8]});
@@ -838,7 +851,7 @@ function etiqueta(latlng, texto, de){
   mapa.openTooltip(tipMapa);
   etiquetaDe = de;
   clearTimeout(relojEtiqueta);
-  relojEtiqueta = setTimeout(() => { if (mapa) mapa.closeTooltip(tipMapa); }, ETIQUETA_MS);
+  relojEtiqueta = setTimeout(() => { trasClic = false; if (mapa) mapa.closeTooltip(tipMapa); }, ETIQUETA_MS);
 }
 function iluminaFicha(p){
   const antes = marcadores.get(marcaFicha);
@@ -1030,7 +1043,8 @@ function pintaMapa0(lista, area){
   caja.classList.toggle('oculto', !conPos.length);
   if (!conPos.length) return;
   if (!mapa){
-    mapa = L.map(div, {worldCopyJump: true, zoomSnap: .25});
+    mapa = L.map(div, {worldCopyJump: true, zoomSnap: .25, zoomControl: false});
+    L.control.zoom({position: 'topright'}).addTo(mapa);   // el + y el -, a la derecha (a la izquierda, las ciudades)
     mapa.attributionControl.setPrefix(false);
     const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/';
     L.tileLayer(ESRI + 'World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
@@ -1046,7 +1060,7 @@ function pintaMapa0(lista, area){
     L.tileLayer(ESRI + 'World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {maxZoom: 16, className: 'teselaNombres', pane: 'nombres'}).addTo(mapa);
     if (typeof PAISES_GEO != 'undefined'){
       capaPaises = L.geoJSON(PAISES_GEO, {pane: 'paises', style: ESTILO_PAIS, onEachFeature: (f, l) => l.on('click', e => {
-        paisSel = paisSel === l ? null : l;
+        paisSel = paisSel === l && !lugarSel && !ciudadSel ? null : l;   // con una ciudad elegida, a su país; si no, el país elegido vuelve al área
         lugarSel = ciudadSel = null;
         soloBuscado = false;
         if (paisSel) etiqueta(e.latlng, f.properties.pais, 'pais');
@@ -1054,6 +1068,7 @@ function pintaMapa0(lista, area){
       })}).addTo(mapa);
     }
     capaMapa = L.layerGroup().addTo(mapa);
+    mapa.on('moveend', pintaCiudades);
   }
   mapa.invalidateSize();
   capaMapa.clearLayers();
@@ -1072,7 +1087,11 @@ function pintaMapa0(lista, area){
             : (ps.some(p => p.zona) ? marcaCuadrada : L.circleMarker)(centroPos(ps[0].pos), {radius: radioDe(ps.length), opacity: 1, ...estilo});
     const nombre = nombreMarca(ps);
     if (nombre) m.bindTooltip(nombre + ' (' + ps.length + ')', {direction: 'top', offset: [0, -6], className: 'tipNombre'});   // al pasar por encima: su ciudad o país (cuántos)
+    m.on('tooltipopen', () => { if (trasClic) m.closeTooltip(); });
+    m.on('mouseout', () => { trasClic = false; });
     m.on('click', () => {
+      trasClic = true;
+      m.closeTooltip();
       lugarSel = lugarSel == k ? null : k;
       ciudadSel = null;
       soloBuscado = false;
@@ -1091,6 +1110,64 @@ function pintaMapa0(lista, area){
   if (etiquetaDe && !{pais: paisSel, lugar: lugarSel, ciudad: ciudadSel}[etiquetaDe]) mapa.closeTooltip(tipMapa);
   if (!sinEncuadre) encuadra(conPos);
   sinEncuadre = false;
+  pintaCiudades();   // y otra vez al acabar de encuadrar (moveend)
+}
+
+// las ciudades de las marcas que se ven en el mapa, a la izquierda: en cada columna las que caben en el alto del mapa
+// (202px: 12; en el móvil, 144px: 8), hasta 2 columnas completas (24; en el móvil, 16); con más, solo 'more than N cities'. En el hover, cuántas líneas tiene cada una en el listado (lineasCiudad, de pinta)
+const COLUMNAS_CIUDAD = 2, ALTO_CIUDAD = 16;   // el line-height de .ciudadesMapa
+let lineasCiudad = () => 0;
+// el hover de una ciudad: al momento (el title tarda) y a su derecha, sin salirse del mapa
+function tipCiudad(s, texto){
+  const t = $('tipCiudad'), caja = $('mapaCaja');
+  s.onmouseenter = () => {
+    if (trasClic) return;
+    t.textContent = texto();
+    t.classList.remove('oculto');
+    const div = s.offsetParent;
+    t.style.left = Math.max(0, Math.min(div.offsetLeft + s.offsetLeft + s.offsetWidth + 6, caja.clientWidth - t.offsetWidth - 2)) + 'px';
+    t.style.top = (div.offsetTop + s.offsetTop - 1) + 'px';
+  };
+  s.onmouseleave = () => { trasClic = false; t.classList.add('oculto'); };
+}
+// al pulsar una ciudad de la lista (con líneas en el listado): como su marca, la ciudad elegida en el listado y en el mapa, con su país
+function eligeCiudad(c, nombre){
+  const p = posMapa.find(p => ciudadDe(p) == c), antes = paisSel;
+  lugarSel = null;
+  ciudadSel = c;
+  soloBuscado = false;
+  if (capaPaises) capaPaises.eachLayer(l => { if (l.feature.properties.nombres.includes(p.pais)) paisSel = l; });
+  etiqueta(centroPos(p.pos), nombre, 'ciudad');
+  sinEncuadre = paisSel === antes;
+  pinta();
+}
+function pintaCiudades(){
+  $('tipCiudad').classList.add('oculto');
+  const div = $('ciudadesMapa'), vista = mapa.getBounds(), nombres = new Map();
+  for (const p of posMapa) if (p.ciudad && vista.contains(centroPos(p.pos))) nombres.set(ciudadDe(p), p.ciudad);
+  const ciudades = [...nombres].sort((x, y) => x[1].localeCompare(y[1]));
+  const filas = Math.max(1, Math.floor(($('mapa').clientHeight - 8) / ALTO_CIUDAD)), max = COLUMNAS_CIUDAD * filas;
+  div.innerHTML = '';
+  if (ciudades.length > max){   // con más, solo el aviso
+    div.style.gridTemplateRows = '';
+    const s = document.createElement('span');
+    s.textContent = 'more than ' + max + ' cities';
+    tipCiudad(s, () => '(' + ciudades.length + ')');
+    return div.appendChild(s);
+  }
+  div.style.gridTemplateRows = 'repeat(' + Math.min(ciudades.length, filas) + ', auto)';   // se llena una columna y luego la siguiente
+  for (const [c, nombre] of ciudades){
+    const s = document.createElement('span');
+    s.textContent = nombre;
+    tipCiudad(s, () => '(' + lineasCiudad(c) + ')');   // solo el número: el nombre ya se ve
+    s.onclick = () => {   // con el listado a cero, nada; si no, fuera el hover: sale la etiqueta blanca del mapa
+      if (!lineasCiudad(c)) return;
+      trasClic = true;
+      $('tipCiudad').classList.add('oculto');
+      eligeCiudad(c, nombre);
+    };
+    div.appendChild(s);
+  }
 }
 
 const totalesArea = new Map();
@@ -1134,8 +1211,19 @@ function rutaListado(a, r, fs, dias, conRoles, n){   // la última línea de la 
   d.append(' › ', ico, ' ' + n);
 }
 
+// lo que se elige (mapa, tiras, selectores, búsqueda): si con ello el listado se queda a cero, no cambia nada y
+// se vuelve a lo del último pinta con líneas
+let estadoPintado = null;
+const estado = () => ({lugarSel, ciudadSel, paisSel, fechaSel, diasSel: new Set(diasSel), rolesSel: new Set(rolesSel),
+                       soloBuscado, buscado, areaPrevia, area: $('selArea').value, rol: $('selRol').value});
+function vuelveA(e){
+  ({lugarSel, ciudadSel, paisSel, fechaSel, soloBuscado, buscado, areaPrevia} = e);
+  diasSel = new Set(e.diasSel);
+  rolesSel = new Set(e.rolesSel);
+  $('selArea').value = e.area;
+  $('selRol').value = e.rol;
+}
 function pinta(){
-  cierraFicha();
   const val = sel => sel.value || sel.dataset.inicial || TODOS;
   const sa = $('selArea');
   if (paisSel){ if (sa.value) areaPrevia = sa.value; }
@@ -1144,31 +1232,14 @@ function pinta(){
   const areaCuenta = paisSel ? (areaPrevia || TODOS) : a;
   const deListado = personas;   // también las personas sin foto (recuadro gris): el listado cuadra con el selector
   const visibles = personas;
-  const areas = [...new Set(personas.map(p => p.area))].filter(x => x != MUNDIAL)
-                  .sort((x, y) => (x == '-') - (y == '-') || x.localeCompare(y));
-  opciones(sa, areas, v => v == '-' ? 'no area' : v, v => totalArea(v), 'World');
-  if (paisSel) sa.selectedIndex = -1;
-  opciones($('selRol'), [{grupo: 'events', valores: [LIS, ACA, EVT, SEM, MIL, PRA]},
-                         {grupo: 'people', valores: [PEO, ...TIPOS_P]}],
-           v => PRIMEROS[v] || textoRol(v));   // sin contador: el número va al final de la ruta
   const conFechas = deEventos(r) && !sinFecha(r), conDias = regular(r), conRoles = r == PEO;
   const fs = conFechas && !soloBuscado ? fechaSel : null;
   const dias = conDias && diasSel.size && !soloBuscado ? [...diasSel] : null;
   const enDias = p => !dias || !!proximaEn(p, dias);
   const enTiras = p => enDias(p) && (!conRoles || soloBuscado || enRoles(p));
-  $('fechas').classList.remove('oculto');
-  $('fechas').classList.toggle('sinFechas', !conFechas && !conDias && !conRoles);
-  // la tira de roles privados, solo si hay datos privados (la local; en la publicada nadie los tiene)
-  const hayPrivados = personas.some(p => !p.evento && p.roles.some(x => ROLES[x] && !ROLES[x].publico));
-  $('rBotones').classList.toggle('oculto', !conRoles || !hayPrivados);
   const enSel = p => (!lugarSel || (p.pos && claveMarca(p) == lugarSel))
                   && (!ciudadSel || ciudadDe(p) == ciudadSel)
                   && (!paisSel || paisSel.feature.properties.nombres.includes(p.pais));
-  const rFechas = conFechas ? r : EVT;
-  if (conDias) pintaDias(d => deListado.filter(p => enArea(p, a) && enRol(p, r) && enSel(p) && (d === null || proximaEn(p, [d]))).length);
-  else if (conRoles) pintaRoles(k => deListado.filter(p => enArea(p, a) && enRol(p, PEO) && enSel(p) && (k === null || conRol(p, k))).length);
-  else pintaFechas(i => deListado.filter(p => enArea(p, a) && enRol(p, rFechas) && enFecha(p, i) && enSel(p)).length, !conFechas);
-
   const base = visibles.filter(p => enArea(p, a) && enRol(p, r) && enFecha(p, fs) && enTiras(p));
   const areaPais = paisSel && paisSel.feature.properties.area, aMapa = areaPais && areaPais != '-' ? areaPais : a;
   const baseMapa = deListado.filter(p => enArea(p, aMapa) && enRol(p, r) && enFecha(p, fs) && enTiras(p)
@@ -1179,6 +1250,34 @@ function pinta(){
                         .sort((x, y) => !deEventos(r) ? x.nombre.localeCompare(y.nombre)
                                       : desdeHoy(x) - desdeHoy(y) || x.nombre.localeCompare(y.nombre));
   const filas = conDias && !soloBuscado ? filasMilongas(lista) : lista.map(p => ({p, dia: conDias ? proximaEn(p) : null}));
+  if (!filas.length && estadoPintado){   // a cero: todo como estaba, sin repintar (el mapa sin moverse, la ficha abierta)
+    vuelveA(estadoPintado);
+    if (mapa && tipMapa) mapa.closeTooltip(tipMapa);
+    sinEncuadre = false;
+    return;
+  }
+  cierraFicha();
+  lineasCiudad = c => {   // las líneas que tendría el listado con la ciudad c (pais|ciudad)
+    const suyas = base.filter(p => ciudadDe(p) == c);
+    return conDias && !soloBuscado ? filasMilongas(suyas).length : suyas.length;
+  };
+  const areas = [...new Set(personas.map(p => p.area))].filter(x => x != MUNDIAL)
+                  .sort((x, y) => (x == '-') - (y == '-') || x.localeCompare(y));
+  opciones(sa, areas, v => v == '-' ? 'no area' : v, v => totalArea(v), 'World');
+  if (paisSel) sa.selectedIndex = -1;
+  opciones($('selRol'), [{grupo: 'events', valores: [LIS, ACA, EVT, SEM, MIL, PRA]},
+                         {grupo: 'people', valores: [PEO, ...TIPOS_P]}],
+           v => PRIMEROS[v] || textoRol(v));   // sin contador: el número va al final de la ruta
+  estadoPintado = filas.length ? estado() : null;   // con los selectores ya como se ven
+  $('fechas').classList.remove('oculto');
+  $('fechas').classList.toggle('sinFechas', !conFechas && !conDias && !conRoles);
+  // la tira de roles privados, solo si hay datos privados (la local; en la publicada nadie los tiene)
+  const hayPrivados = personas.some(p => !p.evento && p.roles.some(x => ROLES[x] && !ROLES[x].publico));
+  $('rBotones').classList.toggle('oculto', !conRoles || !hayPrivados);
+  const rFechas = conFechas ? r : EVT;
+  if (conDias) pintaDias(d => deListado.filter(p => enArea(p, a) && enRol(p, r) && enSel(p) && (d === null || proximaEn(p, [d]))).length);
+  else if (conRoles) pintaRoles(k => deListado.filter(p => enArea(p, a) && enRol(p, PEO) && enSel(p) && (k === null || conRol(p, k))).length);
+  else pintaFechas(i => deListado.filter(p => enArea(p, a) && enRol(p, rFechas) && enFecha(p, i) && enSel(p)).length, !conFechas);
   pintaMapa(baseMapa, a);
   $('bListado').innerHTML = (enListado ? '☰' : '<span class="iParrilla">▦</span>') + ' list';
   $('parrilla').classList.toggle('oculto', enListado);
