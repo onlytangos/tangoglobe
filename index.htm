@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- wwt/index.htm — wwt: eventos y personas por zona, con mapa (doc.txt) -->
+<!-- wwt/index.htm — wwt: eventos y personas por zona, con mapa (doc.htm) -->
 <html lang="es">
 <head>
 <meta charset="utf-8">
@@ -141,7 +141,7 @@
   .listado.filas { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 0; border-top: 1px solid var(--borde); }
   .listado.filas.conFecha { grid-template-columns: auto auto minmax(0, 1fr) auto auto; }
   .listado .fila { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; column-gap: 16px; align-items: center;
-                   padding: 7px 10px; border-bottom: 1px solid var(--borde); border-left: 2px solid transparent; cursor: pointer; }
+                   padding: 5.5px 10px; border-bottom: 1px solid var(--borde); border-left: 2px solid transparent; cursor: pointer; }   /* 2026-10-26: un 10% más baja (antes 7px) */
   .listado .fila:hover { background: rgba(255, 255, 255, .04); }
   .listado .fila.abierta { background: var(--acento); color: #000; }
   .listado .fila.abierta .fFecha, .listado .fila.abierta .fLugar { color: #5c4a38; }
@@ -151,9 +151,11 @@
   .ruta .icono { height: 16px; width: auto; vertical-align: -3px; }
   .ruta .paso { color: var(--enlace); cursor: pointer; }
   .ruta .paso:hover { text-decoration: underline; }
-  .fila span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fila span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25; }   /* todas con el mismo alto: centradas igual */
   .fila .fFecha, .fila .fLugar { color: var(--suave); font-size: .85em; font-variant-numeric: tabular-nums; }
-  .fila .fNombre { font-weight: 500; }
+  .fila .fNombre { font-weight: 500; position: relative; top: -1px; }   /* su letra, mayor: sin esto queda 1px más baja que la fecha y la ciudad */
+  .fila .fNombre .fSala { color: var(--suave); font-size: .85em; font-weight: 400; }   /* milongas y prácticas: " - sala", con la letra de la ciudad */
+  .listado .fila.abierta .fSala { color: #5c4a38; }
   .fila .fLugar { text-align: right; max-width: 18em; }
   .fila .fIconos { display: flex; align-self: center; min-width: 16px; }
   .fila .fIconos img { height: 16px; width: 16px; display: block; }
@@ -184,9 +186,11 @@
   /* las ciudades del mapa, a la izquierda en 1-2 columnas; en el hover, sus líneas del listado */
   .ciudadesMapa { position: absolute; top: 4px; left: 6px; z-index: 1000;   /* sobre las capas de Leaflet (400-1000) */ display: grid; grid-auto-flow: column; column-gap: 10px;
                   justify-items: start; font-size: 13px; line-height: 16px; pointer-events: none; }   /* 16px = ALTO_CIUDAD */
-  .tipCiudad { position: absolute; z-index: 1001; pointer-events: none; padding: 1px 6px; font-size: 12px; line-height: 16px; white-space: nowrap;
-               background: #444; color: var(--texto); border: 1px solid var(--borde); border-radius: 3px; box-shadow: 0 1px 4px rgba(0,0,0,.6); }
-  .ciudadesMapa span:hover { text-decoration: underline; }
+  .tipCiudad { position: absolute; z-index: 1001; pointer-events: none; box-sizing: border-box; min-width: 20px; height: 20px; padding: 0 4px;
+               font-size: 11px; line-height: 18px; text-align: center; white-space: nowrap;   /* el contador, en un círculo */
+               background: #444; color: var(--texto); border: 1px solid var(--borde); border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.6); }
+  .ciudadesMapa { background: rgba(47, 90, 143, .75); padding: 3px 7px; border-radius: 4px; }   /* azul (el de las áreas del mapa) al 75% */
+  .ciudadesMapa:empty { display: none; }
   .ciudadesMapa span { pointer-events: auto; cursor: pointer; white-space: nowrap; color: var(--texto); text-shadow: 0 0 3px #000, 0 0 3px #000; }
   .mapa { height: 202px; max-height: 28.8vh; border: 1px solid var(--borde); border-radius: 6px; }
   #bMapa:disabled { opacity: .45; cursor: default; }
@@ -893,7 +897,7 @@ const COLOR_MARCA = '#ffd8b0';
 const BORDE_MARCA = '#ffd500';
 const COLOR_CIUDAD = '#e53935';
 const ESTILO_CIUDAD = {color: COLOR_CIUDAD, fillColor: COLOR_CIUDAD, fillOpacity: 1, weight: 4};
-const ESTILO_LUGAR = {color: BORDE_MARCA, fillColor: BORDE_MARCA, fillOpacity: 1, weight: 4};
+const ESTILO_LUGAR = ESTILO_CIUDAD;   // la ciudad o el lugar elegidos, en rojo (2026-10-26; antes amarillo, BORDE_MARCA)
 const deCiudadSel = k => k == lugarSel || (ciudadSel && (porLugarMapa.get(k) || []).some(p => ciudadDe(p) == ciudadSel));
 let _centros = null;
 function centroPos(pos){
@@ -1113,10 +1117,12 @@ function pintaMapa0(lista, area){
   pintaCiudades();   // y otra vez al acabar de encuadrar (moveend)
 }
 
-// las ciudades de las marcas que se ven en el mapa, a la izquierda: en cada columna las que caben en el alto del mapa
-// (202px: 12; en el móvil, 144px: 8), hasta 2 columnas completas (24; en el móvil, 16); con más, solo 'more than N cities'. En el hover, cuántas líneas tiene cada una en el listado (lineasCiudad, de pinta)
+// los lugares de las marcas que se ven en el mapa, a la izquierda: en el nivel de área o con un país elegido, los
+// países (de baseLugares: todo el listado sin el país); con una ciudad o un lugar elegidos, sus ciudades. En cada columna los que caben en el alto del mapa (202px: 12; en el móvil, 144px: 8), hasta
+// 2 columnas completas (24; en el móvil, 16); con más, solo 'more than N cities/countries'. En el hover, cuántas
+// líneas tiene cada uno en el listado (lineasCiudad y lineasPais, de pinta); al pulsarlo, se elige
 const COLUMNAS_CIUDAD = 2, ALTO_CIUDAD = 16;   // el line-height de .ciudadesMapa
-let lineasCiudad = () => 0;
+let lineasCiudad = () => 0, lineasPais = () => 0, baseLugares = [];
 // el hover de una ciudad: al momento (el title tarda) y a su derecha, sin salirse del mapa
 function tipCiudad(s, texto){
   const t = $('tipCiudad'), caja = $('mapaCaja');
@@ -1126,45 +1132,62 @@ function tipCiudad(s, texto){
     t.classList.remove('oculto');
     const div = s.offsetParent;
     t.style.left = Math.max(0, Math.min(div.offsetLeft + s.offsetLeft + s.offsetWidth + 6, caja.clientWidth - t.offsetWidth - 2)) + 'px';
-    t.style.top = (div.offsetTop + s.offsetTop - 1) + 'px';
+    t.style.top = (div.offsetTop + s.offsetTop - 2) + 'px';   // centrado en la línea (16px) del nombre
   };
   s.onmouseleave = () => { trasClic = false; t.classList.add('oculto'); };
 }
-// al pulsar una ciudad de la lista (con líneas en el listado): como su marca, la ciudad elegida en el listado y en el mapa, con su país
+// al pulsar una ciudad de la lista (con líneas en el listado) o elegirla en el buscador (CIT): como su marca,
+// la ciudad c (pais|ciudad) elegida en el listado y en el mapa, con su país
 function eligeCiudad(c, nombre){
-  const p = posMapa.find(p => ciudadDe(p) == c), antes = paisSel;
+  const pais = c.split('|')[0], p = personas.find(p => ciudadDe(p) == c && p.pos), antes = paisSel;
   lugarSel = null;
   ciudadSel = c;
   soloBuscado = false;
-  if (capaPaises) capaPaises.eachLayer(l => { if (l.feature.properties.nombres.includes(p.pais)) paisSel = l; });
-  etiqueta(centroPos(p.pos), nombre, 'ciudad');
+  if (capaPaises) capaPaises.eachLayer(l => { if (l.feature.properties.nombres.includes(pais)) paisSel = l; });
+  if (p && mapa) etiqueta(centroPos(p.pos), nombre, 'ciudad');
   sinEncuadre = paisSel === antes;
+  pinta();
+}
+// al pulsar un país de la lista (nivel de área): como pulsarlo en el mapa
+function eligePais(pais){
+  let l = null;
+  if (capaPaises) capaPaises.eachLayer(x => { if (!l && x.feature.properties.nombres.includes(pais)) l = x; });
+  if (!l) return;
+  paisSel = l;
+  lugarSel = ciudadSel = null;
+  soloBuscado = false;
+  etiqueta(boundsPais(l).getCenter(), l.feature.properties.pais, 'pais');
   pinta();
 }
 function pintaCiudades(){
   $('tipCiudad').classList.add('oculto');
-  const div = $('ciudadesMapa'), vista = mapa.getBounds(), nombres = new Map();
-  for (const p of posMapa) if (p.ciudad && vista.contains(centroPos(p.pos))) nombres.set(ciudadDe(p), p.ciudad);
+  const div = $('ciudadesMapa'), vista = mapa.getBounds(), nombres = new Map(), dePais = !!(ciudadSel || lugarSel);   // con ciudad o lugar elegidos: ciudades; si no, países
+  for (const p of dePais ? posMapa : baseLugares){   // los países, de todo el listado (con un país elegido, el mapa solo pinta los suyos)
+    if (!vista.contains(centroPos(p.pos))) continue;
+    if (dePais && p.ciudad) nombres.set(ciudadDe(p), p.ciudad);
+    else if (!dePais && p.pais && p.pais != '-') nombres.set(p.pais, p.pais);
+  }
   const ciudades = [...nombres].sort((x, y) => x[1].localeCompare(y[1]));
+  const lineas = dePais ? lineasCiudad : lineasPais, elige = dePais ? eligeCiudad : eligePais;
   const filas = Math.max(1, Math.floor(($('mapa').clientHeight - 8) / ALTO_CIUDAD)), max = COLUMNAS_CIUDAD * filas;
   div.innerHTML = '';
   if (ciudades.length > max){   // con más, solo el aviso
     div.style.gridTemplateRows = '';
     const s = document.createElement('span');
-    s.textContent = 'more than ' + max + ' cities';
-    tipCiudad(s, () => '(' + ciudades.length + ')');
+    s.textContent = 'more than ' + max + (dePais ? ' cities' : ' countries');
+    tipCiudad(s, () => ciudades.length);
     return div.appendChild(s);
   }
   div.style.gridTemplateRows = 'repeat(' + Math.min(ciudades.length, filas) + ', auto)';   // se llena una columna y luego la siguiente
   for (const [c, nombre] of ciudades){
     const s = document.createElement('span');
     s.textContent = nombre;
-    tipCiudad(s, () => '(' + lineasCiudad(c) + ')');   // solo el número: el nombre ya se ve
+    tipCiudad(s, () => lineas(c));   // solo el número: el nombre ya se ve
     s.onclick = () => {   // con el listado a cero, nada; si no, fuera el hover: sale la etiqueta blanca del mapa
-      if (!lineasCiudad(c)) return;
+      if (!lineas(c)) return;
       trasClic = true;
       $('tipCiudad').classList.add('oculto');
-      eligeCiudad(c, nombre);
+      elige(c, nombre);
     };
     div.appendChild(s);
   }
@@ -1257,10 +1280,10 @@ function pinta(){
     return;
   }
   cierraFicha();
-  lineasCiudad = c => {   // las líneas que tendría el listado con la ciudad c (pais|ciudad)
-    const suyas = base.filter(p => ciudadDe(p) == c);
-    return conDias && !soloBuscado ? filasMilongas(suyas).length : suyas.length;
-  };
+  const lineas = suyas => conDias && !soloBuscado ? filasMilongas(suyas).length : suyas.length;
+  lineasCiudad = c => lineas(base.filter(p => ciudadDe(p) == c));   // las líneas que tendría el listado con la ciudad c (pais|ciudad)
+  lineasPais = c => lineas(base.filter(p => p.pais == c));          // o con el país c
+  baseLugares = base.filter(p => p.pos);
   const areas = [...new Set(personas.map(p => p.area))].filter(x => x != MUNDIAL)
                   .sort((x, y) => (x == '-') - (y == '-') || x.localeCompare(y));
   opciones(sa, areas, v => v == '-' ? 'no area' : v, v => totalArea(v), 'World');
@@ -1308,6 +1331,8 @@ function pinta(){
       c.appendChild(iconoFila(p));   // el logo siempre al inicio de la línea; luego la fecha y el nombre
       if (conFecha) span('fFecha', p.evento ? (dia ? textoDia(dia) : fechaListado(p)) : '');
       span('fNombre', p.nombre);
+      const sala = (p.tipo == 'milonga' || p.tipo == 'practica') && (p.sala || p.venue);
+      if (sala){ const v = document.createElement('span'); v.className = 'fSala'; v.textContent = ' - ' + sala; c.lastChild.appendChild(v); }
       span('fLugar', p.ciudad || p.lugar);   // solo la ciudad (la sala va en la ficha)
       const mini = cara(p);   // la miniatura al final, de la altura de la línea
       mini.classList.add('fMini');
@@ -1408,23 +1433,23 @@ function marca(i){
 }
 function irGeo(g){
   soloBuscado = false;
-  lugarSel = ciudadSel = paisSel = buscado = null;
+  buscado = null;
   enListado = true;
-  if (g.geo == 'ARE'){
+  if (g.geo == 'CIT'){   // una ciudad: lo mismo que pulsarla en el mapa
+    mapaAbierto = true;
+    eligeCiudad(g.ciudad, g.nombre);
+  } else if (g.geo == 'ARE'){
+    lugarSel = ciudadSel = paisSel = null;
     $('selArea').value = g.nombre;
     pinta();
   } else {
+    lugarSel = ciudadSel = paisSel = null;
     mapaAbierto = true;
     sinEncuadre = true;
     pinta();
-    const pais = g.geo == 'CIT' ? g.pais : g.nombre;
-    if (capaPaises) capaPaises.eachLayer(l => { if (!paisSel && l.feature.properties.nombres.includes(pais)) paisSel = l; });
-    if (g.geo == 'CIT') ciudadSel = g.ciudad;
+    if (capaPaises) capaPaises.eachLayer(l => { if (!paisSel && l.feature.properties.nombres.includes(g.nombre)) paisSel = l; });
     pinta();
-    if (g.geo == 'CIT'){
-      const conPos = personas.find(p => ciudadDe(p) == g.ciudad && p.pos);
-      if (conPos) etiqueta(conPos.pos, g.nombre, 'ciudad');
-    } else if (paisSel) etiqueta(boundsPais(paisSel).getCenter(), g.nombre, 'pais');
+    if (paisSel) etiqueta(boundsPais(paisSel).getCenter(), g.nombre, 'pais');
   }
   $('buscar').value = '';
   $('sugs').classList.add('oculto');
@@ -1466,6 +1491,7 @@ function muestraInfo(){
   d.className = 'texto';
   const FB = 'https://www.facebook.com/profile.php?id=100093497583670';
   d.innerHTML = '<p><a href="' + FB + '" target="_blank" rel="noopener">by KoKoTango</a> (public version)</p>' +
+                '<p><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> (Creative Commons Reconocimiento–NoComercial–CompartirIgual)</p>' +
                 '<p class="enlaces"><a href="' + FB + '" target="_blank" rel="noopener"><img src="img/mensaje.svg" alt="" class="icono">send me a message with your urls</a></p>' +
                 '<p>powered by Opus 5.5</p>' +
                 '<p class="creditos">map: tiles &copy; <a href="https://www.esri.com/" target="_blank" rel="noopener">Esri</a>, HERE, Garmin, ' +
