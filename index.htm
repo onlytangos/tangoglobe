@@ -211,7 +211,8 @@
   .detalle .texto { padding-right: 30px; }
   .detalle .texto > * { margin: 0; line-height: 22px; }   /* título, fecha, org, enlaces...: todas las líneas con el mismo interlineado */
   .detalle .texto p.enlaces { margin-top: 0; row-gap: 0; }
-  #dCerrar { position: absolute; top: 6px; right: 8px; border: 0; background: none; color: var(--acento); font-size: 1.43em; font-weight: 700; cursor: pointer; }
+  #dCerrar { position: absolute; top: 6px; right: 8px; box-sizing: border-box; width: 26px; height: 26px; padding: 2px 0 0;   /* el × de la letra va alto: 1px abajo */ border: 2px solid currentColor; border-radius: 50%;
+             display: flex; align-items: center; justify-content: center; background: none; color: var(--acento); font-size: 1.43em; line-height: 1; font-weight: 700; cursor: pointer; }
   #dCerrar:hover { color: #ffc890; }
   #dCopiar { position: absolute; top: 38px; right: 12px; border: 0; background: none; color: var(--acento); padding: 0; cursor: pointer; }
   #dCopiar:hover { color: #ffc890; }
