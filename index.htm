@@ -52,6 +52,7 @@
   .cuerpo.encontrado { outline: 2px solid var(--enlace); }
   .busca { position: relative; flex: 1 1 8.5em; min-width: 8.5em; }
   #selArea, #selRol { width: 9.5em; box-sizing: border-box; }
+  #selRol { width: calc(9.5em - 4ch); }   /* el tipo, 4 letras más estrecho: el sitio, para el buscador */
   #sugs { position: absolute; left: 0; top: 100%; margin-top: 4px; width: min(28em, 90vw); z-index: 2;
           background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,.6);
           max-height: calc(10 * 26px); overflow-y: auto; }
@@ -115,6 +116,7 @@
 
   .cabecera:has(#fechas:not(.oculto)) .linea1 { width: 0; min-width: 100%; flex-wrap: nowrap; }
   .cabecera:has(#fechas:not(.oculto)) .linea1 > label { flex: 0 1 9.5em; min-width: 4.5em; }
+  .cabecera:has(#fechas:not(.oculto)) .linea1 > label:has(#selRol) { flex-basis: calc(9.5em - 4ch); }
   .cabecera:has(#fechas:not(.oculto)) .linea1 select { width: 100%; }
   .cabecera:has(#fechas:not(.oculto)) .busca { flex-basis: 5em; min-width: 5em; }
   .fechas { display: flex; flex-direction: column; gap: 4px; align-items: stretch; justify-content: center; min-width: 0; }
@@ -155,7 +157,7 @@
   .fila span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25; }   /* todas con el mismo alto: centradas igual */
   .fila .fFecha, .fila .fLugar { color: var(--suave); font-size: .85em; font-variant-numeric: tabular-nums; }
   .fila .fNombre { font-weight: 500; position: relative; top: -1px; }   /* su letra, mayor: sin esto queda 1px más baja que la fecha y la ciudad */
-  .fila .fNombre .fSala { color: var(--suave); font-size: .85em; font-weight: 400; }   /* milongas y prácticas: " - sala", con la letra de la ciudad */
+  .fila .fNombre .fSala { color: var(--suave); font-size: .85em; font-weight: 400; }   /* milongas y prácticas: " - sala - org", con la letra de la ciudad */
   .listado .fila.abierta .fSala { color: #5c4a38; }
   .fila .fLugar { text-align: right; max-width: 18em; }
   .fila .fIconos { display: flex; align-self: center; min-width: 16px; }
@@ -1383,8 +1385,8 @@ function pinta(){
       c.appendChild(iconoFila(p));   // el logo siempre al inicio de la línea; luego la fecha y el nombre
       if (conFecha) span('fFecha', p.evento ? (dia ? textoDia(dia) : fechaListado(p)) : '');
       span('fNombre', p.nombre);
-      const sala = (p.tipo == 'milonga' || p.tipo == 'practica') && (p.sala || p.venue);
-      if (sala){ const v = document.createElement('span'); v.className = 'fSala'; v.textContent = ' - ' + sala; c.lastChild.appendChild(v); }
+      const tras = p.tipo == 'milonga' || p.tipo == 'practica' ? [p.sala || p.venue, p.orgs.join(', ')].filter(Boolean) : [];   // " - sala - org"
+      if (tras.length){ const v = document.createElement('span'); v.className = 'fSala'; v.textContent = ' - ' + tras.join(' - '); c.lastChild.appendChild(v); }
       span('fLugar', p.ciudad || p.lugar);   // solo la ciudad (la sala va en la ficha)
       const mini = cara(p);   // la miniatura al final, de la altura de la línea
       mini.classList.add('fMini');
