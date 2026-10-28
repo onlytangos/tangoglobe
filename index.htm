@@ -131,7 +131,8 @@
 
   .tira { flex: 1 1 auto; }
   .tira button { flex: 1 0 auto; }
-  .tira button.vacio { cursor: default; }
+  .tipTira { position: fixed; z-index: 2000; pointer-events: none; padding: 2px 7px; font-size: 12px; white-space: nowrap;   /* el hover de las tiras: al momento y sin borde */
+             background: #444; color: var(--texto); border-radius: 4px; box-shadow: 0 1px 4px rgba(0,0,0,.6); }
   .fechas button.activo { background: var(--acento); border-color: var(--acento); color: #000; position: relative; }
 
   .listado .cuerpo.linea { padding: 6px 12px; cursor: pointer; }
@@ -244,6 +245,7 @@
     <div id="fBotones" class="tira"></div>
     <div id="rBotones" class="tira oculto"></div>
   </div>
+  <div id="tipTira" class="tipTira oculto"></div>
   <div id="ruta" class="ruta"></div>
  </div>
 </div>
@@ -596,6 +598,7 @@ const fechaListado = p => (p.fecha || '').replace(/^\d{4}\./, '') || (regular(p.
 // milongas por días de la semana: un solo día a la vez (diasSel, con uno o vacío = todos)
 const DIAS_SEM = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 let diasSel = new Set();
+let deTira = false;   // pinta() desde un botón de las tiras: a cero, el listado vacío (no se vuelve a lo de antes)
 function proximaEn(p, dias){   // próxima fecha (desde hoy) de la milonga p en alguno de esos días (todos si no se dan); null si no hay
   const f = String(p.fechaOrig || '').split('.');
   if (f[0] != 'EVT') return proximaReg(p.fechaOrig, dias);
@@ -613,6 +616,21 @@ function filasMilongas(lista){   // [{p, dia}] por fecha desde hoy: con días el
   const t = x => x.dia ? x.dia.getTime() : Infinity;
   return filas.sort((x, y) => t(x) - t(y) || horaDe(x.p).localeCompare(horaDe(y.p)) || x.p.nombre.localeCompare(y.p.nombre));
 }
+// el hover de un botón de las tiras: al momento (el title tarda), centrado sobre el botón, sin salirse de la ventana
+function tipTira(b, texto){
+  const t = $('tipTira'), fuera = () => t.classList.add('oculto');
+  b.onmouseenter = () => {
+    t.textContent = texto;
+    t.classList.remove('oculto');
+    const r = b.getBoundingClientRect();
+    t.style.left = Math.max(2, Math.min(r.left + (r.width - t.offsetWidth) / 2, innerWidth - t.offsetWidth - 2)) + 'px';
+    const arriba = r.top - t.offsetHeight - 4;   // encima del botón; si no cabe, debajo
+    t.style.top = (arriba >= 2 ? arriba : r.bottom + 4) + 'px';
+  };
+  b.onmouseleave = fuera;
+  b.addEventListener('click', fuera);   // al pulsar se repinta la tira: el botón se va sin su mouseleave
+}
+
 // people por roles: dos tiras (públicos y privados), varios a la vez; rolesSel vacío = todos
 const PTC = 'ptc';   // los roles PTC (p24, p25, p26...) en un solo botón
 const PTCS = Object.keys(ROLES).filter(r => String(ROLES[r].desc).startsWith('PTC'));
@@ -629,14 +647,14 @@ function pintaRoles(cuenta){
       const b = document.createElement('button');
       b.textContent = k === null ? 'ALL' : k == PTC ? 'PTC' : textoRol(k);
       const cuantos = cuenta(k);   // el contador, solo en el hover
-      b.title = (k === null ? 'all people' : k == PTC ? PTCS.map(textoRol).join(', ') : (ROLES[k] || {}).desc || b.textContent)
-                + ' (' + cuantos + ')';
+      tipTira(b, (k === null ? 'all people' : k == PTC ? PTCS.map(textoRol).join(', ') : (ROLES[k] || {}).desc || b.textContent)
+                 + ' (' + cuantos + ')');
       b.classList.toggle('activo', k === null ? !rolesSel.size : rolesSel.has(k));
-      b.classList.toggle('vacio', !cuantos);
-      if (cuantos) b.onclick = () => {
+      b.onclick = () => {   // a cero también: el listado vacío
         if (k === null) rolesSel.clear();
         else if (!rolesSel.delete(k)) rolesSel.add(k);
         soloBuscado = false;
+        deTira = true;
         pinta();
       };
       div.appendChild(b);
@@ -654,12 +672,12 @@ function pintaDias(cuenta){
     const b = document.createElement('button');
     b.textContent = d === null ? 'WEEK' : DIAS_SEM[d];
     const cuantos = cuenta(d);   // el contador, solo en el hover
-    b.title = (d === null ? 'all days' : d == hoy ? 'today' : DIAS_SEM[d]) + ' (' + cuantos + ')';
+    tipTira(b, (d === null ? 'all days' : d == hoy ? 'today' : DIAS_SEM[d]) + ' (' + cuantos + ')');
     b.classList.toggle('activo', d === null ? !diasSel.size : diasSel.has(d));
-    b.classList.toggle('vacio', !cuantos);
-    if (cuantos) b.onclick = () => {
+    b.onclick = () => {   // a cero también: el listado vacío
       diasSel = new Set(d === null ? [] : [d]);
       soloBuscado = false;
+      deTira = true;
       pinta();
     };
     div.appendChild(b);
@@ -832,10 +850,9 @@ function pintaFechas(cuenta, oculto){
     const b = document.createElement('button');
     b.textContent = f.doce ? 'YEAR' : f.mes === undefined ? f.anyo : MESES[f.mes];
     const cuantos = cuenta(i);   // el contador, solo en el hover
-    b.title = (f.mes !== undefined ? MESES[f.mes] + ' ' + f.anyo : b.textContent) + ' (' + cuantos + ')';
+    tipTira(b, (f.mes !== undefined ? MESES[f.mes] + ' ' + f.anyo : b.textContent) + ' (' + cuantos + ')');
     b.classList.toggle('activo', i == fechaSel);
-    b.classList.toggle('vacio', !cuantos);
-    if (cuantos) b.onclick = () => { fechaSel = i; lugarSel = ciudadSel = null; soloBuscado = false; pinta(); };
+    b.onclick = () => { fechaSel = i; lugarSel = ciudadSel = null; soloBuscado = false; deTira = true; pinta(); };   // a cero también: el listado vacío
     div.appendChild(b);
   });
   if (!oculto) div.children[fechaSel].scrollIntoView({block: 'nearest', inline: 'nearest'});
@@ -888,9 +905,9 @@ function abreCierraMapa(){
   $('bMapa').textContent = (mapaAbierto ? '▴' : '▾') + ' map';
   if (!mapaAbierto) return;
   if (!mapa || mapaPendiente){
-    const [lista, area] = mapaPendiente || [posMapa, areaMapa || TODOS];
+    const [lista, area, conMapa] = mapaPendiente || [posMapa, areaMapa || TODOS, true];
     mapaPendiente = null;
-    pintaMapa(lista, area);
+    pintaMapa(lista, area, conMapa);
   } else mapa.invalidateSize();
 }
 const COLOR_MARCA = '#ffd8b0';
@@ -1019,9 +1036,9 @@ function vuela(b, tope, mas = 0){
   if (mapa._loaded) mapa.flyTo(centro, zoom, {duration: .8});
   else mapa.setView(centro, zoom);
 }
-function pintaMapa(lista, area){
+function pintaMapa(lista, area, conMapa){
   $('mapaAviso').classList.add('oculto');
-  try { pintaMapa0(lista, area); }
+  try { pintaMapa0(lista, area, conMapa); }
   catch (e){ avisoMapa('error en el mapa: ' + e.message); console.error(e); }
   finally { sinEncuadre = false; }
 }
@@ -1033,19 +1050,20 @@ function avisoMapa(texto){
   $('mapaAviso').textContent = texto;
   $('mapaAviso').classList.remove('oculto');
 }
-function pintaMapa0(lista, area){
-  const div = $('mapa'), caja = $('mapaCaja'), conPos = posMapa = lista.filter(p => p.pos);
-  $('bMapa').disabled = !conPos.length;
-  $('bMapa').textContent = (!conPos.length ? '•' : mapaAbierto ? '▴' : '▾') + ' map';
-  $('bMapa').title = !conPos.length ? 'map: not applicable here' : 'show / hide the map';
+// conMapa: el mapa, aunque la lista no tenga marcas (en event, un mes a cero: el mapa vacío, no fuera)
+function pintaMapa0(lista, area, conMapa){
+  const div = $('mapa'), caja = $('mapaCaja'), conPos = posMapa = lista.filter(p => p.pos), hay = conPos.length || conMapa;
+  $('bMapa').disabled = !hay;
+  $('bMapa').textContent = (!hay ? '•' : mapaAbierto ? '▴' : '▾') + ' map';
+  $('bMapa').title = !hay ? 'map: not applicable here' : 'show / hide the map';
   caja.classList.toggle('cerrado', !mapaAbierto);
   div.classList.toggle('oculto', !mapaAbierto);
-  if (!mapaAbierto){ mapaPendiente = [lista, area]; return; }
+  if (!mapaAbierto){ mapaPendiente = [lista, area, conMapa]; return; }
   mapaPendiente = null;
   areaMapa = area == TODOS ? null : area;
   if (typeof L == 'undefined') return avisoMapa('no se ha podido cargar Leaflet (wwt/leaflet/leaflet.js)');
-  caja.classList.toggle('oculto', !conPos.length);
-  if (!conPos.length) return;
+  caja.classList.toggle('oculto', !hay);
+  if (!hay) return;
   if (!mapa){
     mapa = L.map(div, {worldCopyJump: true, zoomSnap: .25, zoomControl: false});
     L.control.zoom({position: 'topright'}).addTo(mapa);   // el + y el -, a la derecha (a la izquierda, las ciudades)
@@ -1273,7 +1291,9 @@ function pinta(){
                         .sort((x, y) => !deEventos(r) ? x.nombre.localeCompare(y.nombre)
                                       : desdeHoy(x) - desdeHoy(y) || x.nombre.localeCompare(y.nombre));
   const filas = conDias && !soloBuscado ? filasMilongas(lista) : lista.map(p => ({p, dia: conDias ? proximaEn(p) : null}));
-  if (!filas.length && estadoPintado){   // a cero: todo como estaba, sin repintar (el mapa sin moverse, la ficha abierta)
+  const aCero = deTira;
+  deTira = false;
+  if (!filas.length && estadoPintado && !aCero){   // a cero: todo como estaba, sin repintar (el mapa sin moverse, la ficha abierta); desde las tiras, el listado vacío
     vuelveA(estadoPintado);
     if (mapa && tipMapa) mapa.closeTooltip(tipMapa);
     sinEncuadre = false;
@@ -1301,7 +1321,7 @@ function pinta(){
   if (conDias) pintaDias(d => deListado.filter(p => enArea(p, a) && enRol(p, r) && enSel(p) && (d === null || proximaEn(p, [d]))).length);
   else if (conRoles) pintaRoles(k => deListado.filter(p => enArea(p, a) && enRol(p, PEO) && enSel(p) && (k === null || conRol(p, k))).length);
   else pintaFechas(i => deListado.filter(p => enArea(p, a) && enRol(p, rFechas) && enFecha(p, i) && enSel(p)).length, !conFechas);
-  pintaMapa(baseMapa, a);
+  pintaMapa(baseMapa, a, deListado.some(p => p.pos && enArea(p, aMapa) && enRol(p, r)));   // sin las tiras: si el tipo lleva mapa
   $('bListado').innerHTML = (enListado ? '☰' : '<span class="iParrilla">▦</span>') + ' list';
   $('parrilla').classList.toggle('oculto', enListado);
   $('listado').classList.toggle('oculto', !enListado);
