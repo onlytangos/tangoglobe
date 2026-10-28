@@ -30,6 +30,8 @@
   #mapa .leaflet-control-attribution { background: transparent; color: #8899aa; font-size: 9px; }
   #mapa .leaflet-control-attribution a { color: inherit; }
   .creditos { font-size: .8em; color: var(--suave); }
+  ul.circulos { list-style: circle; margin: .6em 0; padding-left: 1.3em; }
+  ul.circulos li { margin: .3em 0; }
 
   #mapa .leaflet-control-zoom { border: 1px solid var(--acento); }
   #mapa .leaflet-control-zoom a { background: var(--acento); color: #000; border-bottom-color: #0003;
@@ -611,9 +613,17 @@ function proximaEn(p, dias){   // próxima fecha (desde hoy) de la milonga p en 
 }
 const horaDe = p => (leeReg(p.fechaOrig) || {hora: ''}).hora.slice(0, 4) || '9999';
 const textoDia = d => DIAS_SEM[d.getDay()] + ' ' + MESES[d.getMonth()] + '.' + d.getDate();
+// milongas y prácticas: solo las de los próximos 7 días (hoy y los 6 siguientes); las mensuales, la semana que les toca
+const DIAS_VISTA = 7;
+function enVista(d){
+  const tope = new Date();
+  tope.setHours(0, 0, 0, 0);
+  tope.setDate(tope.getDate() + DIAS_VISTA);
+  return !!d && d < tope;
+}
 function filasMilongas(lista){   // [{p, dia}] por fecha desde hoy: con días elegidos, una por cada uno en que se hace
-  const filas = diasSel.size ? lista.flatMap(p => [...diasSel].map(d => ({p, dia: proximaEn(p, [d])}))).filter(x => x.dia)
-                             : lista.map(p => ({p, dia: proximaEn(p)}));
+  const filas = (diasSel.size ? lista.flatMap(p => [...diasSel].map(d => ({p, dia: proximaEn(p, [d])})))
+                              : lista.map(p => ({p, dia: proximaEn(p)}))).filter(x => enVista(x.dia));
   const t = x => x.dia ? x.dia.getTime() : Infinity;
   return filas.sort((x, y) => t(x) - t(y) || horaDe(x.p).localeCompare(horaDe(y.p)) || x.p.nombre.localeCompare(y.p.nombre));
 }
@@ -1160,7 +1170,7 @@ function pintaMapa0(lista, area, conMapa){
 // líneas tiene cada uno en el listado (lineasCiudad y lineasPais, de pinta); al pulsarlo, se elige
 const COLUMNAS_CIUDAD = 2, ALTO_CIUDAD = 16;   // el line-height de .ciudadesMapa
 let lineasCiudad = () => 0, lineasPais = () => 0, baseLugares = [];
-// el hover de una ciudad: al momento (el title tarda) y a su derecha, sin salirse del mapa
+// el hover de una ciudad: al momento (el title tarda) y en el borde derecho de su columna, sin salirse del mapa
 function tipCiudad(s, texto){
   const t = $('tipCiudad'), caja = $('mapaCaja');
   s.onmouseenter = () => {
@@ -1168,7 +1178,9 @@ function tipCiudad(s, texto){
     t.textContent = texto();
     t.classList.remove('oculto');
     const div = s.offsetParent;
-    t.style.left = Math.max(0, Math.min(div.offsetLeft + s.offsetLeft + s.offsetWidth + 6, caja.clientWidth - t.offsetWidth - 2)) + 'px';
+    const columna = [...div.children].filter(x => x.offsetLeft == s.offsetLeft);   // justify-items: start, la columna empieza igual
+    const derecha = Math.max(...columna.map(x => x.offsetLeft + x.offsetWidth));
+    t.style.left = Math.max(0, Math.min(div.offsetLeft + derecha + 2, caja.clientWidth - t.offsetWidth - 2)) + 'px';
     t.style.top = (div.offsetTop + s.offsetTop - 2) + 'px';   // centrado en la línea (16px) del nombre
   };
   s.onmouseleave = () => { trasClic = false; t.classList.add('oculto'); };
@@ -1295,7 +1307,7 @@ function pinta(){
   const conFechas = deEventos(r) && !sinFecha(r), conDias = regular(r), conRoles = r == PEO;
   const fs = conFechas && !soloBuscado ? fechaSel : null;
   const dias = conDias && diasSel.size && !soloBuscado ? [...diasSel] : null;
-  const enDias = p => !dias || !!proximaEn(p, dias);
+  const enDias = p => !conDias || soloBuscado || enVista(proximaEn(p, dias));   // con la búsqueda, aunque sea más adelante
   const enTiras = p => enDias(p) && (!conRoles || soloBuscado || enRoles(p));
   const enSel = p => (!lugarSel || (p.pos && claveMarca(p) == lugarSel))
                   && (!ciudadSel || ciudadDe(p) == ciudadSel)
@@ -1337,7 +1349,7 @@ function pinta(){
   const hayPrivados = personas.some(p => !p.evento && p.roles.some(x => ROLES[x] && !ROLES[x].publico));
   $('rBotones').classList.toggle('oculto', !conRoles || !hayPrivados);
   const rFechas = conFechas ? r : EVT;
-  if (conDias) pintaDias(d => deListado.filter(p => enArea(p, a) && enRol(p, r) && enSel(p) && (d === null || proximaEn(p, [d]))).length);
+  if (conDias) pintaDias(d => deListado.filter(p => enArea(p, a) && enRol(p, r) && enSel(p) && enVista(proximaEn(p, d === null ? null : [d]))).length);
   else if (conRoles) pintaRoles(k => deListado.filter(p => enArea(p, a) && enRol(p, PEO) && enSel(p) && (k === null || conRol(p, k))).length);
   else pintaFechas(i => deListado.filter(p => enArea(p, a) && enRol(p, rFechas) && enFecha(p, i) && enSel(p)).length, !conFechas);
   pintaMapa(baseMapa, a, deListado.some(p => p.pos && enArea(p, aMapa) && enRol(p, r)));   // sin las tiras: si el tipo lleva mapa
@@ -1531,12 +1543,12 @@ function muestraInfo(){
   const FB = 'https://www.facebook.com/profile.php?id=100093497583670';
   d.innerHTML = '<p><a href="' + FB + '" target="_blank" rel="noopener">by KoKoTango</a> (public version)</p>' +
                 '<p class="enlaces"><a href="' + FB + '" target="_blank" rel="noopener"><img src="img/mensaje.svg" alt="" class="icono">send me a message with your urls</a></p>' +
-                '<p>powered by Opus 5.5</p>' +
-                '<p class="creditos">map: tiles &copy; <a href="https://www.esri.com/" target="_blank" rel="noopener">Esri</a>, HERE, Garmin, ' +
+                '<ul class="circulos"><li>powered by Opus 5.5</li>' +
+                '<li class="creditos">map: tiles &copy; <a href="https://www.esri.com/" target="_blank" rel="noopener">Esri</a>, HERE, Garmin, ' +
                 '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors; ' +
                 'countries: <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a>; ' +
-                '<a href="https://leafletjs.com/" target="_blank" rel="noopener">Leaflet</a></p>' +
-                '<p><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> (Creative Commons Reconocimiento–NoComercial–CompartirIgual)</p>';
+                '<a href="https://leafletjs.com/" target="_blank" rel="noopener">Leaflet</a></li>' +
+                '<li><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> (Creative Commons Reconocimiento–NoComercial–CompartirIgual)</li></ul>';
   $('fCuerpo').appendChild(d);
   $('ficha').showModal();
   return false;
