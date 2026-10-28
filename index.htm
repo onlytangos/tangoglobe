@@ -73,9 +73,7 @@
   .cara img, .cara .sinfoto { display: block; flex: none; width: 100%; aspect-ratio: 1; object-fit: contain; background: #000; }
   .cara img.sinfoto, .cuerpo > img.sinfoto { background: var(--sinfoto); }
 
-  .parrilla:not(.evts) .cara.evt { flex-basis: calc(2 * (100% - (var(--cols) - 1) * 6px) / var(--cols) + 6px); }
-  .parrilla .cara.evt { max-width: calc(2 * var(--maxFoto) + 6px); }   /* un evento ocupa dos caras */
-  .cara.evt img, .cara.evt .sinfoto { aspect-ratio: 16 / 9; object-fit: cover; }
+  .cara.evt img, .cara.evt .sinfoto { object-fit: contain; }   /* un evento, una cara cuadrada como las personas (2026-10-28; antes dos caras, 16:9 y cover): la foto entera, sobre negro */
   .cara figcaption { flex: none; height: calc(2.5em + 6px); box-sizing: border-box; padding: 3px; background: var(--barra); color: var(--texto);
                      font-size: .7em; line-height: 1.25; display: flex; align-items: center; justify-content: center;
                      text-align: center; overflow-wrap: anywhere; }
@@ -88,8 +86,8 @@
 
   .cara.evt img.logo, .cuerpo > img.logo { object-fit: contain; background: #fff; padding: 6%; box-sizing: border-box; }
 
-  .cuerpo > img.portada { flex: none; align-self: stretch; width: auto; height: auto; min-height: 90px;
-                           max-width: min(50%, var(--maxFoto)); max-height: var(--maxFoto); aspect-ratio: 16 / 9; object-fit: cover; contain: size; }
+  .cuerpo > img.portada { flex: none; align-self: flex-start; width: min(50%, var(--maxFoto)); height: auto;
+                           aspect-ratio: 1; object-fit: cover; }   /* cuadrada (2026-10-28; antes 16:9 y del alto del texto) */
 
   dialog { border: 1px solid var(--borde); border-radius: 8px; padding: 16px; width: min(520px, 90vw);
            background: var(--barra); color: var(--texto); box-shadow: 0 4px 24px rgba(0,0,0,.8); }
@@ -97,12 +95,12 @@
   dialog::backdrop { background: rgba(0,0,0,.7); }
   .cuerpo { display: flex; gap: 14px; align-items: flex-start; }
 
-  .cuerpo > img, .cuerpo > .sinfoto { flex: none; align-self: stretch; width: auto; height: auto; min-height: 90px;
-                                        max-width: min(50%, var(--maxFoto)); max-height: var(--maxFoto); aspect-ratio: 1; object-fit: cover; border-radius: 6px;
-                                        contain: size; }
+  .cuerpo > img, .cuerpo > .sinfoto { flex: none; align-self: flex-start; width: min(50%, var(--maxFoto)); height: auto;
+                                        aspect-ratio: 1; object-fit: cover; border-radius: 6px; }   /* cuadrada: el alto, el del ancho (antes el del texto) */
   .cuerpo > img { background: #000; }
   .texto { flex: 1; min-width: 0; }
   dialog .texto { padding-right: 28px; }
+  dialog .texto p.enlaces { margin-top: 0; }   /* el popup de KK: sin líneas en blanco */
   .cuerpo h2 { margin: 0 0 8px; font-size: 1.1em; }
   .cuerpo p { margin: 0; font-size: .9em; overflow-wrap: anywhere; }   /* líneas de texto seguidas; los enlaces, aparte (p.enlaces) */
 
@@ -208,11 +206,14 @@
 
   .detalle { position: sticky; top: calc(var(--altoBarra, 0px) + 16px); z-index: 1; max-height: 60vh; overflow-y: auto;
              box-shadow: 0 -16px 0 var(--fondo), 0 16px 0 var(--fondo); }
-  .detalle .texto { padding-right: 28px; }
+  .detalle .texto { padding-right: 30px; }
   .detalle .texto > * { margin: 0; line-height: 22px; }   /* título, fecha, org, enlaces...: todas las líneas con el mismo interlineado */
   .detalle .texto p.enlaces { margin-top: 0; row-gap: 0; }
-  #dCerrar { position: absolute; top: 6px; right: 8px; border: 0; background: none; color: var(--acento); font-size: 1.3em; font-weight: 700; cursor: pointer; }
+  #dCerrar { position: absolute; top: 6px; right: 8px; border: 0; background: none; color: var(--acento); font-size: 1.43em; font-weight: 700; cursor: pointer; }
   #dCerrar:hover { color: #ffc890; }
+  #dCopiar { position: absolute; top: 38px; right: 12px; border: 0; background: none; color: var(--acento); padding: 0; cursor: pointer; }
+  #dCopiar:hover { color: #ffc890; }
+  #dCopiar svg { width: 18px; height: 18px; display: block; }
 
   .detalle.filas { background: var(--fondo); border: 0; border-radius: 0; border-top: 1px solid var(--borde);
                    border-bottom: 1px solid var(--borde); padding: 14px 10px; }
@@ -249,7 +250,7 @@
   <div id="ruta" class="ruta"></div>
  </div>
 </div>
-<div id="detalle" class="detalle oculto"><button id="dCerrar" title="close">&times;</button><div id="dCuerpo" class="cuerpo"></div></div>
+<div id="detalle" class="detalle oculto"><button id="dCerrar" title="close">&times;</button><button id="dCopiar" title="copy link"></button><div id="dCuerpo" class="cuerpo"></div></div>
 <div id="parrilla" class="parrilla oculto"></div>
 <div id="listado" class="listado"></div>
 <dialog id="ficha"><button id="fCerrar" title="close">&times;</button><div id="fCuerpo" class="cuerpo"></div></dialog>
@@ -264,8 +265,8 @@ const ANCHO_CARA = 110;   // = --maxFoto del CSS: tamaño máximo de las fotos
 let soloEventos = false;
 function columnasParrilla(evts){
   soloEventos = evts;
-  const div = $('parrilla'), w = div.clientWidth || window.innerWidth, ancho = evts ? 2 * ANCHO_CARA : ANCHO_CARA;
-  div.style.setProperty('--cols', Math.max(4, Math.floor((w + 6) / (ancho + 6))));   // sin tope: cada cara, ANCHO_CARA como mucho (--maxFoto)
+  const div = $('parrilla'), w = div.clientWidth || window.innerWidth;
+  div.style.setProperty('--cols', Math.max(4, Math.floor((w + 6) / (ANCHO_CARA + 6))));   // un evento, una cara (2026-10-28; antes dos)   // sin tope: cada cara, ANCHO_CARA como mucho (--maxFoto)
   div.classList.toggle('evts', evts);
 }
 const EVT = 'evt';
@@ -807,6 +808,7 @@ function abreFicha(p, fila){   // fila: la pulsada (una milonga puede salir en v
   marcaAbierta();
   $('dCuerpo').innerHTML = '';
   rellena($('dCuerpo'), p, true);
+  pintaCopiar(p);
   iluminaFicha(p);
   if (mapa && mapaAbierto && vistaMapa) mapa.flyTo(...vistaMapa, {duration: .8});   // vuelve al centro y zoom del último encuadre
   const d = $('detalle');
@@ -817,6 +819,23 @@ function abreFicha(p, fila){   // fila: la pulsada (una milonga puede salir en v
     const tapa = d.getBoundingClientRect().bottom + 16 - f.getBoundingClientRect().top;
     if (tapa > 0) window.scrollBy({top: -tapa, behavior: 'smooth'});
   }
+}
+// el enlace a la ficha: esta página con ?id=<id> (abreId), y el #k= de la clave si lo hay; publicada, el
+// Worker /w?id=<id> (push.sh escribe URL_FICHA), que lleva a tangoglobe/?id=<id>#k=<clave>
+const URL_FICHA = 'https://tangoinfo-eventos.55tgb.workers.dev/w';
+const ICONO_ENLACE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' +
+                     '<path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>';
+function pintaCopiar(p){
+  const b = $('dCopiar'), id = (p.ids || [])[0];
+  b.classList.toggle('oculto', !id);
+  b.innerHTML = ICONO_ENLACE;
+  b.onclick = async () => {
+    const url = (URL_FICHA || location.origin + location.pathname) + '?id=' + id + (URL_FICHA ? '' : location.hash);
+    try { await navigator.clipboard.writeText(url); }
+    catch (e){ window.prompt('link', url); return; }
+    b.textContent = '✓';
+    setTimeout(() => { if (fichaAbierta == p) b.innerHTML = ICONO_ENLACE; }, 1500);
+  };
 }
 const midoBarra = new ResizeObserver(() => {
   const css = document.documentElement.style;
@@ -1511,13 +1530,13 @@ function muestraInfo(){
   d.className = 'texto';
   const FB = 'https://www.facebook.com/profile.php?id=100093497583670';
   d.innerHTML = '<p><a href="' + FB + '" target="_blank" rel="noopener">by KoKoTango</a> (public version)</p>' +
-                '<p><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> (Creative Commons Reconocimiento–NoComercial–CompartirIgual)</p>' +
                 '<p class="enlaces"><a href="' + FB + '" target="_blank" rel="noopener"><img src="img/mensaje.svg" alt="" class="icono">send me a message with your urls</a></p>' +
                 '<p>powered by Opus 5.5</p>' +
                 '<p class="creditos">map: tiles &copy; <a href="https://www.esri.com/" target="_blank" rel="noopener">Esri</a>, HERE, Garmin, ' +
                 '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors; ' +
                 'countries: <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a>; ' +
-                '<a href="https://leafletjs.com/" target="_blank" rel="noopener">Leaflet</a></p>';
+                '<a href="https://leafletjs.com/" target="_blank" rel="noopener">Leaflet</a></p>' +
+                '<p><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> (Creative Commons Reconocimiento–NoComercial–CompartirIgual)</p>';
   $('fCuerpo').appendChild(d);
   $('ficha').showModal();
   return false;

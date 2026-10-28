@@ -120,8 +120,8 @@ function claveUrl(u){
   return ruta+(ps.length ? '?'+ps.join('&') : '');
 }
 
-// foto de un id (campo 9, idfoto): la primera que haya en import/src.comun/fotos/foto1,2/
-// (eventos 2,1: la portada antes; salvo los ids de fotosPerfil, FOTO_PERFIL de adhoc.js: el perfil
+// foto de un id (campo 9, idfoto): la primera que haya en import/src.comun/fotos/foto1,2,8/
+// (8: las imágenes generadas, la última; eventos 2,1,8: la portada antes; salvo los ids de fotosPerfil, FOTO_PERFIL de adhoc.js: el perfil
 // también en sus eventos), según fotosId de datajs/fotoid.js
 // (se carga después de aux.js: se lee en la primera llamada).
 // {carpeta, fichero: '<id>.<ext>'}; null si no tiene
@@ -129,11 +129,11 @@ let fotoSetsCache=null;
 function fotoDeId(idfoto,evento){
   if (!idfoto || idfoto=='-'){return null}       // "-": sin foto
   if (!fotoSetsCache){
-    fotoSetsCache=Object.fromEntries(['1','2'].map(c =>
+    fotoSetsCache=Object.fromEntries(['1','2','8'].map(c =>
       [c,new Set(typeof fotosId!='undefined' && fotosId[c] ? fotosId[c] : [])]));
   }
   const perfil=typeof fotosPerfil!='undefined' && fotosPerfil.includes(idfoto);
-  for (const c of (evento && !perfil ? ['2','1'] : ['1','2']))
+  for (const c of (evento && !perfil ? ['2','1','8'] : ['1','2','8']))
     for (const e of ['jpg','webp','png'])
       if (fotoSetsCache[c].has(idfoto+'.'+e)){return {carpeta:c, fichero:idfoto+'.'+e}}
   return null;
