@@ -1161,8 +1161,8 @@ function eligePais(pais){
 }
 function pintaCiudades(){
   $('tipCiudad').classList.add('oculto');
-  const div = $('ciudadesMapa'), vista = mapa.getBounds(), nombres = new Map(), dePais = !!(ciudadSel || lugarSel);   // con ciudad o lugar elegidos: ciudades; si no, países
-  for (const p of dePais ? posMapa : baseLugares){   // los países, de todo el listado (con un país elegido, el mapa solo pinta los suyos)
+  const div = $('ciudadesMapa'), vista = mapa.getBounds(), nombres = new Map(), dePais = !!(ciudadSel || lugarSel || paisSel);   // con país, ciudad o lugar elegidos: las ciudades (del país); si no, países
+  for (const p of dePais ? posMapa : baseLugares){   // las ciudades, de lo que pinta el mapa (con un país elegido, solo las suyas); los países, de todo el listado
     if (!vista.contains(centroPos(p.pos))) continue;
     if (dePais && p.ciudad) nombres.set(ciudadDe(p), p.ciudad);
     else if (!dePais && p.pais && p.pais != '-') nombres.set(p.pais, p.pais);
