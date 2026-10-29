@@ -451,8 +451,8 @@ function eventos(){
     }
     const f = fechaDe(e).split('.');
     const prox = f[0] == 'REG' ? proximaReg(fechaDe(e)) : null;
-    const fecha = f[0] == 'EVT' ? [f[4], f[2], f[3]].filter(Boolean).join('.')
-                : prox ? [prox.getFullYear(), MESES[prox.getMonth()], prox.getDate()].join('.') : '';
+    const fecha = f[0] == 'EVT' ? [f[4], f[2], (f[3] || '').replace(/\d+/g, dos)].filter(Boolean).join('.')
+                : prox ? [prox.getFullYear(), MESES[prox.getMonth()], dos(prox.getDate())].join('.') : '';
     const reg = f[0] == 'REG' ? textoReg(fechaDe(e)) : '';
     const orden = f[0] == 'EVT' ? (parseInt(f[4]) || 9999) * 100 + (parseInt(f[1]) || 0) : prox ? prox.getFullYear() * 100 + prox.getMonth() : 999999;
     const mes = f[0] == 'EVT' ? parseInt(f[1]) : prox ? prox.getMonth() : NaN, dia = prox ? prox.getDate() : parseInt(f[3]) || 1;
@@ -632,11 +632,12 @@ function proximaEn(p, dias){   // próxima fecha (desde hoy) de la milonga p en 
   return d >= hoy && (!dias || dias.includes(d.getDay())) ? d : null;
 }
 const horaDe = p => (leeReg(p.fechaOrig) || {hora: ''}).hora.slice(0, 4) || '9999';
+function dos(n){ return String(n).padStart(2, '0'); }   // el día con dos cifras (05): las fechas del listado, alineadas
 function textoDia(d){   // THU.OCT.29; hoy, TODAY (mañana, con su fecha)
   const hoy = new Date();
   hoy.setHours(0, 0, 0, 0);
   const n = Math.round((new Date(d).setHours(0, 0, 0, 0) - hoy) / 864e5);
-  return n == 0 ? 'TODAY' : DIAS_SEM[d.getDay()] + '.' + MESES[d.getMonth()] + '.' + d.getDate();
+  return n == 0 ? 'TODAY' : DIAS_SEM[d.getDay()] + '.' + MESES[d.getMonth()] + '.' + dos(d.getDate());
 }
 // milongas y prácticas: solo las de los próximos 7 días (hoy y los 6 siguientes); las mensuales, la semana que les toca
 const DIAS_VISTA = 7;
