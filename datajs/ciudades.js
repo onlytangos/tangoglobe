@@ -2,8 +2,6 @@
 // el mapa de wwt/wwt.htm. Copia de CIUDAD_COORD de import/geo.py (corregir
 // allí): la escribe import/coords.py en cada join. null: no encontrada.
 var CIUDADES_COORD = {
-"AZ|Baku": [40.3756, 49.8328],
-"Andorra|Giens": null,
 "Argentina|Avellaneda": [-34.6648, -58.3628],
 "Argentina|Buenos Aires": [-34.6096, -58.3888],
 "Argentina|City Bell": [-34.867, -58.0475],
@@ -26,6 +24,7 @@ var CIUDADES_COORD = {
 "Austria|Mondsee": [47.856, 13.3501],
 "Austria|Velden am Wörthersee": [46.6152, 14.0451],
 "Austria|Vienna": [48.2081, 16.3713],
+"Azerbaijan|Baku": [40.3756, 49.8328],
 "Belgium|Antwerp": [51.2199, 4.415],
 "Belgium|Bruges": [51.2085, 3.2251],
 "Belgium|Ixelles": [50.8331, 4.3668],
@@ -181,6 +180,7 @@ var CIUDADES_COORD = {
 "France|Fontenay Le Comte": [46.4661, -0.8064],
 "France|Frejus": [43.433, 6.736],
 "France|Gevrey Chambertin": [47.2262, 4.9706],
+"France|Giens": [43.0382, 6.1319],
 "France|Grenoble": [45.1876, 5.7358],
 "France|Gresy Sur Aix": [45.7214, 5.9318],
 "France|Hellemmes": [50.6275, 3.1092],
@@ -349,6 +349,7 @@ var CIUDADES_COORD = {
 "Germany|Langen": [49.9915, 8.6634],
 "Germany|Lappersdorf": [49.0716, 12.0599],
 "Germany|Ludwigshafen": [49.4774, 8.4447],
+"Germany|Ludwigshafen am Rhein": [49.4704, 8.4382],
 "Germany|Lübeck": [53.8664, 10.6847],
 "Germany|Mattstedt": [51.0549, 11.5042],
 "Germany|Munich": [48.1351, 11.582],
@@ -695,6 +696,7 @@ var CIUDADES_COORD = {
 "Spain|Calpe": [38.6436, 0.0457],
 "Spain|Cambrils": [41.0679, 1.0658],
 "Spain|Campello": [43.2876, -7.768],
+"Spain|Canary Islands": [28.2936, -16.6214],
 "Spain|Candás": [43.5802, -5.7551],
 "Spain|Cartagena": [37.598, -0.9765],
 "Spain|Castro Urdiales": [43.3737, -3.2146],
