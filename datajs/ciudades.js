@@ -1,12 +1,13 @@
 // ciudades.js : coordenadas [lat, lon] de cada "País|Ciudad" de los datos, para
 // el mapa de wwt/wwt.htm. Copia de CIUDAD_COORD de import/geo.py (corregir
-// allí): la escribe import/coords.py en cada join. null: no encontrada.
+// allí): la escribe import/coords.py en cada join (y en la 1, coords.py busca). null: no encontrada.
 var CIUDADES_COORD = {
 "Argentina|Avellaneda": [-34.6648, -58.3628],
 "Argentina|Buenos Aires": [-34.6096, -58.3888],
 "Argentina|City Bell": [-34.867, -58.0475],
 "Argentina|Córdoba": [-31.4201, -64.1888],
 "Argentina|Ingeniero Maschwitz": [-34.3891, -58.7379],
+"Argentina|La Plata": [-34.9207, -57.9538],
 "Argentina|Mendoza": [-32.8894, -68.8446],
 "Argentina|Monte Grande": [-34.8193, -58.4664],
 "Argentina|Rosario": [-32.9594, -60.6617],
@@ -381,6 +382,7 @@ var CIUDADES_COORD = {
 "Greece|Crete": [35.2401, 24.8093],
 "Greece|Greece": [39.0742, 21.8243],
 "Greece|Heraklion": [35.3391, 25.1333],
+"Greece|Kalamata": [37.0373, 22.1107],
 "Greece|Karystos": [38.0155, 24.4199],
 "Greece|Kavala": [40.9367, 24.4148],
 "Greece|Larissa": [39.639, 22.4191],
@@ -591,6 +593,7 @@ var CIUDADES_COORD = {
 "Poland|Miedzybrodzie Bialskie": [49.7875, 19.1943],
 "Poland|Międzybrodzie Bialskie": [49.7873, 19.194],
 "Poland|Nałęczów": [51.2857, 22.2153],
+"Poland|Olsztyn": [53.7767, 20.4765],
 "Poland|Osiecznica": [51.3261, 15.4212],
 "Poland|Otmuchow": [50.4654, 17.173],
 "Poland|Piechowice": [50.8496, 15.5985],
@@ -630,6 +633,7 @@ var CIUDADES_COORD = {
 "Serbia|Belgrade": [44.8125, 20.4612],
 "Serbia|Vrnjačka Banja": [43.6253, 20.8952],
 "Singapore|Singapore": [1.2812, 103.8503],
+"Slovakia|Banská Bystrica": [48.7354, 19.1457],
 "Slovakia|Bratislava": [48.1478, 17.1072],
 "Slovenia|Laško": [46.1543, 15.236],
 "Slovenia|Ljubljana": [46.0569, 14.5058],
@@ -715,7 +719,11 @@ var CIUDADES_COORD = {
 "Spain|Denia": [38.8389, 0.1077],
 "Spain|Donostia-San Sebastián": [43.314, -2.0006],
 "Spain|El Masnou": [41.4791, 2.3193],
+"Spain|El Rosario": [28.4325, -16.3684],
+"Spain|Estepona": [36.4268, -5.1468],
 "Spain|Figueres": [42.2666, 2.9638],
+"Spain|Fuengirola": [36.5388, -4.6234],
+"Spain|Fuerteventura": [28.5066, -13.8452],
 "Spain|Gijón": [43.536, -5.657],
 "Spain|Girona": [41.9552, 2.8085],
 "Spain|Gran Canaria": [27.958, -15.6062],
@@ -792,6 +800,7 @@ var CIUDADES_COORD = {
 "Spain|Tenerife": [28.4663, -16.3059],
 "Spain|Torre del Mar": [36.7379, -4.0945],
 "Spain|Torrevieja": [37.9775, -0.6828],
+"Spain|Torrox": [36.7705, -3.9531],
 "Spain|Torrox Costa": [36.7307, -3.965],
 "Spain|Tossa de Mar": [41.7198, 2.9312],
 "Spain|Urdúliz": [43.373, -2.9482],

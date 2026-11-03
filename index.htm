@@ -219,6 +219,7 @@
   .iParrilla { position: relative; top: -2px; }
   .iMapa { position: relative; top: -2px; }   /* el triángulo del botón map */
   .vacio { padding: 24px 12px; text-align: center; color: var(--suave); }   /* el listado a cero */
+  .listado.filas .maxLineas { grid-column: 1 / -1; padding: 12px; }   /* la última línea: el máximo */
   .vacio button { margin-top: 10px; font-size: .9em; padding: 4px 10px; cursor: pointer; background: var(--tarjeta); color: var(--texto); border: 1px solid var(--borde); border-radius: 4px; }
   @media (max-width: 600px) { .mapaCaja { --altoMapa: 144px; } .ciudadesMapa { width: 110px; } }
   .aviso { color: var(--suave); }
@@ -236,9 +237,10 @@
              display: flex; align-items: center; justify-content: center; background: none; color: var(--acento); font-size: 1.43em; line-height: 1; font-weight: 700; cursor: pointer; }
   #fCerrar { top: 4px; }   /* el del popup, 2px más arriba */
   #dCerrar:hover, #fCerrar:hover { color: #ffc890; border-radius: 4px; }   /* bajo el ratón, de círculo a cuadrado */
-  #dCopiar { position: absolute; top: 38px; right: 12px; border: 0; background: none; color: var(--acento); padding: 0; cursor: pointer; }
+  /* el de copiar el enlace: al final de la primera línea de la ficha (su título; 2026-11-01, el usuario) */
+  #dCopiar { display: inline-flex; vertical-align: -2px; margin-left: 8px; border: 0; background: none; color: var(--acento); padding: 0; cursor: pointer; }
   #dCopiar:hover { color: #ffc890; }
-  #dCopiar svg { width: 18px; height: 18px; display: block; }
+  #dCopiar svg { width: 16px; height: 16px; display: block; }
 
   .detalle.filas { background: var(--fondo); border: 0; border-radius: 0; border-top: 1px solid var(--borde);
                    border-bottom: 1px solid var(--borde); padding: 14px 10px; }
@@ -282,6 +284,7 @@ const FOTOS = 'foto';
 const TODOS = '*';
 const ESTILO_LISTADO = 'filas';
 history.scrollRestoration = 'manual';   // al cargar (o recargar), arriba: a la vista la primera línea del listado
+const MAX_LINEAS = 100;   // las líneas del listado (2026-11-02, el usuario: "máximo número de líneas en listado en 100")
 let enListado = true;   // listado o parrilla de caras (botón list; ?c=grid / ?c=list)
 const ANCHO_CARA = 110;   // = --maxFoto del CSS: tamaño máximo de las fotos
 let soloEventos = false;
@@ -367,8 +370,11 @@ function cargaFilas(filas){
     const p = porClave.get(clave);
     const pos = coordCiudad(c) || coordDe(c);   // como los eventos: el centro de su ciudad (posEvento)
     const tipoP = String(c[CAMPO.tipo] || '').trim() in TIPOS_PERSONA ? String(c[CAMPO.tipo]).trim() : 'person';
+    // (un grupo con sala propia la apunta en loc: la sala es su venue, con su dirección; 2026-11-02, el usuario)
+    const sala = (v.loc || [''])[0], salaFb = sala ? urlSala(c) : '', salaDir = sala ? dirSala(c) : '';
     if (!p){ porClave.set(clave, {area, pais, lugar, ciudad, pos, roles, tipoP, nombre: c[CAMPO.name], video, foto: f, fb, notas: notas ? [notas] : [],
-                                     coment: coments, ids: [idDe(c)].filter(Boolean)}); continue; }
+                                     coment: coments, ids: [idDe(c)].filter(Boolean), sala, salaFb, salaDir}); continue; }
+    if (!p.sala && sala){ p.sala = sala; p.salaFb = salaFb; p.salaDir = salaDir; }
     if (idDe(c)) p.ids.push(idDe(c));
     if (!p.pos) p.pos = pos;
     if (!p.fb) p.fb = fb;
@@ -404,6 +410,13 @@ function proximaReg(f, solo){   // solo: días de la semana (0 = domingo) a los 
   hoy.setHours(0, 0, 0, 0);
   const dias = r ? r.dias.filter(d => !solo || solo.includes(d)) : [];
   if (!dias.length) return null;
+  if (r.frec == 'Q'){     // cada 2 semanas: el primero de los 14 días que viene que le toca (aux.js saleReg)
+    for (let k = 0; k < 14; k++){
+      const d = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + k);
+      if (dias.includes(d.getDay()) && saleReg(r, d)) return d;
+    }
+    return null;
+  }
   if (r.frec != 'M'){
     const k = Math.min(...dias.map(d => (d - hoy.getDay() + 7) % 7));
     return new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + k);
@@ -432,7 +445,8 @@ function mapaDe(e){
 function eventos(){
   const porClave = new Map(), lista = [];
   for (const e of eventosTango()){
-    if (!String(e[CAMPO.tipo]).startsWith('event') && !sinFecha(rolEvento(e[CAMPO.tipo]))) continue;
+    // los eventos y las milongas de un día (fecha EVT, rol iti; 2026-10-31: fuera milonga+)
+    if (!String(e[CAMPO.tipo]).startsWith('event') && !String(fechaDe(e)).startsWith('EVT') && !sinFecha(rolEvento(e[CAMPO.tipo]))) continue;
     const url = /^https?:\/\//.test(e[CAMPO.urlfb] || '') ? e[CAMPO.urlfb] : '';
     const n = inicio(fechaDe(e));
     const claves = d => [...[url, wwwDe(e)].filter(Boolean).map(u => 'u:' + claveUrl(u) + '#' + (n == null ? fechaDe(e) : n + d)), n != null && 'n:' + claveNom(e[CAMPO.name], n + d)].filter(Boolean);
@@ -451,7 +465,7 @@ function eventos(){
     }
     const f = fechaDe(e).split('.');
     const prox = f[0] == 'REG' ? proximaReg(fechaDe(e)) : null;
-    const fecha = f[0] == 'EVT' ? [f[4], f[2], (f[3] || '').replace(/\d+/g, dos)].filter(Boolean).join('.')
+    const fecha = f[0] == 'EVT' ? [f[4], f[2], (f[3] || '').replace(/\d+/g, dos)].filter(Boolean).join('.') + (esExtrapolada(fechaDe(e)) ? UNCONFIRMED : '')
                 : prox ? [prox.getFullYear(), MESES[prox.getMonth()], dos(prox.getDate())].join('.') : '';
     const reg = f[0] == 'REG' ? textoReg(fechaDe(e)) : '';
     const orden = f[0] == 'EVT' ? (parseInt(f[4]) || 9999) * 100 + (parseInt(f[1]) || 0) : prox ? prox.getFullYear() * 100 + prox.getMonth() : 999999;
@@ -576,7 +590,7 @@ function logosFicha(d, img, texto, {mapa = '', fb = '', www = [], video = ''}){
   const dominio = u => u.replace(/^https?:\/\/(www\.)?/, '').split('/')[0];
   const logos = [...(mapa ? [enlace(mapa, 'map', 'img/mapa.svg')] : []),
                  ...(fb ? [enlace(fb, 'facebook', 'img/perfil.svg')] : []),
-                 ...www.map(u => enlace(u, dominio(u), 'img/web.svg')),
+                 ...www.filter(u => !esAgendaWeb(u)).map(u => enlace(u, dominio(u), 'img/web.svg')),   // no la agenda de donde salen los datos (aux.js)
                  ...(video ? [enlace(video, 'video', 'img/yt.svg')] : [])];
   if (!texto && !logos.length) return;
   const par = document.createElement('p');
@@ -606,7 +620,7 @@ function iconoFila(p){   // un solo icono: su Facebook (urlfb) si lo tiene; si n
   s.className = 'fIconos';
   const notas = (p.notas || []).join(' ').match(/https?:\/\/[^\s,]+/g) || [];
   const fb = p.fb && esFb(p.fb) ? p.fb : '';
-  const web = fb ? '' : [p.fb, ...(p.www || []), ...notas].find(u => u && esEnlace(u) && !esFb(u) && !/youtu/.test(u));
+  const web = fb ? '' : [p.fb, ...(p.www || []), ...notas].find(u => u && esEnlace(u) && !esFb(u) && !/youtu/.test(u) && !esAgendaWeb(u));
   if (fb || web){
     const a = enlace(fb || web, '', fb ? 'img/perfil.svg' : 'img/web.svg');
     a.title = fb ? 'facebook' : 'web';
@@ -799,6 +813,7 @@ function rellenaPersona(c, p, conLugar){
   const roles = p.roles.filter(r => ROLES[r]);
   const publicos = roles.filter(r => ROLES[r].publico), privados = roles.filter(r => !ROLES[r].publico);
   if (p.tipoP && p.tipoP != 'person') linea('type', p.tipoP);
+  if (p.sala) linea('venue', p.salaFb ? enlace(p.salaFb, p.sala) : p.sala, ...(p.salaDir ? [' · ' + p.salaDir] : []));
   if (publicos.length) linea('rol', publicos.map(textoRol).join(', '));
   if (privados.length) linea('pr', privados.map(textoRol).join(', '));
   const eventos = organiza.get(p.nombre) || [];
@@ -846,6 +861,7 @@ function marcaAbierta(){
 function abreFicha(p, fila){   // fila: la pulsada (una milonga puede salir en varios días)
   fichaAbierta = p;
   marcaAbierta();
+  $('detalle').appendChild($('dCopiar'));   // fuera de la ficha que se borra (va al final de su primera línea: pintaCopiar)
   $('dCuerpo').innerHTML = '';
   rellena($('dCuerpo'), p, true);
   pintaCopiar(p);
@@ -871,6 +887,8 @@ function pintaCopiar(p){
   const b = $('dCopiar'), id = (p.ids || [])[0];
   b.classList.toggle('oculto', !id);
   b.innerHTML = ICONO_ENLACE;
+  const linea = $('dCuerpo').querySelector('.texto > *');   // al final de la primera línea (el título)
+  if (linea) linea.appendChild(b);
   b.onclick = async () => {
     const url = (URL_FICHA || location.origin + location.pathname) + '?id=' + id + (URL_FICHA ? '' : location.hash);
     try { await navigator.clipboard.writeText(url); }
@@ -1461,7 +1479,7 @@ function pinta(){
   const conFecha = filas.some(({p}) => p.evento);   // con fecha: su columna al principio (vacía en las filas sin fecha)
   div.classList.toggle('conFecha', conFecha);
   const vistos = new Set();
-  for (const {p, dia} of filas){
+  for (const {p, dia} of filas.slice(0, MAX_LINEAS)){   // como mucho MAX_LINEAS líneas; la última dice el máximo
     const c = document.createElement('div');
     if (!vistos.has(p.id)) c.id = 'f' + p.id;
     vistos.add(p.id);
@@ -1477,7 +1495,7 @@ function pinta(){
       c.appendChild(iconoFila(p));   // el logo siempre al inicio de la línea; luego la fecha y el nombre
       if (conFecha) span('fFecha', p.evento ? (dia ? textoDia(dia) : fechaListado(p)) : '');
       span('fNombre', p.nombre);
-      const tras = p.tipo == 'milonga' || p.tipo == 'practica' ? [p.sala || p.venue, p.orgs.join(', ')].filter(Boolean) : [];   // " - sala - org"
+      const tras = p.tipo == 'milonga' || p.tipo == 'practica' ? [p.sala != '?' && (p.sala || p.venue), p.orgs.join(', ')].filter(Boolean) : [];   // " - sala - org" (la sala por saber, ?, solo en la ficha)
       if (tras.length){ const v = document.createElement('span'); v.className = 'fSala'; v.textContent = ' - ' + tras.join(' - '); c.lastChild.appendChild(v); }
       span('fLugar', p.ciudad || p.lugar);   // solo la ciudad (la sala va en la ficha)
       const mini = cara(p);   // la miniatura al final, de la altura de la línea
@@ -1489,6 +1507,12 @@ function pinta(){
     }
     c.onclick = () => abreFicha(p, c);
     div.appendChild(c);
+  }
+  if (filas.length > MAX_LINEAS){
+    const m = document.createElement('div');
+    m.className = 'vacio maxLineas';
+    m.textContent = 'lines number max is ' + MAX_LINEAS;
+    div.appendChild(m);
   }
   pintaVacio(filas.length, div, areaCuenta, r, fs, dias, conRoles);
   marcaAbierta();
