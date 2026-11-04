@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- wwt/index.htm — wwt: eventos y personas por zona, con mapa (doc.htm) -->
+<!-- app.tg/index.htm — tangoglobe: eventos y personas por zona, con mapa (doc.htm) -->
 <html lang="es">
 <head>
 <meta charset="utf-8">
@@ -15,62 +15,73 @@
 <link rel="stylesheet" href="leaflet/leaflet.css">
 <script src="leaflet/leaflet.js"></script>
 <style>
-  :root { --maxFoto: 110px;   /* tamaño máximo de las fotos (= ANCHO_CARA) */ --altoTira: 27px; color-scheme: dark;
-          --fondo: #222; --barra: #444; --tarjeta: #3a3a3a; --sinfoto: #474747;
-          --texto: #eee; --suave: #999; --enlace: #8ab4f8; --borde: #555;
-          --acento: #ffd8b0; }
+  :root { --maxFoto: 110px;   /* tamaño máximo de las fotos (= ANCHO_CARA) */ --altoTira: 27px; --altoFila: 31px;   /* la fila de los selectores y las de la barra: así las migas quedan a la altura del mapa */ color-scheme: dark;
+          /* la paleta: solo estos colores (en el script, con paleta()) */
+          --azulOscuro: #2f5a8f; --azulClaro: #8ab4f8; --amarillo: #ffd500; --grisClaro: #999; --grisMedio: #444; --grisOscuro: #222; --negro: #000; --blanco: #fff;
+          /* y los del mapa */
+          --mapaMar: #0d1b2a; --mapaPais: #22406a; --mapaBorde: #888; --mapaMarca: #ffd8b0; --mapaAro: #e6d37e; --mapaLugar: #e53935; --mapaPaisSel: #f5c211;
+          /* sus usos */
+          --fondo: var(--negro); --barra: var(--grisOscuro); --tarjeta: var(--grisMedio); --sinfoto: var(--grisMedio);
+          --texto: var(--blanco); --suave: var(--grisClaro); --enlace: var(--azulClaro); --borde: var(--negro);
+          --acento: var(--amarillo); }
+  .principal { --borde: var(--grisMedio); }   /* las líneas del listado, sobre el fondo negro */
+  .panel, .barraLista, dialog, #sugs { --borde: var(--grisClaro); }   /* los controles, con borde claro */
   html { overflow-y: scroll; }
-  body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; background: var(--fondo); color: var(--texto); }
+  body { font-family: system-ui, sans-serif; margin: 0; background: var(--fondo); color: var(--texto); }
   button, select, input, textarea, .leaflet-container { font-family: inherit; }   /* todo con la letra del body: los controles y leaflet no la heredan */
   a { color: var(--enlace); }
+  html { scrollbar-color: var(--grisClaro) var(--grisMedio); }
+  ::selection { background: var(--azulClaro); color: var(--negro); }
+  ::placeholder { color: var(--suave); opacity: 1; }
+  :focus-visible { outline-color: var(--azulClaro); }
 
   .teselaBase { filter: sepia(1) hue-rotate(180deg) saturate(3) brightness(.85); }
   .teselaNombres { filter: sepia(.6) hue-rotate(180deg) saturate(1.5); }
-  #mapa.leaflet-container { background: #0d1b2a; }
+  #mapa.leaflet-container { background: var(--mapaMar); }
 
-  #mapa .leaflet-control-attribution { background: transparent; color: #8899aa; font-size: 9px; }
+  #mapa .leaflet-control-attribution { background: transparent; color: var(--grisClaro); font-size: 9px; }
   #mapa .leaflet-control-attribution a { color: inherit; }
-  .creditos { font-size: .8em; color: var(--suave); }
-  ul.circulos { list-style: circle; margin: .6em 0; padding-left: 1.3em; }
-  ul.circulos li { margin: .3em 0; }
-
   .cuerpo a { text-decoration: none; font-weight: 600; }
   .cuerpo a:hover { color: var(--texto); }
   .cuerpo p.enlaces { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 10px; }
   .cuerpo p.enlaces a { display: inline-flex; align-items: center; gap: 5px; }
   .cuerpo .icono { height: 16px; width: auto; }
-  .filtros { display: flex; justify-content: center; margin: -16px -16px 16px; padding: 4px 16px;
-             position: sticky; top: 0; z-index: 2; background: var(--barra); box-shadow: 0 1px 6px rgba(0,0,0,.6); }
-  select { font-size: 1em; padding: 4px 6px; background: var(--tarjeta); color: var(--texto); border: 1px solid var(--borde); border-radius: 4px; }
-  #buscar { font-size: 1em; padding: 4px 6px; width: 100%; box-sizing: border-box;
+  /* dos columnas: a la izquierda el panel de control, vertical; a la derecha la barra (buscador y ruta) y el listado */
+  .app { display: grid; grid-template-columns: 320px minmax(0, 1fr); align-items: start; }
+  .panel { position: sticky; top: 0; z-index: 3; box-sizing: border-box; height: 100vh; height: 100dvh; overflow-y: auto; scrollbar-width: thin;
+           display: flex; flex-direction: column; gap: 10px; padding: 8px 12px 12px; background: var(--barra); box-shadow: 1px 0 6px rgba(0,0,0,.6); }
+  .principal { min-width: 0; padding: 0 16px 16px; }
+  .barraLista { --altoTira: var(--altoFila); position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 8px;
+                margin: 0 -16px 16px; padding: 8px 16px; background: var(--barra); box-shadow: 0 1px 6px rgba(0,0,0,.6); }
+  select { height: var(--altoFila); box-sizing: border-box; font-size: 1em; padding: 0 6px; background: var(--tarjeta); color: var(--texto); border: 1px solid var(--borde); border-radius: 4px; }
+  #buscar { font-size: 1em; padding: 0 6px; height: var(--altoFila); width: 100%; box-sizing: border-box;
              background: var(--tarjeta); color: var(--texto); border: 1px solid var(--borde); border-radius: 4px; }
-  select:focus, #buscar:focus { outline: none; border-color: #808080; }   /* al elegirlos, un gris en vez del blanco del navegador */
+  select:focus, #buscar:focus { outline: none; border-color: var(--azulClaro); }   /* al elegirlos, el de los enlaces en vez del blanco del navegador */
   #info { display: flex; }
   .cuerpo.encontrado { outline: 2px solid var(--enlace); }
-  .busca { position: relative; flex: 1 1 8.5em; min-width: 8.5em; }
-  #selArea, #selRol { width: 9.5em; box-sizing: border-box; }
-  #selRol { width: calc(9.5em - 4ch); }   /* el tipo, 4 letras más estrecho: el sitio, para el buscador */
-  #sugs { position: absolute; left: 0; top: 100%; margin-top: 4px; width: min(28em, 90vw); z-index: 2;
+  .busca { flex: 1 1 0; min-width: 0; }
+  #selArea, #selRol { width: 100%; box-sizing: border-box; }
+  #sugs { position: fixed; width: min(28em, 90vw); z-index: 2;
           background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,.6);
           max-height: calc(10 * 26px); overflow-y: auto; }
   #sugs div { height: 26px; line-height: 26px; padding: 0 8px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  #sugs div.activa, #sugs div:hover { background: var(--barra); }
+  #sugs div.activa, #sugs div:hover { background: var(--azulOscuro); }
   #sugs small { color: var(--suave); }
   #sugs .tipo { display: inline-block; width: 3.2em; margin-right: 6px; font-size: .75em; font-weight: 600;
                 text-align: center; color: var(--suave); border: 1px solid var(--borde); border-radius: 3px; line-height: 1.5; }
 
-  #sugs .tipo.geoARE { background: #fffbe8; border-color: #fffbe8; color: #333; }
-  #sugs .tipo.geoCON { background: #fff3b8; border-color: #fff3b8; color: #333; }
-  #sugs .tipo.geoCIT { background: #ffe680; border-color: #ffe680; color: #333; }
-  #sugs .tipo.gente { background: #9be39b; border-color: #9be39b; color: #333; }   /* personas de tipo people */
+  #sugs .tipo.geoARE { background: var(--blanco); border-color: var(--blanco); color: var(--negro); }
+  #sugs .tipo.geoCON { background: var(--blanco); border-color: var(--blanco); color: var(--negro); }
+  #sugs .tipo.geoCIT { background: var(--amarillo); border-color: var(--amarillo); color: var(--negro); }
+  #sugs .tipo.gente { background: var(--grisClaro); border-color: var(--grisClaro); color: var(--negro); }   /* personas de tipo people */
   #info img { width: 28px; height: 28px; opacity: .8; }
   #info:hover img { opacity: 1; }
 
   .parrilla { --cols: 8; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; align-items: stretch; }
   .parrilla .cara { flex: 0 0 calc((100% - (var(--cols) - 1) * 6px) / var(--cols)); max-width: var(--maxFoto); }
-  .cara { position: relative; margin: 0; background: #000; display: flex; flex-direction: column;
+  .cara { position: relative; margin: 0; background: var(--negro); display: flex; flex-direction: column;
            border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.5); }
-  .cara img, .cara .sinfoto { display: block; flex: none; width: 100%; aspect-ratio: 1; object-fit: contain; background: #000; }
+  .cara img, .cara .sinfoto { display: block; flex: none; width: 100%; aspect-ratio: 1; object-fit: contain; background: var(--negro); }
   .cara img.sinfoto, .cuerpo > img.sinfoto { background: var(--sinfoto); }
 
   .cara.evt img, .cara.evt .sinfoto { object-fit: contain; }   /* un evento, una cara cuadrada como las personas (2026-10-28; antes dos caras, 16:9 y cover): la foto entera, sobre negro */
@@ -84,7 +95,7 @@
 
   .cuerpo > img.conEnlace { cursor: pointer; }
 
-  .cara.evt img.logo, .cuerpo > img.logo { object-fit: contain; background: #fff; padding: 6%; box-sizing: border-box; }
+  .cara.evt img.logo, .cuerpo > img.logo { object-fit: contain; background: var(--blanco); padding: 6%; box-sizing: border-box; }
 
   .cuerpo > img.portada { flex: none; align-self: flex-start; width: min(50%, var(--maxFoto)); height: auto;
                            aspect-ratio: 1; object-fit: cover; }   /* cuadrada (2026-10-28; antes 16:9 y del alto del texto) */
@@ -97,79 +108,77 @@
 
   .cuerpo > img, .cuerpo > .sinfoto { flex: none; align-self: flex-start; width: min(50%, var(--maxFoto)); height: auto;
                                         aspect-ratio: 1; object-fit: cover; border-radius: 6px; }   /* cuadrada: el alto, el del ancho (antes el del texto) */
-  .cuerpo > img { background: #000; }
+  .cuerpo > img { background: var(--negro); }
   .texto { flex: 1; min-width: 0; }
   dialog .texto { padding-right: 28px; }
   dialog .texto p.enlaces { margin-top: 0; }   /* el popup de KK: sin líneas en blanco */
-  dialog .texto li { font-size: .9em; }   /* el popup de KK: todo con la letra de sus líneas (p), también los créditos */
+  #kkTexto { display: block; width: 100%; height: 190px; border: 0; }   /* atribucionkk.htm; su alto, el que avisa (conecta) */
   .cuerpo h2 { margin: 0 0 8px; font-size: 1.1em; }
   .cuerpo p { margin: 0; font-size: .9em; overflow-wrap: anywhere; }   /* líneas de texto seguidas; los enlaces, aparte (p.enlaces) */
 
-  .listado { display: flex; flex-direction: column; gap: 8px; width: var(--anchoCab, 640px); max-width: 100%; box-sizing: border-box; margin: 0 auto; font-size: 18px; }   /* 2px más que el body (16px); fechas, ciudades y salas, en proporción (.85em) */
+  .listado { display: flex; flex-direction: column; gap: 8px; box-sizing: border-box; font-size: 18px; }   /* 2px más que el body (16px); fechas, ciudades y salas, en proporción (.85em) */
   .listado .cuerpo { padding: 12px; background: var(--barra); border: 1px solid var(--borde); border-radius: 8px; }
   .listado .cuerpo > img, .listado .cuerpo > .sinfoto { aspect-ratio: 16 / 9; }
 
-  .cabecera { display: flex; flex-direction: column; gap: 4px; width: 41em; max-width: 100%; min-width: 0; }
-  .linea1 { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; justify-content: center; }
+  .linea1, .linea2 { display: flex; gap: 4px; align-items: center; }
+  .linea2 label { flex: 1 1 0; min-width: 0; }
+  #rBotones { margin-top: 20px; }   /* los roles privados, separados como la fecha de hoy (con el hueco de .fechas, 24px) */
+  .hoy { margin-top: 14px; text-align: center; color: var(--suave); font-size: .85em; font-variant-numeric: tabular-nums; }   /* la fecha de hoy, bajo el último bloque del panel, con la letra de las fechas del listado */
+  .fechas { margin-top: 14px; display: flex; flex-direction: column; gap: 4px; align-items: stretch; justify-content: center; min-width: 0; }   /* separado de los países, 24px con el hueco del panel */
 
-  .cabecera:has(#fechas:not(.oculto)) .linea1 { width: 0; min-width: 100%; flex-wrap: nowrap; }
-  .cabecera:has(#fechas:not(.oculto)) .linea1 > label { flex: 0 1 9.5em; min-width: 4.5em; }
-  .cabecera:has(#fechas:not(.oculto)) .linea1 > label:has(#selRol) { flex-basis: calc(9.5em - 4ch); }
-  .cabecera:has(#fechas:not(.oculto)) .linea1 select { width: 100%; }
-  .cabecera:has(#fechas:not(.oculto)) .busca { flex-basis: 5em; min-width: 5em; }
-  .fechas { display: flex; flex-direction: column; gap: 4px; align-items: stretch; justify-content: center; min-width: 0; }
-
-  .fechas.sinFechas { visibility: hidden; height: 0; overflow: hidden; margin-top: -4px; }
-  .tira { display: flex; min-width: 0; overflow-x: auto; scrollbar-width: thin; }
+  .fechas.sinFechas { display: none; }
+  .tira { display: flex; gap: 2px; min-width: 0; overflow-x: auto; scrollbar-width: thin; }
   .fechas button, #bMapa, #bListado { flex: none; font-size: .85em; padding: 3px 7px; white-space: nowrap; cursor: pointer;
                    background: var(--tarjeta); color: var(--texto); border: 1px solid var(--borde); border-radius: 4px; }
-  .tira button { border-radius: 0; margin-left: -1px; }
-  .tira button:first-child { border-radius: 4px 0 0 4px; margin-left: 0; }
-  .tira button:last-child { border-radius: 0 4px 4px 0; }
+  .tira button { border: 0; border-radius: 4px; background: var(--tarjeta); color: var(--texto); }
   .tira button { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.25; padding: 0 7px;
                  height: var(--altoTira); box-sizing: border-box; }   /* los meses y la ruta, de la misma altura */
 
   .tira { flex: 1 1 auto; }
   .tira button { flex: 1 0 auto; }
   .tipTira { position: fixed; z-index: 2000; pointer-events: none; padding: 2px 7px; font-size: 12px; white-space: nowrap;   /* el hover de las tiras: al momento y sin borde */
-             background: #444; color: var(--texto); border-radius: 4px; box-shadow: 0 1px 4px rgba(0,0,0,.6); }
-  .fechas button.activo { background: var(--acento); border-color: var(--acento); color: #000; position: relative; }
-  .tira button:not(.activo):hover { background: #505050; }   /* el botón bajo el ratón, como en la lista del mapa */
-  .tira button.cero { opacity: .4; cursor: default; }   /* a cero: sin clic (el contador, en el hover) */
-  .tira button.cero:hover { background: #444; }
+             background: var(--grisMedio); color: var(--texto); border-radius: 4px; box-shadow: 0 1px 4px rgba(0,0,0,.6); }
+  .fechas button.activo { background: var(--acento); color: var(--negro); position: relative; }
+  .tira button:not(.activo):hover { background: var(--azulClaro); color: var(--negro); }   /* el botón bajo el ratón, como en la lista del mapa */
+  .tira button.cero, .tira button.cero:hover { background: none; color: var(--grisClaro); cursor: default; }   /* a cero: sin clic (el contador, en el hover) */
 
   .listado .cuerpo.linea { padding: 6px 12px; cursor: pointer; }
   .listado .linea h2 { flex: 1; min-width: 0; margin: 0; font-size: 1em; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .listado .linea:hover { border-color: var(--enlace); }
 
-  .listado.filas { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 0; border-top: 1px solid var(--borde); }
-  .listado.filas.conFecha { grid-template-columns: auto auto minmax(0, 1fr) auto auto; }
+  .listado.filas { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0; border-top: 1px solid var(--borde); }
+  .listado.filas.conFecha { grid-template-columns: auto auto minmax(0, 1fr) auto; }
   .listado .fila { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; column-gap: 16px; align-items: center;
                    padding: 5.5px 10px; border-bottom: 1px solid var(--borde); border-left: 2px solid transparent; cursor: pointer; }   /* 2026-10-26: un 10% más baja (antes 7px) */
-  .listado .fila:hover { background: rgba(255, 255, 255, .04); }
-  .listado .fila.abierta { background: var(--acento); color: #000; }
-  .listado .fila.abierta .fFecha, .listado .fila.abierta .fLugar { color: #5c4a38; }
+  .listado .fila:hover { background: var(--grisOscuro); }
+  .listado .fila.abierta { background: var(--acento); color: var(--negro); }
+  .listado .fila.abierta .fFecha, .listado .fila.abierta .fLugar { color: var(--grisMedio); }
   .listado .fila.encontrado { outline: 0; border-left-color: var(--enlace); }
-  .ruta { height: var(--altoTira); box-sizing: border-box; padding: 0 10px; line-height: calc(var(--altoTira) - 1px); font-size: .85em;   /* la de los botones de meses y días */ background: #333; color: var(--suave); border-bottom: 1px solid var(--borde);
+  .ruta { height: var(--altoTira); box-sizing: border-box; padding: 0 10px; line-height: calc(var(--altoTira) - 2px); font-size: .85em;   /* la de los botones de meses y días */ background: var(--grisMedio); color: var(--suave); border: 1px solid var(--borde); border-radius: 4px;
                    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ruta .icono { height: 16px; width: auto; vertical-align: -3px; }
   .ruta .paso { color: var(--enlace); cursor: pointer; }
   .ruta .paso:hover { text-decoration: underline; }
-  .ruta .cuenta { color: #ffd500; font-weight: bold; }
+  .ruta .cuenta { color: var(--amarillo); font-weight: bold; }
   .ruta { position: relative; padding-right: 30px; flex: 1; min-width: 0; }   /* a la derecha, el botón de copiar la url de la ruta */
-  .lineaRuta { display: flex; gap: 4px; }   /* la ruta y, fuera de ella a la derecha, los botones map y list / grid */
+  .lineaRuta { flex: 1 1 100%; min-width: 0; display: flex; gap: 4px; }   /* la ruta y, fuera de ella a la derecha, el botón list / grid */
   .rutaDer { position: absolute; top: 0; right: 8px; height: 100%; display: flex; align-items: center; }   /* el de copiar */
-  .lineaRuta #bListado, .lineaRuta #bMapa { height: var(--altoTira); padding: 0 8px; width: 4.6em; box-sizing: border-box; text-align: center; }   /* los dos, del mismo ancho (cabe "▦ grid") */
+  #bListado, #bMapa { height: var(--altoTira); padding: 0 8px; box-sizing: border-box; text-align: center; }
+  #bListado { width: 4.6em; }   /* cabe "▦ grid" */
+  #bMapa { width: 100%; }   /* sin mapa, en su fila; con mapa, dentro de él (.zonaMapa) */
   .ruta .copiaRuta { height: 100%; border: 0; background: none; color: var(--acento); padding: 0; cursor: pointer;
                      display: flex; align-items: center; }
-  .ruta .copiaRuta:hover { color: #ffc890; }
+  .ruta .copiaRuta:hover { color: var(--blanco); }
   .ruta .copiaRuta svg { width: 15px; height: 15px; display: block; }
   .fila span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25; }   /* todas con el mismo alto: centradas igual */
   .fila .fFecha, .fila .fLugar { color: var(--suave); font-size: .85em; font-variant-numeric: tabular-nums; }
   .fila .fNombre { font-weight: 500; position: relative; top: -1px; }   /* su letra, mayor: sin esto queda 1px más baja que la fecha y la ciudad */
-  .fila .fNombre .fSala { color: var(--suave); font-size: .85em; font-weight: 400; }   /* milongas y prácticas: " - sala - org", con la letra de la ciudad */
-  .listado .fila.abierta .fSala { color: #5c4a38; }
-  .fila .fLugar { text-align: right; max-width: 18em; }
+  .fila .fTexto { display: flex; align-items: center; gap: 16px; min-width: 0; }   /* el título y su ciudad, en la misma celda: el título llega hasta su ciudad */
+  .fila .fNombre { flex: 0 1 auto; }
+  .logoEspecial { height: 1em; width: 1em; margin-right: 6px; vertical-align: -.12em; }
+  .cara figcaption img.logoEspecial { display: inline; width: 1em; height: 1em; aspect-ratio: auto; background: none; }   /* no es una foto de la cara */
+  .listado .fila.abierta .logoEspecial { filter: brightness(0); }   /* la estrella, sobre el amarillo */
+  .fila .fLugar { flex: none; margin-left: auto; text-align: right; max-width: 18em; }
   .fila .fIconos { display: flex; align-self: center; min-width: 16px; }
   .fila .fIconos img { height: 16px; width: 16px; display: block; }
   /* el logo de la fila con su propio hover (como en el detalle): sobre él se resalta el logo, no la fila */
@@ -179,112 +188,169 @@
   .fila .fMini { align-self: stretch; height: auto; min-height: 1.2em; aspect-ratio: 16 / 9; width: auto; contain: size;   /* el alto de la fila (contain: no la agranda) */
                  object-fit: cover; justify-self: end; border-radius: 2px; display: block; }
   .fila .fMini.sinfoto { background: var(--sinfoto); }
-  .fila .fMini.logo { object-fit: contain; background: #fff; }
+  .fila .fMini.logo { object-fit: contain; background: var(--blanco); }
   @media (max-width: 600px) {
-    .listado.filas { grid-template-columns: auto minmax(0, 1fr) auto; }
-    .listado.filas.conFecha { grid-template-columns: auto auto minmax(0, 1fr) auto; }
-    .fila .fLugar { grid-column: 2; text-align: left; max-width: none; }
-    .conFecha .fila .fLugar { grid-column: 3; }
-    .fila .fFecha, .fila .fIconos { grid-row: 1 / span 2; }
-    .fila .fMini { grid-column: 3; grid-row: 1 / span 2; }
-    .conFecha .fila .fMini { grid-column: 4; }
+    .fila .fTexto { flex-direction: column; align-items: stretch; gap: 0; }   /* la ciudad, bajo el título */
+    .fila .fLugar { margin-left: 0; text-align: left; max-width: none; }
+    .listado .fila { column-gap: 8px; }   /* el ancho, para el título */
+    .fila .fMini { min-height: 2.3em; }   /* las dos líneas de la fila: con este mínimo, su columna ya mide la miniatura entera */
   }
 
-  .leaflet-tooltip.tipNombre { background: #444; color: var(--texto); border: 1px solid var(--borde); box-shadow: 0 1px 4px rgba(0,0,0,.6); }
-  .leaflet-tooltip-top.tipNombre::before { border-top-color: #444; }
-  .marcaLista { box-sizing: border-box; border-radius: 2px; background: var(--acento); color: #000; }
+  .leaflet-tooltip { color: var(--negro); }
+  .leaflet-tooltip.tipNombre { background: var(--grisMedio); color: var(--texto); border: 1px solid var(--borde); box-shadow: 0 1px 4px rgba(0,0,0,.6); }
+  .leaflet-tooltip-top.tipNombre::before { border-top-color: var(--grisMedio); }
+  .marcaLista { box-sizing: border-box; border-radius: 2px; background: var(--mapaMarca); color: var(--negro); }
   .marcaLista > div { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 8px; line-height: 1; }
-  .mapaCaja { position: relative; z-index: 0; display: flex; gap: 6px; --altoMapa: 202px; }   /* a la izquierda el mapa; a la derecha los países o ciudades */
-  .mapaCaja.cerrado { display: none; }
+  .mapaCaja { position: relative; z-index: 0; display: flex; gap: 6px; }   /* a la izquierda el mapa; a la derecha los países o ciudades */
+  .zonaMapa { --altoMapa: 172px; --anchoLista: 150px; position: relative; min-width: 0; }
+  .zonaMapa:has(.mapaCaja:not(.cerrado, .oculto)) #bMapa { position: absolute; z-index: 1; top: 6px; left: 6px; width: auto; }   /* dentro del mapa, arriba a la izquierda */
   /* las ciudades del mapa, a la izquierda en 1-2 columnas; en el hover, sus líneas del listado */
-  .ciudadesMapa { flex: none; width: 150px; box-sizing: border-box; height: calc(var(--altoMapa) + 2px); max-height: calc(28.8vh + 2px);   /* el alto del mapa, con su borde */
-                  overflow-y: auto; font-size: 16px; line-height: 20px; }   /* con más de los que caben, el scroll */
+  .ciudadesMapa { flex: none; width: var(--anchoLista); box-sizing: border-box; height: calc(var(--altoMapa) + 2px); max-height: calc(24.5vh + 2px);   /* el alto del mapa, con su borde */
+                  overflow-y: auto; font-size: .85em; line-height: var(--altoTira); }   /* con más de los que caben, el scroll */
   .tipTira.circulo { box-sizing: border-box; min-width: 24px; height: 24px; padding: 0 5px;
                font-size: 13px; line-height: 22px; text-align: center; white-space: nowrap;   /* el contador, en un círculo (también el de meses y días) */
-               background: #505050; color: var(--texto); border: 1px solid var(--borde); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.6); }
-  .ciudadesMapa { background: rgba(47, 90, 143, .75); padding: 3px 2px; border-radius: 4px; }   /* el resto del margen y el hueco entre columnas, en los nombres */   /* azul (el de las áreas del mapa) al 75% */
-  #selArea { background: rgba(47, 90, 143, .75); border-color: transparent; font-size: 16px; text-shadow: 0 0 3px #000, 0 0 3px #000; }   /* el selector de área, del color del panel de países y ciudades */
-  #selArea option { background: #2f5a8f; }
+               background: var(--grisMedio); color: var(--texto); border: 1px solid var(--borde); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.6); }
+  .ciudadesMapa { display: grid; grid-auto-rows: var(--altoTira); align-content: start; gap: 2px; scrollbar-width: thin; }   /* el resto del margen y el hueco entre columnas, en los nombres */   /* el azul de las áreas del mapa */
+  #selArea { background: var(--azulOscuro); border-color: transparent; font-size: 16px; text-shadow: 0 0 3px var(--negro), 0 0 3px var(--negro); }   /* el selector de área, en azul */
+  option { background: var(--grisMedio); color: var(--blanco); }
+  :where(#selArea) option { background: var(--azulOscuro); }   /* con :where, para que le ganen la elegida y el hover */
+  option:checked, option.actual { background: var(--amarillo); color: var(--negro); }   /* la elegida; .actual, mientras selArea se abre vacío (conecta) */
+  #selRol option:not(.grupo, :first-child) { padding-left: calc(8px + 2ch); }   /* los tipos, sangrados bajo su grupo; all no tiene grupo */
+  option.grupo { color: var(--blanco); font-weight: 700; }
+  /* el desplegable con la paleta, también al pasar el ratón; sin base-select, el del navegador con las opciones de arriba */
+  @supports (appearance: base-select) {
+    select, ::picker(select) { appearance: base-select; }
+    select { display: flex; align-items: center; }
+    select::picker-icon { color: var(--blanco); }
+    ::picker(select) { padding: 3px 0; background: var(--grisMedio); color: var(--blanco); border: 1px solid var(--grisClaro); border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,.6); }
+    #selArea::picker(select) { background: var(--azulOscuro); }
+    option { padding: 2px 8px; text-shadow: none; }
+    option::checkmark { display: none; }
+    option:not(:disabled):hover, option:not(:disabled):focus-visible { background: var(--azulClaro); color: var(--negro); outline: 0; }
+    option:checked, option:checked:hover, option:checked:focus-visible { background: var(--amarillo); color: var(--negro); font-weight: 400; }
+    option.grupo { padding-top: 6px; background: none; }
+  }
   .ciudadesMapa > span { display: flex; gap: 6px; padding: 0 5px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-                       color: var(--texto); text-shadow: 0 0 3px #000, 0 0 3px #000; }
-  .ciudadesMapa > span:hover { background: rgba(255, 255, 255, .2); border-radius: 3px; }   /* el nombre bajo el ratón */
-  .ciudadesMapa > span.sel, .ciudadesMapa > span.sel:hover { background: var(--acento); color: #000; text-shadow: none; border-radius: 3px; }   /* la ciudad elegida, del color de los botones activos */
-  .ciudadesMapa > span.cero { opacity: .5; cursor: default; }
-  .ciudadesMapa > span.cero:hover { background: none; }
+                       align-items: center; border-radius: 4px; background: var(--tarjeta); color: var(--texto); }   /* cada país, una celda como los meses */
+  .ciudadesMapa > span:hover { background: var(--azulClaro); color: var(--negro); }   /* el nombre bajo el ratón */
+  .ciudadesMapa > span.atras:not(:hover), .ciudadesMapa > span.mas:not(:hover) { color: var(--amarillo); }   /* back y more..., en amarillo */
+  .ciudadesMapa > span.atras, .ciudadesMapa > span.mas { justify-content: center; }
+  .ciudadesMapa > span.sel, .ciudadesMapa > span.sel:hover { background: var(--acento); color: var(--negro); }   /* la ciudad elegida, del color de los botones activos */
+  .ciudadesMapa > span.hueco, .ciudadesMapa > span.hueco:hover { background: var(--tarjeta); cursor: default; }
+  .ciudadesMapa > span.cero, .ciudadesMapa > span.cero:hover { background: none; color: var(--grisClaro); cursor: default; }
   .ciudadesMapa .nom { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }   /* el nombre, cortado con … si no cabe */
-  .ciudadesMapa .num { flex: none; font-size: 13px; }   /* a su derecha, el contador */
-  .ciudadesMapa span.atras svg { flex: none; width: 15px; height: 15px; position: relative; top: 2px; margin-right: -3px; }   /* la primera: volver al nivel de arriba, con su doble chevron */
-  .mapa { flex: 1; min-width: 0; height: var(--altoMapa); max-height: 28.8vh; border: 1px solid var(--borde); border-radius: 6px; }
+  .ciudadesMapa .num { flex: none; }   /* a su derecha, el contador */
+  .ciudadesMapa span.atras svg { flex: none; width: 15px; height: 15px; margin-right: -3px; }   /* la primera: volver al nivel de arriba, con su doble chevron */
+  .mapa { flex: 1; min-width: 0; height: var(--altoMapa); max-height: 24.5vh; border: 1px solid var(--borde); border-radius: 6px; }
   #bMapa:disabled { opacity: .45; cursor: default; }
   .iParrilla { position: relative; top: -2px; }
   .iMapa { position: relative; top: -2px; }   /* el triángulo del botón map */
   .vacio { padding: 24px 12px; text-align: center; color: var(--suave); }   /* el listado a cero */
-  .listado.filas .maxLineas { grid-column: 1 / -1; padding: 12px; }   /* la última línea: el máximo */
   .vacio button { margin-top: 10px; font-size: .9em; padding: 4px 10px; cursor: pointer; background: var(--tarjeta); color: var(--texto); border: 1px solid var(--borde); border-radius: 4px; }
-  @media (max-width: 600px) { .mapaCaja { --altoMapa: 144px; } .ciudadesMapa { width: 110px; } }
+  @media (max-width: 600px) { .zonaMapa { --altoMapa: 122px; --anchoLista: 110px; } }
   .aviso { color: var(--suave); }
   .oculto { display: none !important; }
 
-  .detalle { position: relative; width: var(--anchoCab, 640px); max-width: 100%; box-sizing: border-box; margin: 0 auto 16px; padding: 16px; background: var(--barra);
+  .detalle { position: relative; box-sizing: border-box; margin: 0 0 16px; padding: 16px; background: var(--barra);
              border: 1px solid var(--borde); border-radius: 8px; }
 
   .detalle { position: sticky; top: calc(var(--altoBarra, 0px) + 16px); z-index: 1; max-height: 60vh; overflow-y: auto;
              box-shadow: 0 -16px 0 var(--fondo), 0 16px 0 var(--fondo); }
-  .detalle .texto { padding-right: 30px; }
+  .detalle .texto { margin-right: 30px; max-height: calc(5 * 22px + 6px); overflow-y: auto; scrollbar-width: thin; }   /* como mucho 5 líneas; si hay más texto, scroll: nada se pierde */
   .detalle .texto > * { margin: 0; line-height: 22px; }   /* título, fecha, org, enlaces...: todas las líneas con el mismo interlineado */
   .detalle .texto p.enlaces { margin-top: 0; row-gap: 0; }
-  #dCerrar, #fCerrar { position: absolute; top: 6px; right: 8px; box-sizing: border-box; width: 26px; height: 26px; padding: 0 0 2px 2px;   /* el × de la letra va a la izquierda y abajo: 1px a la derecha y 1px arriba */ border: 2px solid currentColor; border-radius: 50%;
-             display: flex; align-items: center; justify-content: center; background: none; color: var(--acento); font-size: 1.43em; line-height: 1; font-weight: 700; cursor: pointer; }
-  #fCerrar { top: 4px; }   /* el del popup, 2px más arriba */
-  #dCerrar:hover, #fCerrar:hover { color: #ffc890; border-radius: 4px; }   /* bajo el ratón, de círculo a cuadrado */
+  #dCerrar, #fCerrar { position: absolute; top: 6px; right: 8px; box-sizing: border-box; width: 26px; height: 26px; padding: 0; border: 2px solid currentColor; border-radius: 50%;
+             display: flex; align-items: center; justify-content: center; background: none; color: var(--blanco); cursor: pointer; }
+  #dCerrar svg, #fCerrar svg { display: block; width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }   /* la X dibujada: la × de la letra se descentraba según la fuente */
+  #fCerrar { top: 8px; }   /* el del popup, a la misma distancia arriba y a la derecha */
+  #dCerrar:hover, #fCerrar:hover { border-radius: 4px; }   /* bajo el ratón, de círculo a cuadrado */
   /* el de copiar el enlace: al final de la primera línea de la ficha (su título; 2026-11-01, el usuario) */
   #dCopiar { display: inline-flex; vertical-align: -2px; margin-left: 8px; border: 0; background: none; color: var(--acento); padding: 0; cursor: pointer; }
-  #dCopiar:hover { color: #ffc890; }
+  #dCopiar:hover { color: var(--blanco); }
   #dCopiar svg { width: 16px; height: 16px; display: block; }
 
   .detalle.filas { background: var(--fondo); border: 0; border-radius: 0; border-top: 1px solid var(--borde);
                    border-bottom: 1px solid var(--borde); padding: 14px 10px; }
   .detalle.filas h2 { font-weight: 500; font-size: 1.05em; }
-  .detalle.filas h2 .hLugar { color: var(--suave); font-size: .8em; font-weight: 400; margin-left: 10px; }
   .detalle.filas p { color: var(--suave); }
-  .detalle.filas p.fFecha { font-variant-numeric: tabular-nums; margin-top: 0; }
+  .detalle.filas h2 .hTipo { color: var(--suave); font-size: .8em; font-weight: 400; margin-left: 10px; }
+  .detalle.filas .fFecha { font-variant-numeric: tabular-nums; }
   .detalle.filas .cuerpo a { font-weight: 500; }
   .detalle.filas .cuerpo > img { border-radius: 3px; }
+
+  /* pantalla ancha: el panel vertical. Bajo los selectores, el mapa; debajo los países o ciudades en 2 columnas, del alto de
+     su contenido; al final, meses, días y roles, en rejilla (no caben en una tira) */
+  @media (min-width: 801px) {
+    .tira { flex: none; flex-wrap: wrap; gap: 2px; overflow: visible; }
+    .tira button { flex: 1 0 auto; padding: 0 4px; }
+    .tira[data-tira="meses"], .tira[data-tira="dias"] { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); }
+    .tira[data-tira="dias"] button { grid-column: span 3; }
+    .tira[data-tira="meses"] button { grid-column: span 3; order: 2; }   /* los 12 meses, de 4 en 4 */
+    .tira[data-tira="meses"] button:nth-child(-n+2), .tira[data-tira="meses"] button:last-child { grid-column: span 4; order: 1; }   /* antes, los años y YEAR en su línea */
+    .zonaMapa { --altoMapa: 178px; display: flex; flex-direction: column; min-height: 0; }
+    .zonaMapa:has(.mapaCaja.cerrado) #bMapa { margin-bottom: 6px; }
+    .mapaCaja { flex-direction: column; min-height: 0; }
+    .mapa { flex: none; box-sizing: border-box; max-height: none; }
+    .ciudadesMapa { flex: 0 1 auto; min-height: 0; width: auto; height: auto; max-height: none;   /* del alto de su contenido: hasta 6 líneas, por páginas */
+                    grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: column; grid-template-rows: repeat(var(--filas, 1), var(--altoTira)); }   /* se llena por columnas: primero la de la izquierda (--filas, en pintaCiudades) */
+    .ciudadesMapa:empty { display: none; }
+  }
+  @media (min-width: 801px) and (max-height: 460px) { .zonaMapa { flex: none; } }   /* ventana baja: no cabe; scroll en el panel */
+  /* pantalla estrecha: una columna, como la cabecera de antes: el panel arriba y debajo la barra, los dos fijos */
+  @media (max-width: 800px) {
+    .app { display: block; }
+    .panel { height: auto; overflow: visible; flex-flow: row wrap; align-items: center; gap: 4px; padding: 4px 16px; box-shadow: none; }
+    .linea1, .linea2 { flex: 0 0 100%; }
+    .zonaMapa, .fechas, .hoy { flex: 0 0 100%; min-width: 0; }
+    .hoy, #rBotones, .fechas { margin-top: 0; }
+    .mapaCaja.cerrado { display: none; }   /* aquí cerrar el mapa libera sitio: se van los dos */
+    .barraLista { top: var(--altoPanel, 0px); gap: 4px 8px; padding: 6px 16px; }
+    .detalle { top: calc(var(--altoPanel, 0px) + var(--altoBarra, 0px) + 16px); }
+  }
 </style>
 </head>
 <body>
-<div class="filtros">
- <div class="cabecera">
+<div class="app">
+ <aside id="panel" class="panel">
   <div class="linea1">
     <a id="info" href="#" title="KoKo Tango"><img src="img/koko.svg" alt="KoKo Tango"></a>
     <span class="busca"><input id="buscar" type="search" placeholder="search tango…" autocomplete="off"><div id="sugs" class="oculto"></div></span>
-    <label><select id="selRol" data-inicial="evt"></select></label>
+  </div>
+  <div class="linea2">
+    <label><select id="selRol" data-inicial="fes"></select></label>
     <label><select id="selArea" data-inicial="Asia"></select></label>
   </div>
-  <div id="mapaCaja" class="mapaCaja oculto">
-    <div id="mapa" class="mapa"></div>
-    <div id="ciudadesMapa" class="ciudadesMapa"></div>
+  <div class="zonaMapa">
+    <button id="bMapa" title="show / hide the map">map</button>
+    <div id="mapaCaja" class="mapaCaja oculto">
+      <div id="mapa" class="mapa"></div>
+      <div id="ciudadesMapa" class="ciudadesMapa"></div>
+    </div>
+    <div id="mapaAviso" class="aviso oculto"></div>
   </div>
-  <div id="mapaAviso" class="aviso oculto"></div>
   <div id="fechas" class="fechas oculto">
     <div id="fBotones" class="tira"></div>
     <div id="rBotones" class="tira oculto"></div>
   </div>
-  <div id="tipTira" class="tipTira oculto"></div>
-  <div class="lineaRuta"><div class="ruta"><span id="ruta"></span><span id="rutaDer" class="rutaDer"></span></div><button id="bMapa" title="show / hide the map">map</button><button id="bListado" title="switch to grid">list</button></div>
- </div>
+  <div id="hoy" class="hoy"></div>
+ </aside>
+ <main class="principal">
+  <div id="barraLista" class="barraLista">
+    <div class="lineaRuta"><div class="ruta"><span id="ruta"></span><span id="rutaDer" class="rutaDer"></span></div><button id="bListado" title="switch to grid">list</button></div>
+  </div>
+  <div id="detalle" class="detalle oculto"><button id="dCerrar" title="close"><svg viewBox="0 0 14 14"><path d="M1.5 1.5l11 11M12.5 1.5l-11 11"/></svg></button><button id="dCopiar" title="copy link"></button><div id="dCuerpo" class="cuerpo"></div></div>
+  <div id="parrilla" class="parrilla oculto"></div>
+  <div id="listado" class="listado"></div>
+ </main>
 </div>
-<div id="detalle" class="detalle oculto"><button id="dCerrar" title="close">&times;</button><button id="dCopiar" title="copy link"></button><div id="dCuerpo" class="cuerpo"></div></div>
-<div id="parrilla" class="parrilla oculto"></div>
-<div id="listado" class="listado"></div>
-<dialog id="ficha"><button id="fCerrar" title="close">&times;</button><div id="fCuerpo" class="cuerpo"></div></dialog>
+<div id="tipTira" class="tipTira oculto"></div>
+<dialog id="ficha"><button id="fCerrar" title="close"><svg viewBox="0 0 14 14"><path d="M1.5 1.5l11 11M12.5 1.5l-11 11"/></svg></button><div id="fCuerpo" class="cuerpo"></div></dialog>
 
 <script>
 const FOTOS = 'foto';
 const TODOS = '*';
-const ESTILO_LISTADO = 'filas';
 history.scrollRestoration = 'manual';   // al cargar (o recargar), arriba: a la vista la primera línea del listado
-const MAX_LINEAS = 100;   // las líneas del listado (2026-11-02, el usuario: "máximo número de líneas en listado en 100")
+const MAX_FILAS_PANEL = 6;   // las celdas por columna del panel de países y ciudades, con back y more... (2026-11-04, el usuario: "mas de celdas por columna es 6")
 let enListado = true;   // listado o parrilla de caras (botón list; ?c=grid / ?c=list)
 const ANCHO_CARA = 110;   // = --maxFoto del CSS: tamaño máximo de las fotos
 let soloEventos = false;
@@ -294,18 +360,19 @@ function columnasParrilla(evts){
   div.style.setProperty('--cols', Math.max(4, Math.floor((w + 6) / (ANCHO_CARA + 6))));   // un evento, una cara (2026-10-28; antes dos)   // sin tope: cada cara, ANCHO_CARA como mucho (--maxFoto)
   div.classList.toggle('evts', evts);
 }
-const EVT = 'evt';
+const EVT = 'evt';   // un evento; en el selector, festivals (rolesEvento)
+const FES = 'fes';
 const SEM = 'sem';
 const ACA = 'aca';
 const MIL = 'mil';
 const PRA = 'pra';
 const regular = r => r == MIL || r == PRA;   // milongas y prácticas: por días de la semana
-const deEventos = r => r == EVT || r == SEM || r == ACA || regular(r);
+const deEventos = r => r == FES || r == SEM || r == ACA || regular(r);
 const sinFecha = r => r == ACA || regular(r);
 const rolEvento = t => String(t).indexOf('seminar') != -1 ? SEM : String(t).indexOf('academy') != -1 ? ACA
                      : String(t).split(' ')[0] == 'milonga' ? MIL : String(t).split(' ')[0] == 'practica' ? PRA : EVT;
 const PEO = 'peo';
-const TIPOS_P = Object.keys(TIPOS_PERSONA).filter(t => t != 'person');   // group, shop, hostel: en el selector, sin tiras
+const TIPOS_P = Object.keys(TIPOS_PERSONA).filter(t => t != 'person');   // group, couple: en el selector, sin tiras
 const LIS = 'lis';
 const MUNDIAL = 'World';
 const $ = id => document.getElementById(id);
@@ -371,10 +438,10 @@ function cargaFilas(filas){
     const pos = coordCiudad(c) || coordDe(c);   // como los eventos: el centro de su ciudad (posEvento)
     const tipoP = String(c[CAMPO.tipo] || '').trim() in TIPOS_PERSONA ? String(c[CAMPO.tipo]).trim() : 'person';
     // (un grupo con sala propia la apunta en loc: la sala es su venue, con su dirección; 2026-11-02, el usuario)
-    const sala = (v.loc || [''])[0], salaFb = sala ? urlSala(c) : '', salaDir = sala ? dirSala(c) : '';
+    const sala = (v.loc || [''])[0], salaFb = sala ? urlSala(c) : '', mapa = sala && dirSala(c) ? mapaDe(c) : '';
     if (!p){ porClave.set(clave, {area, pais, lugar, ciudad, pos, roles, tipoP, nombre: c[CAMPO.name], video, foto: f, fb, notas: notas ? [notas] : [],
-                                     coment: coments, ids: [idDe(c)].filter(Boolean), sala, salaFb, salaDir}); continue; }
-    if (!p.sala && sala){ p.sala = sala; p.salaFb = salaFb; p.salaDir = salaDir; }
+                                     coment: coments, ids: [idDe(c)].filter(Boolean), sala, salaFb, mapa}); continue; }
+    if (!p.sala && sala){ p.sala = sala; p.salaFb = salaFb; p.mapa = mapa; }
     if (idDe(c)) p.ids.push(idDe(c));
     if (!p.pos) p.pos = pos;
     if (!p.fb) p.fb = fb;
@@ -435,13 +502,15 @@ function mapaDe(e){
   const dir = (v.dir || vv.dir || [''])[0];
   const lugar = [e[CAMPO.city], e[CAMPO.country]].map(x => String(x || '').trim())
                 .filter(x => x && x != '-' && !dir.toLowerCase().includes(x.toLowerCase()));
-  const trozos = [(v.loc || [''])[0], dir, ...lugar].join(', ').split(',').map(x => x.trim()).filter(Boolean);
+  const trozos = [locDe(e), dir, ...lugar].join(', ').split(',').map(x => x.trim()).filter(Boolean);
   const texto = trozos.filter((x, i) => trozos.findIndex(y => y.toLowerCase() == x.toLowerCase()) == i).join(', ');
   const la = parseFloat((v.lat || vv.lat || [])[0]), lo = parseFloat((v.lon || vv.lon || [])[0]);
   const conPos = !isNaN(la) && !isNaN(lo);
   const q = texto || (conPos ? la + ',' + lo : '');
   return q ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q) : '';
 }
+// festivals: los eventos, también las maratones y los encuentros (2026-11-04, el usuario: "queda más claro"); el resto de tipos, en su opción
+const rolesEvento = e => { const r = rolEvento(e[CAMPO.tipo]); return [r == EVT ? FES : r]; };
 function eventos(){
   const porClave = new Map(), lista = [];
   for (const e of eventosTango()){
@@ -465,18 +534,18 @@ function eventos(){
     }
     const f = fechaDe(e).split('.');
     const prox = f[0] == 'REG' ? proximaReg(fechaDe(e)) : null;
-    const fecha = f[0] == 'EVT' ? [f[4], f[2], (f[3] || '').replace(/\d+/g, dos)].filter(Boolean).join('.') + (esExtrapolada(fechaDe(e)) ? UNCONFIRMED : '')
+    const fecha = f[0] == 'EVT' ? [f[4], f[2], (f[3] || '').replace(/\d+/g, dos)].filter(Boolean).join('.')
                 : prox ? [prox.getFullYear(), MESES[prox.getMonth()], dos(prox.getDate())].join('.') : '';
     const reg = f[0] == 'REG' ? textoReg(fechaDe(e)) : '';
     const orden = f[0] == 'EVT' ? (parseInt(f[4]) || 9999) * 100 + (parseInt(f[1]) || 0) : prox ? prox.getFullYear() * 100 + prox.getMonth() : 999999;
     const mes = f[0] == 'EVT' ? parseInt(f[1]) : prox ? prox.getMonth() : NaN, dia = prox ? prox.getDate() : parseInt(f[3]) || 1;
     const orgs = orgsDe(e);
-    const ev = {evento: true, area: e[CAMPO.area] && e[CAMPO.area] != '-' ? e[CAMPO.area] : '-', pais: e[CAMPO.country] && e[CAMPO.country] != '-' ? e[CAMPO.country] : '-', roles: [rolEvento(e[CAMPO.tipo])], nombre: e[CAMPO.name], foto: fotoEvento(e),
+    const ev = {evento: true, area: e[CAMPO.area] && e[CAMPO.area] != '-' ? e[CAMPO.area] : '-', pais: e[CAMPO.country] && e[CAMPO.country] != '-' ? e[CAMPO.country] : '-', roles: rolesEvento(e), nombre: e[CAMPO.name], foto: fotoEvento(e),
                          fb: url, tipo: String(e[CAMPO.tipo]).replace(/^event\s*/, '') || 'event', pos: posEvento(e),
                          ciudad: e[CAMPO.city] && e[CAMPO.city] != '-' ? String(e[CAMPO.city]).trim() : '',
                          lugar: e[CAMPO.city] && e[CAMPO.city] != '-' ? String(e[CAMPO.city]).trim() : '',
-                         sala: (leeVarios(e).loc || [''])[0], venue: (venueDe(e) || [])[CAMPO.name] || '', salaFb: urlSala(e), salaDir: dirSala(e), fecha, reg, orden, fechaOrig: fechaDe(e),
-                         mapa: regular(rolEvento(e[CAMPO.tipo])) ? mapaDe(e) : '', mes, dia, orgs, www: wwwDe(e) ? [wwwDe(e)] : [],
+                         sala: locDe(e), venue: (venueDe(e) || [])[CAMPO.name] || '', salaFb: urlSala(e), fecha, reg, orden, fechaOrig: fechaDe(e), noVerificado: Boolean(leeVarios(e).ext),
+                         mapa: regular(rolEvento(e[CAMPO.tipo])) || dirSala(e) ? mapaDe(e) : '', mes, dia, orgs, www: wwwDe(e) ? [wwwDe(e)] : [],
                          video: (leeVarios(e).vid || [''])[0], notas: [], coment: [], ids: [idDe(e)].filter(Boolean)};
     for (const k of claves(0)) porClave.set(k, ev);
     lista.push(ev);
@@ -540,19 +609,21 @@ const enRol  = (p, r) => r == TODOS ? true   // all: todo, también las listas
 function opciones(sel, valores, etiqueta, cuenta, todos = 'all'){
   const actual = sel.value || sel.dataset.inicial || TODOS;
   sel.innerHTML = '';
-  const opcion = (dentro, v) => {
+  const opcion = v => {
     const o = document.createElement('option');
     o.value = v;
     o.textContent = (v == TODOS ? todos : etiqueta(v)) + (cuenta ? ' ' + cuenta(v) : '');
-    dentro.appendChild(o);
+    sel.appendChild(o);
   };
-  opcion(sel, TODOS);
+  opcion(TODOS);
   for (const v of valores){
-    if (typeof v != 'object'){ opcion(sel, v); continue; }
-    const g = document.createElement('optgroup');
-    g.label = v.grupo;
-    for (const w of v.valores) opcion(g, w);
+    if (typeof v != 'object'){ opcion(v); continue; }
+    const g = document.createElement('option');   // el título del grupo: una opción que no se elige (un optgroup lo sangra el navegador)
+    g.textContent = v.grupo;
+    g.className = 'grupo';
+    g.disabled = true;
     sel.appendChild(g);
+    v.valores.forEach(opcion);
   }
   sel.value = actual;
   if (sel.selectedIndex < 0) sel.value = TODOS;
@@ -570,7 +641,8 @@ function organizadores(){
   }
   return organiza;
 }
-const organiza = organizadores();
+let organiza = null;    // (la primera vez que se pide, ya con los datos: en la publicada están cifrados al cargar la página)
+const organizaDe = nombre => (organiza = organiza || organizadores()).get(nombre) || [];
 
 const esFb = u => /^https?:\/\/([a-z]+\.)?(facebook\.com|fb\.com|fb\.me)\//i.test(u);
 function enlace(href, texto, icono){
@@ -586,22 +658,24 @@ function enlace(href, texto, icono){
 
 // los logos de la ficha, siempre en este orden y solo los que tiene: local (mapa), fb, www, yt;
 // la imagen de la ficha abre la url del primero
-function logosFicha(d, img, texto, {mapa = '', fb = '', www = [], video = ''}){
+function logosFicha(d, img, texto, {mapa = '', fb = '', www = [], video = '', mapaAparte = false, fotoMapa = true}){   // mapaAparte: su enlace ya está en la línea del lugar; fotoMapa: la imagen abre el mapa
   const dominio = u => u.replace(/^https?:\/\/(www\.)?/, '').split('/')[0];
   const logos = [...(mapa ? [enlace(mapa, 'map', 'img/mapa.svg')] : []),
                  ...(fb ? [enlace(fb, 'facebook', 'img/perfil.svg')] : []),
                  ...www.filter(u => !esAgendaWeb(u)).map(u => enlace(u, dominio(u), 'img/web.svg')),   // no la agenda de donde salen los datos (aux.js)
                  ...(video ? [enlace(video, 'video', 'img/yt.svg')] : [])];
-  if (!texto && !logos.length) return;
-  const par = document.createElement('p');
-  par.className = 'enlaces';
-  if (texto) par.append(texto);
-  par.append(...logos);
-  d.appendChild(par);
+  const textos = [].concat(texto).filter(Boolean), vistos = logos.slice(mapa && mapaAparte ? 1 : 0);
+  if (textos.length || vistos.length){
+    const par = document.createElement('p');
+    par.className = 'enlaces';
+    par.append(...textos, ...vistos);
+    d.appendChild(par);
+  }
   if (logos.length && img){
     img.classList.add('conEnlace');
-    img.title = logos[0].href;
-    img.onclick = () => window.open(logos[0].href, '_blank', 'noopener');
+    const abre = logos[mapa && !fotoMapa && logos.length > 1 ? 1 : 0].href;
+    img.title = abre;
+    img.onclick = () => window.open(abre, '_blank', 'noopener');
   }
 }
 
@@ -615,6 +689,13 @@ function cara(p){
   return img;
 }
 
+function logoEspecial(){
+  const i = document.createElement('img');
+  i.src = 'img/especial.svg';
+  i.className = 'logoEspecial';
+  i.alt = i.title = 'special milonga';
+  return i;
+}
 function iconoFila(p){   // un solo icono: su Facebook (urlfb) si lo tiene; si no, su web
   const s = document.createElement('span');
   s.className = 'fIconos';
@@ -651,11 +732,15 @@ function textoDia(d){   // THU.OCT.29; hoy, TODAY (mañana, con su fecha)
   const hoy = new Date();
   hoy.setHours(0, 0, 0, 0);
   const n = Math.round((new Date(d).setHours(0, 0, 0, 0) - hoy) / 864e5);
-  return n == 0 ? 'TODAY' : DIAS_SEM[d.getDay()] + '.' + MESES[d.getMonth()] + '.' + dos(d.getDate());
+  return n == 0 ? 'TODAY' : fechaDia(d);
 }
-// milongas y prácticas: solo las de los próximos 7 días (hoy y los 6 siguientes); las mensuales, la semana que les toca
+const fechaDia = d => DIAS_SEM[d.getDay()] + '.' + MESES[d.getMonth()] + '.' + dos(d.getDate());   // THU.OCT.29
+// milongas y prácticas: solo las de los próximos 7 días (hoy y los 6 siguientes); las mensuales, la semana que les toca.
+// las milongas especiales (las no regulares, de fecha EVT), desde ya hasta su fecha, con su logo (2026-11-04, el usuario)
 const DIAS_VISTA = 7;
-function enVista(d){
+const especial = p => p.roles[0] == MIL && String(p.fechaOrig || '').startsWith('EVT');
+function enVista(d, p){
+  if (d && especial(p)) return true;
   const tope = new Date();
   tope.setHours(0, 0, 0, 0);
   tope.setDate(tope.getDate() + DIAS_VISTA);
@@ -663,14 +748,20 @@ function enVista(d){
 }
 function filasMilongas(lista){   // [{p, dia}] por fecha desde hoy: con días elegidos, una por cada uno en que se hace
   const filas = (diasSel.size ? lista.flatMap(p => [...diasSel].map(d => ({p, dia: proximaEn(p, [d])})))
-                              : lista.map(p => ({p, dia: proximaEn(p)}))).filter(x => enVista(x.dia));
+                              : lista.map(p => ({p, dia: proximaEn(p)}))).filter(x => enVista(x.dia, x.p));
   const t = x => x.dia ? x.dia.getTime() : Infinity;
   return filas.sort((x, y) => t(x) - t(y) || horaDe(x.p).localeCompare(horaDe(y.p)) || x.p.nombre.localeCompare(y.p.nombre));
 }
 // el hover de un botón de las tiras: al momento (el title tarda), centrado sobre el botón, sin salirse de la ventana
 function tipTira(b, texto, circulo){   // circulo: solo el número, como el contador de las ciudades del mapa
-  const t = $('tipTira'), fuera = () => t.classList.add('oculto');
+  const t = $('tipTira'), propio = b.textContent;
+  const fuera = () => { t.classList.add('oculto'); b.textContent = propio; b.style.flex = ''; };
   b.onmouseenter = () => {
+    if (circulo && matchMedia('(min-width: 801px)').matches){   // en el panel vertical, el número en vez del texto; la celda, de su ancho (si no, los roles se recolocan)
+      b.style.flex = '0 0 ' + b.getBoundingClientRect().width + 'px';
+      b.textContent = texto;
+      return;
+    }
     t.textContent = texto;
     t.classList.toggle('circulo', !!circulo);
     t.classList.remove('oculto');
@@ -739,19 +830,24 @@ function pintaDias(cuenta){
   });
 }
 
-function titulo(d, p, conLugar, fechaAparte){
+function titulo(d, p, conLugar){
   const h = document.createElement('h2');
-  if (conLugar && ESTILO_LISTADO == 'filas'){
-    h.textContent = p.nombre;
-    const lugar = p.ciudad ? [p.ciudad, p.pais != '-' ? p.pais : ''].filter(Boolean).join(', ') : p.lugar;   // todos: nombre y ciudad, país (el venue va en su línea)
-    if (lugar){
-      const s = document.createElement('span');
-      s.className = 'hLugar';
-      s.textContent = lugar;
-      h.appendChild(s);
-    }
-  } else h.textContent = (conLugar ? [fechaAparte ? '' : fechaListado(p), p.nombre, p.lugar] : [p.nombre]).filter(Boolean).join(' - ');
+  h.textContent = p.nombre;
   d.appendChild(h);
+  if (!conLugar) return;
+  if (p.evento && p.tipo){
+    const t = document.createElement('span');
+    t.className = 'hTipo';
+    t.textContent = p.tipo;
+    h.appendChild(t);
+  }
+  // la segunda línea: ciudad, país y el mapa (el venue va en su línea)
+  const lugar = p.ciudad ? [p.ciudad, p.pais != '-' ? p.pais : ''].filter(Boolean).join(', ') : p.lugar;
+  if (!lugar && !p.mapa) return;
+  const par = document.createElement('p');
+  par.className = 'enlaces';
+  par.append(...[lugar, p.mapa && enlace(p.mapa, 'map', 'img/mapa.svg')].filter(Boolean));
+  d.appendChild(par);
 }
 
 function rellenaEvento(c, p, conLugar){
@@ -761,18 +857,24 @@ function rellenaEvento(c, p, conLugar){
   const d = document.createElement('div');
   d.className = 'texto';
   c.appendChild(d);
-  titulo(d, p, conLugar, true);
-  const fecha = p.reg ? 'regular ' + p.reg : p.fecha;
-  for (const texto of conLugar ? [fecha] : [p.lugar, fecha]){
+  titulo(d, p, conLugar);
+  const fecha = p.reg ? 'regular ' + p.reg : [p.fecha, p.noVerificado ? '(no verificado)' : ''].filter(Boolean).join(' ');   // (extrapolado del año pasado: ext)
+  const fb = p.fb && esFb(p.fb) ? p.fb : '';
+  const enlaces = texto => logosFicha(d, img, texto, {mapa: p.mapa, fb, www: [...(p.fb && !fb ? [p.fb] : []), ...p.www.filter(u => u != p.fb)], video: p.video, mapaAparte: conLugar, fotoMapa: regular(p.roles[0])});
+  if (p.sala){
+    const par = document.createElement('p');
+    par.append('venue: ', p.salaFb ? enlace(p.salaFb, p.sala) : p.sala);   // la dirección, en el enlace map
+    d.appendChild(par);
+  }
+  if (conLugar){   // la cuarta línea: la fecha y los enlaces (5 líneas: título y tipo, lugar, venue, esta y org)
+    const f = document.createElement('span');
+    f.className = 'fFecha';
+    f.textContent = fecha;
+    enlaces([fecha && f]);
+  } else for (const texto of [p.lugar, fecha]){
     if (!texto) continue;
     const par = document.createElement('p');
     par.textContent = texto;
-    if (conLugar) par.className = 'fFecha';
-    d.appendChild(par);
-  }
-  if (p.sala){
-    const par = document.createElement('p');
-    par.append('venue: ', p.salaFb ? enlace(p.salaFb, p.sala) : p.sala, ...(p.salaDir ? [' · ' + p.salaDir] : []));
     d.appendChild(par);
   }
   if (p.orgs.length){
@@ -785,11 +887,10 @@ function rellenaEvento(c, p, conLugar){
     });
     d.appendChild(par);
   }
-  const fb = p.fb && esFb(p.fb) ? p.fb : '';
-  logosFicha(d, img, p.tipo, {mapa: p.mapa, fb, www: [...(p.fb && !fb ? [p.fb] : []), ...p.www.filter(u => u != p.fb)], video: p.video});
+  if (!conLugar) enlaces(p.tipo);
 }
 
-const TEXTO_ROL = {org: 'organizer', art: 'artist', vip: 'vip'};   // texto propio en wwt (en aux.js, para index.htm)
+const TEXTO_ROL = {org: 'organizer', art: 'artist', vip: 'vip'};   // texto propio en app.tg (en aux.js, para app.tw)
 const textoRol = r => TEXTO_ROL[r] || (ROLES[r] && ROLES[r].nombre) || r;
 
 function rellenaPersona(c, p, conLugar){
@@ -812,11 +913,11 @@ function rellenaPersona(c, p, conLugar){
   };
   const roles = p.roles.filter(r => ROLES[r]);
   const publicos = roles.filter(r => ROLES[r].publico), privados = roles.filter(r => !ROLES[r].publico);
+  if (p.sala) linea('venue', p.salaFb ? enlace(p.salaFb, p.sala) : p.sala);
   if (p.tipoP && p.tipoP != 'person') linea('type', p.tipoP);
-  if (p.sala) linea('venue', p.salaFb ? enlace(p.salaFb, p.sala) : p.sala, ...(p.salaDir ? [' · ' + p.salaDir] : []));
   if (publicos.length) linea('rol', publicos.map(textoRol).join(', '));
   if (privados.length) linea('pr', privados.map(textoRol).join(', '));
-  const eventos = organiza.get(p.nombre) || [];
+  const eventos = organizaDe(p.nombre);
   if (eventos.length)
     linea('org', ...eventos.flatMap((ev, i) => [...(i ? [', '] : []), ev.url ? enlace(ev.url, ev.nombre) : ev.nombre]));
   const coments = [];
@@ -868,7 +969,7 @@ function abreFicha(p, fila){   // fila: la pulsada (una milonga puede salir en v
   iluminaFicha(p);
   if (mapa && mapaAbierto && vistaMapa) mapa.flyTo(...vistaMapa, {duration: .8});   // vuelve al centro y zoom del último encuadre
   const d = $('detalle');
-  d.classList.toggle('filas', ESTILO_LISTADO == 'filas');
+  d.classList.add('filas');
   d.classList.remove('oculto');
   const f = fila || document.getElementById('f' + p.id);
   if (f && f.classList.contains('fila')){
@@ -899,14 +1000,15 @@ function pintaCopiar(p){
 }
 const midoBarra = new ResizeObserver(() => {
   const css = document.documentElement.style;
-  css.setProperty('--altoBarra', document.querySelector('.filtros').offsetHeight + 'px');
-  css.setProperty('--anchoCab', document.querySelector('.cabecera').offsetWidth + 'px');
+  css.setProperty('--altoBarra', $('barraLista').offsetHeight + 'px');
+  css.setProperty('--altoPanel', $('panel').offsetHeight + 'px');   // solo cuenta en pantalla estrecha, con el panel encima
 });
-midoBarra.observe(document.querySelector('.filtros'));
-midoBarra.observe(document.querySelector('.cabecera'));
+midoBarra.observe($('barraLista'));
+midoBarra.observe($('panel'));
 
 function desdeHoy(p){
   if (isNaN(p.mes)) return 9999;
+  if (enCursoEvt(p.fechaOrig)) return 0;   // empezado y sin terminar: el primero (antes, detrás de todo: como si fuera el año que viene)
   const hoy = new Date(), n = (m, d) => m * 31 + d;
   return (n(p.mes, p.dia) - n(hoy.getMonth(), hoy.getDate()) + 372) % 372;
 }
@@ -920,7 +1022,7 @@ const F_DOCE = 1;
 let fechaSel = F_DOCE;
 const anyoDe = p => Math.floor(p.orden / 100);
 const enFecha = (p, i) => i === null || !p.evento || sinFecha(p.roles[0]) ||
-                          (FECHAS[i].doce ? p.orden >= ordenDe(DOCE[0]) && p.orden <= ordenDe(DOCE[11])
+                          (FECHAS[i].doce ? (p.orden >= ordenDe(DOCE[0]) || enCursoEvt(p.fechaOrig)) && p.orden <= ordenDe(DOCE[11])
                                           : anyoDe(p) == FECHAS[i].anyo && (FECHAS[i].mes === undefined || p.mes == FECHAS[i].mes));
 function pintaFechas(cuenta, oculto){
   const div = $('fBotones');
@@ -986,11 +1088,12 @@ function abreCierraMapa(){   // abrir o cerrar el mapa no toca lo elegido: la ru
     pintaMapa(lista, area, conMapa);
   } else mapa.invalidateSize();
 }
-const COLOR_MARCA = '#ffd8b0';
-const BORDE_MARCA = '#e6d37e';   // amarillo suave (antes #ffd500)
-const COLOR_CIUDAD = '#e53935';
+const paleta = c => getComputedStyle(document.documentElement).getPropertyValue('--' + c).trim();   // los colores de la paleta (:root)
+const COLOR_MARCA = paleta('mapaMarca');
+const BORDE_MARCA = paleta('mapaAro');
+const COLOR_CIUDAD = paleta('mapaLugar');
 const ESTILO_CIUDAD = {color: COLOR_CIUDAD, fillColor: COLOR_CIUDAD, fillOpacity: 1, weight: 4};
-const ESTILO_LUGAR = ESTILO_CIUDAD;   // la ciudad o el lugar elegidos, en rojo (2026-10-26; antes amarillo, BORDE_MARCA)
+const ESTILO_LUGAR = ESTILO_CIUDAD;   // la ciudad o el lugar elegidos
 const deCiudadSel = k => k == lugarSel || (ciudadSel && (porLugarMapa.get(k) || []).some(p => ciudadDe(p) == ciudadSel));
 let _centros = null;
 function centroPos(pos){
@@ -1042,9 +1145,9 @@ function radioDe(n){
   }
   return RADIOS[RADIOS.length - 1][1];
 }
-const ESTILO_PAIS = {fill: true, fillOpacity: 1, fillColor: '#22406a', weight: .6, color: '#888', opacity: 1};
-const ESTILO_AREA = {fill: true, fillOpacity: 1, fillColor: '#2f5a8f', weight: .6, color: '#fff', opacity: 1};
-const ESTILO_SEL  = {fill: true, fillOpacity: .15, fillColor: '#f5c211', weight: 2, color: '#fff', opacity: .5};
+const ESTILO_PAIS = {fill: true, fillOpacity: 1, fillColor: paleta('mapaPais'), weight: .6, color: paleta('mapaBorde'), opacity: 1};
+const ESTILO_AREA = {fill: true, fillOpacity: 1, fillColor: paleta('azulOscuro'), weight: .6, color: paleta('blanco'), opacity: 1};
+const ESTILO_SEL  = {fill: true, fillOpacity: .15, fillColor: paleta('mapaPaisSel'), weight: 2, color: paleta('blanco'), opacity: .5};
 let _paisesEv = null;
 function paisesConEventos(){
   if (_paisesEv) return _paisesEv;
@@ -1102,6 +1205,8 @@ function encuadra(conPos){
 const MAS_PAIS = .5;
 const MAS_AREA = .5;
 let vistaMapa = null;   // [centro, zoom] del último encuadre (vuela)
+const mapaMovido = () => !!(mapa && mapaAbierto && vistaMapa)
+  && (Math.abs(mapa.getZoom() - vistaMapa[1]) > .01 || mapa.latLngToContainerPoint(vistaMapa[0]).distanceTo(mapa.getSize().divideBy(2)) > 2);
 function vuela(b, tope, mas = 0){
   const PAD = Math.ceil(RADIOS[RADIOS.length - 1][1]) + 4, VERT = PAD + 26;
   const z = x => mapa.getBoundsZoom(x, false, L.point(2 * PAD, 2 * VERT));
@@ -1146,10 +1251,10 @@ function pintaMapa0(lista, area, conMapa){
   $('bMapa').title = !hay ? 'map: not applicable here' : 'show / hide the map';
   caja.classList.toggle('cerrado', !mapaAbierto);
   div.classList.toggle('oculto', !mapaAbierto);
-  if (!mapaAbierto){ mapaPendiente = [lista, area, conMapa]; return; }
+  if (!mapaAbierto){ caja.classList.toggle('oculto', !hay); mapaPendiente = [lista, area, conMapa]; return pintaCiudades(); }
   mapaPendiente = null;
   areaMapa = area == TODOS ? null : area;
-  if (typeof L == 'undefined') return avisoMapa('no se ha podido cargar Leaflet (wwt/leaflet/leaflet.js)');
+  if (typeof L == 'undefined') return avisoMapa('no se ha podido cargar Leaflet (leaflet/leaflet.js)');
   caja.classList.toggle('oculto', !hay);
   if (!hay) return;
   if (!mapa){
@@ -1243,35 +1348,30 @@ function eligePais(pais){
   pinta();
 }
 function pintaCiudades(){
-  const div = $('ciudadesMapa'), vista = mapa.getBounds(), nombres = new Map(), dePais = !!(ciudadSel || lugarSel || paisSel);   // con país, ciudad o lugar elegidos: las ciudades (del país); si no, países
+  const div = $('ciudadesMapa'), vista = mapa && mapaAbierto ? mapa.getBounds() : null, nombres = new Map(), dePais = !!(ciudadSel || lugarSel || paisSel);   // con país, ciudad o lugar elegidos: las ciudades (del país); si no, países
   for (const p of dePais ? posMapa : baseLugares){   // las ciudades, de lo que pinta el mapa (con un país elegido, solo las suyas); los países, de todo el listado
-    if (!vista.contains(centroPos(p.pos))) continue;
+    if (vista && !vista.contains(centroPos(p.pos))) continue;   // con el mapa oculto, todos: la lista sigue viva
     if (dePais && p.ciudad) nombres.set(ciudadDe(p), p.ciudad);
     else if (!dePais && p.pais && p.pais != '-') nombres.set(p.pais, p.pais);
   }
   const lineas = dePais ? lineasCiudad : lineasPais, elige = dePais ? eligeCiudad : eligePais;
   const n = new Map([...nombres.keys()].map(c => [c, lineas(c)]));
   const ciudades = [...nombres].sort((x, y) => n.get(y[0]) - n.get(x[0]) || x[1].localeCompare(y[1]));   // primero las de más líneas
-  div.innerHTML = '';
   div.scrollTop = 0;
-  if (dePais){   // la primera, la flecha y 'back': de las ciudades (con país, ciudad o lugar elegidos), a los países del área; las fechas (año y mes), los días y los roles, a cero
-    const s = document.createElement('span');
-    s.className = 'atras';
-    s.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' +
-                  '<path d="M12 5l-7 7 7 7M19 5l-7 7 7 7"/></svg>back';
-    s.onclick = () => {
-      lugarSel = ciudadSel = paisSel = null;
-      fechaSel = F_DOCE;
-      diasSel.clear();
-      rolesSel.clear();
-      soloBuscado = false;
-      pinta();
-    };
-    div.appendChild(s);
-  }
+  const BACK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' +
+               '<path d="M12 5l-7 7 7 7M19 5l-7 7 7 7"/></svg>back';
+  const navega = (clase, html, pulsa) => { const s = document.createElement('span'); s.className = clase; s.innerHTML = html; s.onclick = pulsa; return s; };
+  const atras = dePais && navega('atras', BACK, () => {   // de las ciudades (con país, ciudad o lugar elegidos), a los países del área; las fechas (año y mes), los días y los roles, a cero
+    lugarSel = ciudadSel = paisSel = null;
+    fechaSel = F_DOCE;
+    diasSel.clear();
+    rolesSel.clear();
+    soloBuscado = false;
+    pinta();
+  });
   const lugar = lugarSel && (porLugarMapa.get(lugarSel) || [])[0];
   const elegida = ciudadSel || (lugar ? ciudadDe(lugar) : null);   // la ciudad elegida (o la del lugar elegido)
-  for (const [c, nombre] of ciudades){
+  const celdas = ciudades.map(([c, nombre]) => {
     const s = document.createElement('span');
     s.classList.toggle('sel', dePais && c == elegida);
     const nom = document.createElement('span'), num = document.createElement('span');
@@ -1285,8 +1385,25 @@ function pintaCiudades(){
       if (!n.get(c)) return;
       elige(c, nombre);
     };
-    div.appendChild(s);
-  }
+    return s;
+  });
+  // por páginas, de 2 columnas: en la primera celda back, en la última more... (en pantalla estrecha, scroll)
+  const cabe = matchMedia('(min-width: 801px)').matches ? 2 * MAX_FILAS_PANEL : Infinity;
+  const vistas = [];   // dónde empezaba cada página anterior
+  const pagina = desde => {
+    const vuelve = vistas.length ? navega('atras', BACK, () => pagina(vistas.pop())) : atras;
+    let sitio = cabe - (vuelve ? 1 : 0);
+    const hayMas = celdas.length - desde > sitio;
+    if (hayMas) sitio--;
+    const mas = hayMas && navega('mas', 'more...', () => { vistas.push(desde); pagina(desde + sitio); });
+    const vista = [vuelve, ...celdas.slice(desde, desde + sitio), mas].filter(Boolean);
+    if (cabe < Infinity && vista.length % 2) vista.push(navega('hueco', '', null));   // si faltan, una celda vacía: las dos columnas iguales
+    div.replaceChildren(...vista);
+    div.style.setProperty('--filas', Math.ceil(vista.length / 2));
+  };
+  pagina(0);
+  const sel = celdas.find(s => s.classList.contains('sel'));
+  while (sel && !sel.isConnected) div.querySelector('.mas').click();   // la elegida, a la vista
 }
 
 const totalesArea = new Map();
@@ -1295,17 +1412,25 @@ function totalArea(v){
   return totalesArea.get(v);
 }
 
-const PRIMEROS = {[LIS]: 'links', [EVT]: 'event', [SEM]: 'seminar', [ACA]: 'academy', [MIL]: 'milonga', [PRA]: 'practica', [PEO]: 'tanguer@', org: 'organizer', art: 'artist'};
-function rutaListado(a, r, fs, dias, conRoles, n){   // la última línea de la cabecera: área > tipo > país > ciudad > resto de selecciones (n líneas)
+const PRIMEROS = {[LIS]: 'links', [FES]: 'festival', [SEM]: 'seminar', [ACA]: 'academy', [MIL]: 'milonga', [PRA]: 'practica', [PEO]: 'tanguer@', org: 'organizer', art: 'artist'};
+function rutaListado(a, r, fs, dias, conRoles, n){   // la de la barra sobre el listado: área > tipo > país > ciudad > resto de selecciones (n líneas)
   const lugar = lugarSel && ((porLugarMapa.get(lugarSel) || [])[0] || personas.find(p => p.pos && claveMarca(p) == lugarSel));   // con el mapa cerrado, porLugarMapa puede no tenerlo
   const [paisC, ciudadC] = (ciudadSel || '').split('|');
   const f = fs !== null ? FECHAS[fs] : null;
   // cada tramo, con lo que hace al pulsarlo: volver a ese nivel (quita lo que va detrás); sin acción, solo texto
   const quitaResto = () => { fechaSel = F_DOCE; diasSel.clear(); rolesSel.clear(); soloBuscado = false; };
-  const quitaLugar = () => { lugarSel = ciudadSel = paisSel = null; quitaResto(); };
-  const partes = [[a == TODOS ? 'World' : a == '-' ? 'no area' : a, quitaLugar],
+  const conResto = () => fechaSel != F_DOCE || diasSel.size || rolesSel.size || soloBuscado;
+  // pulsar el nivel en el que ya estamos: el mapa solo se recoloca si se ha movido, y sin nada que quitar no se pinta (false)
+  const aNivel = (yaEsta, quita) => () => {
+    const quieto = yaEsta && !mapaMovido(), igual = quieto && !conResto();
+    quita();
+    quitaResto();
+    sinEncuadre = quieto;
+    return !igual;
+  };
+  const partes = [[a == TODOS ? 'World' : a == '-' ? 'no area' : a, aNivel(!lugarSel && !ciudadSel && !paisSel, () => { lugarSel = ciudadSel = paisSel = null; })],
                   [r == TODOS ? 'all' : PRIMEROS[r] || textoRol(r)],   // el tipo, sin clic: se cambia en su selector
-                  [paisSel ? paisSel.feature.properties.nombres[0] : '', () => { lugarSel = ciudadSel = null; quitaResto(); }],
+                  [paisSel ? paisSel.feature.properties.nombres[0] : '', aNivel(!lugarSel && !ciudadSel, () => { lugarSel = ciudadSel = null; })],
                   [ciudadSel ? ciudadC || paisC : lugar ? lugar.ciudad || lugar.lugar : '', quitaResto],
                   ...(soloBuscado && buscado ? [buscado.nombre]
                       : [!f ? '' : f.doce ? 'YEAR' : f.mes === undefined ? f.anyo : MESES[f.mes] + ' ' + f.anyo,
@@ -1320,7 +1445,7 @@ function rutaListado(a, r, fs, dias, conRoles, n){   // la última línea de la 
     s.textContent = texto;
     if (accion && i < partes.length - 1){   // el último tramo es donde ya estamos
       s.className = 'paso';
-      s.onclick = () => { accion(); pinta(); };
+      s.onclick = () => { if (accion() !== false) pinta(); };
     }
     d.appendChild(s);
   });
@@ -1365,7 +1490,7 @@ function buscaRuta(){   // el ?... de la ruta
   return '?' + q.toString().replace(/%2C/g, ',').replace(/%7C/g, '|');
 }
 function urlRuta(tw){   // tw: la de tangoworld (los mismos parámetros; publicada, /i del Worker; en local, app.tw)
-  const busca = buscaRuta();
+  const busca = tw ? buscaRuta().replace(/([?&]b=)fes\b/, '$1' + EVT) : buscaRuta();   // tangoworld solo conoce evt
   if (tw) return URL_FICHA ? URL_FICHA.replace(/\/w$/, '/i') + busca : new URL('../app.tw/index.htm', location.href).href + busca;
   return URL_FICHA ? URL_FICHA + busca : location.origin + location.pathname + busca + location.hash;   // publicada, el Worker (/w; /i para tangoworld): sin la clave a la vista
 }
@@ -1408,25 +1533,28 @@ function vuelveA(e){
   $('selRol').value = e.rol;
 }
 function pinta(){
+  $('hoy').textContent = 'TODAY is ' + fechaDia(new Date());
   const val = sel => sel.value || sel.dataset.inicial || TODOS;
   const sa = $('selArea');
-  if (paisSel){ if (sa.value) areaPrevia = sa.value; }
+  if (paisSel){
+    if (sa.value) areaPrevia = sa.value;
+    const areaPais = paisSel.feature.properties.area;   // un país de otra área (Madrid, buscada desde Asia): pasa a la suya; con World se queda en World
+    if (areaPais && areaPais != '-' && areaPrevia && areaPrevia != TODOS && areaPrevia != areaPais) areaPrevia = sa.value = areaPais;
+  }
   else if (areaPrevia !== null){ if (!sa.value) sa.value = areaPrevia; areaPrevia = null; }
   const a = paisSel ? TODOS : val(sa), r = val($('selRol'));
   const areaCuenta = paisSel ? (areaPrevia || TODOS) : a;
-  const deListado = personas;   // también las personas sin foto (recuadro gris): el listado cuadra con el selector
-  const visibles = personas;
   const conFechas = deEventos(r) && !sinFecha(r), conDias = regular(r), conRoles = r == PEO;
   const fs = conFechas && !soloBuscado ? fechaSel : null;
   const dias = conDias && diasSel.size && !soloBuscado ? [...diasSel] : null;
-  const enDias = p => !conDias || soloBuscado || enVista(proximaEn(p, dias));   // con la búsqueda, aunque sea más adelante
+  const enDias = p => !conDias || soloBuscado || enVista(proximaEn(p, dias), p);   // con la búsqueda, aunque sea más adelante
   const enTiras = p => enDias(p) && (!conRoles || soloBuscado || enRoles(p));
   const enSel = p => (!lugarSel || (p.pos && claveMarca(p) == lugarSel))
                   && (!ciudadSel || ciudadDe(p) == ciudadSel)
                   && (!paisSel || paisSel.feature.properties.nombres.includes(p.pais));
-  const base = visibles.filter(p => enArea(p, a) && enRol(p, r) && enFecha(p, fs) && enTiras(p));
+  const base = personas.filter(p => enArea(p, a) && enRol(p, r) && enFecha(p, fs) && enTiras(p));
   const areaPais = paisSel && paisSel.feature.properties.area, aMapa = areaPais && areaPais != '-' ? areaPais : a;
-  const baseMapa = deListado.filter(p => enArea(p, aMapa) && enRol(p, r) && enFecha(p, fs) && enTiras(p)
+  const baseMapa = personas.filter(p => enArea(p, aMapa) && enRol(p, r) && enFecha(p, fs) && enTiras(p)
                                          && (!paisSel || paisSel.feature.properties.nombres.includes(p.pais))
                                          && (p.area != MUNDIAL || aMapa == TODOS));
   const lista = (soloBuscado && buscado ? base.filter(p => p === buscado)
@@ -1451,20 +1579,20 @@ function pinta(){
                   .sort((x, y) => (x == '-') - (y == '-') || x.localeCompare(y));
   opciones(sa, areas, v => v == '-' ? 'no area' : v, v => totalArea(v), 'World');
   if (paisSel){ if (areaPrevia) sa.value = areaPrevia; else sa.selectedIndex = -1; }   // con un país, se sigue viendo su área; volver a elegirla funciona (pointerdown en conecta)
-  opciones($('selRol'), [{grupo: 'events', valores: [LIS, ACA, EVT, SEM, MIL, PRA]},
+  opciones($('selRol'), [{grupo: 'events', valores: [LIS, ACA, FES, SEM, MIL, PRA]},
                          {grupo: 'community', valores: [PEO, ...TIPOS_P]}],
            v => PRIMEROS[v] || textoRol(v));   // sin contador: el número va al final de la ruta
   estadoPintado = filas.length ? estado() : null;   // con los selectores ya como se ven
   $('fechas').classList.remove('oculto');
   $('fechas').classList.toggle('sinFechas', !conFechas && !conDias && !conRoles);
+  $('fBotones').dataset.tira = conDias ? 'dias' : conRoles ? 'roles' : 'meses';   // cada una, su rejilla en el panel vertical
   // la tira de roles privados, solo si hay datos privados (la local; en la publicada nadie los tiene)
   const hayPrivados = personas.some(p => !p.evento && p.roles.some(x => ROLES[x] && !ROLES[x].publico));
   $('rBotones').classList.toggle('oculto', !conRoles || !hayPrivados);
-  const rFechas = conFechas ? r : EVT;
-  if (conDias) pintaDias(d => deListado.filter(p => enArea(p, a) && enRol(p, r) && enSel(p) && enVista(proximaEn(p, d === null ? null : [d]))).length);
-  else if (conRoles) pintaRoles(k => deListado.filter(p => enArea(p, a) && enRol(p, PEO) && enSel(p) && (k === null || conRol(p, k))).length);
-  else pintaFechas(i => deListado.filter(p => enArea(p, a) && enRol(p, rFechas) && enFecha(p, i) && enSel(p)).length, !conFechas);
-  pintaMapa(baseMapa, a, deListado.some(p => p.pos && enArea(p, aMapa) && enRol(p, r)));   // sin las tiras: si el tipo lleva mapa
+  if (conDias) pintaDias(d => personas.filter(p => enArea(p, a) && enRol(p, r) && enSel(p) && enVista(proximaEn(p, d === null ? null : [d]), p)).length);
+  else if (conRoles) pintaRoles(k => personas.filter(p => enArea(p, a) && enRol(p, PEO) && enSel(p) && (k === null || conRol(p, k))).length);
+  else pintaFechas(i => personas.filter(p => enArea(p, a) && enRol(p, r) && enFecha(p, i) && enSel(p)).length, !conFechas);
+  pintaMapa(baseMapa, a, personas.some(p => p.pos && enArea(p, aMapa) && enRol(p, r)));   // sin las tiras: si el tipo lleva mapa
   $('bListado').innerHTML = enListado ? '☰ list' : '<span class="iParrilla">▦</span> grid';   // lo que se ve; al pulsar, lo otro
   $('bListado').title = enListado ? 'switch to grid' : 'switch to list';
   $('parrilla').classList.toggle('oculto', enListado);
@@ -1475,44 +1603,36 @@ function pinta(){
   if (!enListado){ pintaParrilla(lista, deEventos(r) || r == LIS); return pintaVacio(filas.length, $('parrilla'), areaCuenta, r, fs, dias, conRoles); }
   const div = $('listado');
   div.innerHTML = '';
-  div.classList.toggle('filas', ESTILO_LISTADO == 'filas');
+  div.classList.add('filas');
   const conFecha = filas.some(({p}) => p.evento);   // con fecha: su columna al principio (vacía en las filas sin fecha)
   div.classList.toggle('conFecha', conFecha);
   const vistos = new Set();
-  for (const {p, dia} of filas.slice(0, MAX_LINEAS)){   // como mucho MAX_LINEAS líneas; la última dice el máximo
+  for (const {p, dia} of filas){
     const c = document.createElement('div');
     if (!vistos.has(p.id)) c.id = 'f' + p.id;
     vistos.add(p.id);
     c.dataset.p = p.id;
-    if (ESTILO_LISTADO == 'filas'){
-      c.className = 'fila';
-      const span = (clase, texto) => {
-        const s = document.createElement('span');
-        s.className = clase;
-        s.textContent = texto || '';
-        c.appendChild(s);
-      };
-      c.appendChild(iconoFila(p));   // el logo siempre al inicio de la línea; luego la fecha y el nombre
-      if (conFecha) span('fFecha', p.evento ? (dia ? textoDia(dia) : fechaListado(p)) : '');
-      span('fNombre', p.nombre);
-      const tras = p.tipo == 'milonga' || p.tipo == 'practica' ? [p.sala != '?' && (p.sala || p.venue), p.orgs.join(', ')].filter(Boolean) : [];   // " - sala - org" (la sala por saber, ?, solo en la ficha)
-      if (tras.length){ const v = document.createElement('span'); v.className = 'fSala'; v.textContent = ' - ' + tras.join(' - '); c.lastChild.appendChild(v); }
-      span('fLugar', p.ciudad || p.lugar);   // solo la ciudad (la sala va en la ficha)
-      const mini = cara(p);   // la miniatura al final, de la altura de la línea
-      mini.classList.add('fMini');
-      c.appendChild(mini);
-    } else {
-      c.className = 'cuerpo linea';
-      titulo(c, p, true);
-    }
+    c.className = 'fila';
+    const span = (clase, texto, padre = c) => {
+      const s = document.createElement('span');
+      s.className = clase;
+      s.textContent = texto || '';
+      padre.appendChild(s);
+      return s;
+    };
+    c.appendChild(iconoFila(p));   // el logo siempre al inicio de la línea; luego la fecha y el nombre
+    if (conFecha) span('fFecha', p.evento ? (dia ? textoDia(dia) : fechaListado(p)) : '');
+    const textos = document.createElement('div');
+    textos.className = 'fTexto';
+    c.appendChild(textos);
+    const nombre = span('fNombre', p.nombre, textos);
+    if (especial(p)) nombre.prepend(logoEspecial());
+    span('fLugar', p.ciudad || p.lugar, textos);   // solo la ciudad (la sala va en la ficha)
+    const mini = cara(p);   // la miniatura al final, de la altura de la línea
+    mini.classList.add('fMini');
+    c.appendChild(mini);
     c.onclick = () => abreFicha(p, c);
     div.appendChild(c);
-  }
-  if (filas.length > MAX_LINEAS){
-    const m = document.createElement('div');
-    m.className = 'vacio maxLineas';
-    m.textContent = 'lines number max is ' + MAX_LINEAS;
-    div.appendChild(m);
   }
   pintaVacio(filas.length, div, areaCuenta, r, fs, dias, conRoles);
   marcaAbierta();
@@ -1561,6 +1681,7 @@ function pintaParrilla(lista, evts){
     const pie = document.createElement('figcaption');
     const nom = document.createElement('span');
     nom.textContent = p.nombre;
+    if (especial(p)) nom.prepend(logoEspecial());
     pie.appendChild(nom);
     pie.onclick = () => abreFicha(p);
     fig.appendChild(pie);
@@ -1593,6 +1714,11 @@ function lugaresSug(){
 const detalle = p => p.geo == 'ARE' ? 'area' : p.geo == 'CON' ? p.area : p.geo == 'CIT' ? p.pais : p.lista ? p.lugar || 'links' : p.evento ? [p.fecha, p.lugar].filter(Boolean).join(' ') || p.tipo : p.lugar || 'tanguer@';
 const normaliza = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 function sugerencias(){ personas.forEach(p => p.clave = normaliza(p.nombre)); }
+function colocaSugs(){   // fixed: la lista es más ancha que el panel, que la recortaría
+  const d = $('sugs'), r = $('buscar').getBoundingClientRect();
+  d.style.top = r.bottom + 4 + 'px';
+  d.style.left = Math.max(4, Math.min(r.left, innerWidth - d.offsetWidth - 4)) + 'px';
+}
 function muestra(){
   const q = normaliza($('buscar').value.trim()), d = $('sugs');
   const orden = (x, y) => x.clave.startsWith(q) == y.clave.startsWith(q) ? x.nombre.localeCompare(y.nombre) : x.clave.startsWith(q) ? -1 : 1;
@@ -1617,11 +1743,30 @@ function muestra(){
     d.appendChild(o);
   });
   d.classList.toggle('oculto', !encontradas.length);
+  colocaSugs();
 }
 function marca(i){
   activa = (i + encontradas.length) % encontradas.length;
   [...$('sugs').children].forEach((o, k) => o.classList.toggle('activa', k == activa));
   $('sugs').children[activa].scrollIntoView({block: 'nearest'});
+}
+// lo elegido en el buscador siempre se ve: pinta() deja todo como estaba si se queda a cero. Entonces, con todas las
+// fechas y el primer tipo que tenga líneas allí (Madrid no tiene seminar: festivals); si ninguno, el listado vacío
+function conLineas(elige, hecho){
+  elige();
+  if (hecho()) return;
+  const tipo = $('selRol').value;
+  for (const r of [tipo, FES, SEM, MIL, PRA, ACA, PEO]){
+    $('selRol').value = r;
+    fechaSel = F_DOCE;
+    diasSel.clear();
+    rolesSel.clear();
+    elige();
+    if (hecho()) return;
+  }
+  $('selRol').value = tipo;
+  deTira = true;
+  elige();
 }
 function irGeo(g){
   soloBuscado = false;
@@ -1629,19 +1774,18 @@ function irGeo(g){
   enListado = true;
   if (g.geo == 'CIT'){   // una ciudad: lo mismo que pulsarla en el mapa
     mapaAbierto = true;
-    eligeCiudad(g.ciudad, g.nombre);
+    conLineas(() => eligeCiudad(g.ciudad, g.nombre), () => ciudadSel == g.ciudad);
   } else if (g.geo == 'ARE'){
     lugarSel = ciudadSel = paisSel = null;
-    $('selArea').value = g.nombre;
-    pinta();
+    conLineas(() => { $('selArea').value = g.nombre; pinta(); }, () => $('selArea').value == g.nombre);
   } else {
     lugarSel = ciudadSel = paisSel = null;
     mapaAbierto = true;
     sinEncuadre = true;
     pinta();
-    if (capaPaises) capaPaises.eachLayer(l => { if (!paisSel && l.feature.properties.nombres.includes(g.nombre)) paisSel = l; });
-    pinta();
-    if (paisSel) etiqueta(boundsPais(paisSel).getCenter(), g.nombre, 'pais');
+    const delPais = l => l && l.feature.properties.nombres.includes(g.nombre);
+    conLineas(() => { if (capaPaises) capaPaises.eachLayer(l => { if (!delPais(paisSel) && delPais(l)) paisSel = l; }); pinta(); }, () => delPais(paisSel));
+    if (delPais(paisSel)) etiqueta(boundsPais(paisSel).getCenter(), g.nombre, 'pais');
   }
   $('buscar').value = '';
   $('sugs').classList.add('oculto');
@@ -1652,7 +1796,7 @@ function ir(p){
   buscado = p;
   soloBuscado = true;
   enListado = true;
-  $('selRol').value = p.evento || p.lista ? p.roles[0] : PEO;
+  $('selRol').value = p.evento || p.lista ? p.roles[0] : TIPOS_P.includes(p.tipoP) ? p.tipoP : PEO;   // (group, couple: no están en people, enRol)
   $('selArea').value = p.area == MUNDIAL ? TODOS : p.area;
   fechaSel = F_DOCE;
   lugarSel = ciudadSel = paisSel = null;
@@ -1681,15 +1825,7 @@ function muestraInfo(){
   $('fCuerpo').innerHTML = '';
   const d = document.createElement('div');
   d.className = 'texto';
-  const FB = 'https://www.facebook.com/profile.php?id=100093497583670';
-  d.innerHTML = '<p><a href="' + FB + '" target="_blank" rel="noopener">by KoKoTango</a> (public version)</p><br>' +   // y una línea en blanco
-                '<p class="enlaces"><a href="' + FB + '" target="_blank" rel="noopener"><img src="img/mensaje.svg" alt="" class="icono">send me a message with your urls</a></p>' +
-                '<ul class="circulos"><li>powered by Opus 5.5</li>' +
-                '<li class="creditos">map: tiles &copy; <a href="https://www.esri.com/" target="_blank" rel="noopener">Esri</a>, HERE, Garmin, ' +
-                '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors; ' +
-                'countries: <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a>; ' +
-                '<a href="https://leafletjs.com/" target="_blank" rel="noopener">Leaflet</a></li>' +
-                '<li><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> (Creative Commons Reconocimiento–NoComercial–CompartirIgual)</li></ul>' +
+  d.innerHTML = '<iframe id="kkTexto" src="atribucionkk.htm?v=public version" title="KoKoTango"></iframe>' +   // el mismo que tangoworld
                 '<p class="enlaces"><a id="aTw" href="#" target="_blank" rel="noopener">⇒ go to tangoworld</a></p>';   // con la ruta de las migas
   $('fCuerpo').appendChild(d);
   $('aTw').onclick = () => { $('aTw').href = urlRuta(true); };
@@ -1703,6 +1839,10 @@ function conecta(){
   $('buscar').onblur = () => $('sugs').classList.add('oculto');
   $('buscar').onkeydown = teclaBuscar;
   $('info').onclick = muestraInfo;
+  window.addEventListener('message', e => {
+    const f = $('kkTexto');
+    if (f && e.source == f.contentWindow && e.data.kkAlto > 0) f.style.height = e.data.kkAlto + 'px';
+  });
   $('fCerrar').onclick = () => $('ficha').close();
   $('ficha').onclick = e => { if (e.target == $('ficha')) $('ficha').close(); };
   $('dCerrar').onclick = cierraFicha;
@@ -1718,22 +1858,31 @@ function conecta(){
     soloBuscado = false;
     pinta();
   };
-  let areaAntes = null;
-  $('selArea').addEventListener('pointerdown', () => {
-    if ($('selArea').selectedIndex < 0) return;
-    areaAntes = $('selArea').value;
-    $('selArea').selectedIndex = -1;
+  // volver a elegir el área que ya se ve quita el país (change no salta): en base-select, con el clic en su opción
+  if (CSS.supports('appearance', 'base-select')) $('selArea').addEventListener('click', e => {
+    const o = e.target.closest('option');
+    if (o && o.value == $('selArea').value && (paisSel || ciudadSel || lugarSel)) $('selArea').onchange();
   });
-  $('selArea').addEventListener('blur', () => {
-    if ($('selArea').selectedIndex < 0 && areaAntes !== null) $('selArea').value = areaAntes;
-    areaAntes = null;
-  });
+  else {   // en el desplegable del navegador, vacío mientras está abierto: cualquier opción salta
+    let areaAntes = null;
+    $('selArea').addEventListener('pointerdown', () => {
+      if ($('selArea').selectedIndex < 0) return;
+      areaAntes = $('selArea').value;
+      $('selArea').selectedOptions[0].classList.add('actual');
+      $('selArea').selectedIndex = -1;
+    });
+    $('selArea').addEventListener('blur', () => {
+      if ($('selArea').selectedIndex < 0 && areaAntes !== null) $('selArea').value = areaAntes;
+      for (const o of $('selArea').options) o.classList.remove('actual');
+      areaAntes = null;
+    });
+  }
 }
 
 function deUrl(){
   const q = new URLSearchParams(location.search);
   if (q.get('a')) $('selArea').dataset.inicial = q.get('a');
-  if (q.get('b')) $('selRol').dataset.inicial = q.get('b');
+  if (q.get('b')) $('selRol').dataset.inicial = q.get('b') == EVT || q.get('b') == 'mar' ? FES : q.get('b');   // los enlaces de antes, con b=evt o b=mar
   if (q.has('c')) enListado = !/^(grid|0|off|no)$/i.test(q.get('c'));
   if (q.has('d')) mapaAbierto = !/^(off|0|no)$/i.test(q.get('d'));
   idInicial = (q.get('id') || '').trim();
@@ -1768,26 +1917,8 @@ function abreId(){
   abreFicha(p);
 }
 
-// los datos, en GitHub cifrados (cmd.publicar/cifra.py: datajs/datos.cifrados.js, AES-GCM): se
-// descifran con la clave de la url, wwt/#k=<clave> (el # no llega al servidor); en local, sin cifrar
-async function descifra(){
-  if (typeof DATOS_CIFRADOS == 'undefined') return true;
-  const k = new URLSearchParams(location.hash.slice(1)).get('k') || '';
-  try {
-    const bytes = t => Uint8Array.from(atob(t), c => c.charCodeAt(0));
-    const datos = bytes(DATOS_CIFRADOS);
-    const clave = await crypto.subtle.importKey('raw', bytes(k.replace(/-/g, '+').replace(/_/g, '/')), 'AES-GCM', false, ['decrypt']);
-    const texto = await crypto.subtle.decrypt({name: 'AES-GCM', iv: datos.slice(0, 12)}, clave, datos.slice(12));
-    (0, eval)(new TextDecoder().decode(texto));   // var publictango=[...]
-    return true;
-  } catch (e){
-    $('listado').textContent = k ? 'la clave de la url no es válida' : 'falta la clave en la url (#k=...)';
-    return false;
-  }
-}
-
 async function arranca(){
-  if (!await descifra()) return;
+  if (!await descifra(t => $('listado').textContent = t)) return;
   deUrl();
   creaPaises();
   conecta();
