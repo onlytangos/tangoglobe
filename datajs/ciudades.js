@@ -1,6 +1,6 @@
 // ciudades.js : coordenadas [lat, lon] de cada "País|Ciudad" de los datos, para
 // el mapa de app.tg/index.htm. Copia de CIUDAD_COORD de import/geo.py (corregir
-// allí): la escribe import/coords.py en cada join (y en la 1, coords.py busca). null: no encontrada.
+// allí): la escribe import/coords.py en cada join (y en --res2, coords.py busca). null: no encontrada.
 var CIUDADES_COORD = {
 "Argentina|Avellaneda": [-34.6648, -58.3628],
 "Argentina|Buenos Aires": [-34.6096, -58.3888],
@@ -492,6 +492,7 @@ var CIUDADES_COORD = {
 "Italy|Napoles": [40.8359, 14.2488],
 "Italy|Napoli": [40.8359, 14.2488],
 "Italy|Noci": [40.7939, 17.1259],
+"Italy|Orvieto": [42.7185, 12.1104],
 "Italy|Paestum": [40.4238, 15.007],
 "Italy|Palermo": [38.1112, 13.3524],
 "Italy|Pavia": [45.1839, 9.1673],
@@ -662,6 +663,7 @@ var CIUDADES_COORD = {
 "Singapore|Singapore": [1.2812, 103.8503],
 "Slovakia|Banská Bystrica": [48.7354, 19.1457],
 "Slovakia|Bratislava": [48.1478, 17.1072],
+"Slovakia|Piešťany": [48.5895, 17.8214],
 "Slovenia|Laško": [46.1543, 15.236],
 "Slovenia|Ljubljana": [46.0569, 14.5058],
 "Slovenia|Maribor": [46.5547, 15.6459],
