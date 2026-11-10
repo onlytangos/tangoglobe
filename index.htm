@@ -56,9 +56,8 @@
   select { height: var(--altoFila); box-sizing: border-box; font-size: 1em; padding: 0 6px; background: var(--tarjeta); color: var(--texto); border: 1px solid var(--borde); border-radius: 4px; }
   #buscar { font-size: 1em; padding: 0 6px; height: var(--altoFila); width: 100%; box-sizing: border-box;
              background: var(--tarjeta); color: var(--texto); border: 1px solid var(--borde); border-radius: 4px; }
-  select:focus, #buscar:focus { outline: none; border-color: var(--azulClaro); }   /* al elegirlos, el de los enlaces en vez del blanco del navegador */
+  select:focus, #buscar:focus { outline: none; border-color: var(--acento); }   /* con el foco, el borde amarillo de los botones activos (2026-11-10, el usuario: "borde amarillo si select activo", "tb para el searh con foco"; antes, el azul de los enlaces) */
   #info { display: flex; }
-  .cuerpo.encontrado { outline: 2px solid var(--enlace); }
   .busca { flex: 1 1 0; min-width: 0; }
   #selArea, #selRol { width: 100%; box-sizing: border-box; }
   #sugs { position: fixed; width: min(28em, 90vw); z-index: 2;
@@ -70,8 +69,7 @@
   #sugs .tipo { display: inline-block; width: 3.2em; margin-right: 6px; font-size: .75em; font-weight: 600;
                 text-align: center; color: var(--suave); border: 1px solid var(--borde); border-radius: 3px; line-height: 1.5; }
 
-  #sugs .tipo.geoARE { background: var(--blanco); border-color: var(--blanco); color: var(--negro); }
-  #sugs .tipo.geoCON { background: var(--blanco); border-color: var(--blanco); color: var(--negro); }
+  #sugs .tipo.geoARE, #sugs .tipo.geoCON { background: var(--blanco); border-color: var(--blanco); color: var(--negro); }
   #sugs .tipo.geoCIT { background: var(--amarillo); border-color: var(--amarillo); color: var(--negro); }
   #sugs .tipo.gente { background: var(--grisClaro); border-color: var(--grisClaro); color: var(--negro); }   /* personas de tipo people */
   #info img { width: 28px; height: 28px; opacity: .8; }
@@ -81,10 +79,9 @@
   .parrilla .cara { flex: 0 0 calc((100% - (var(--cols) - 1) * 6px) / var(--cols)); max-width: var(--maxFoto); }
   .cara { position: relative; margin: 0; background: var(--negro); display: flex; flex-direction: column;
            border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.5); }
-  .cara img, .cara .sinfoto { display: block; flex: none; width: 100%; aspect-ratio: 1; object-fit: contain; background: var(--negro); }
+  .cara img, .cara .sinfoto { display: block; flex: none; width: 100%; aspect-ratio: 1; object-fit: contain; background: var(--negro); }   /* también los eventos: una cara cuadrada, la foto entera sobre negro (2026-10-28; antes dos caras, 16:9 y cover) */
   .cara img.sinfoto, .cuerpo > img.sinfoto { background: var(--sinfoto); }
 
-  .cara.evt img, .cara.evt .sinfoto { object-fit: contain; }   /* un evento, una cara cuadrada como las personas (2026-10-28; antes dos caras, 16:9 y cover): la foto entera, sobre negro */
   .cara figcaption { flex: none; height: calc(3.75em + 6px);   /* hasta 3 líneas */ box-sizing: border-box; padding: 3px; background: var(--barra); color: var(--texto);
                      font-size: .7em; line-height: 1.25; display: flex; align-items: center; justify-content: center;
                      text-align: center; overflow-wrap: anywhere; }
@@ -96,9 +93,6 @@
   .cuerpo > img.conEnlace { cursor: pointer; }
 
   .cara.evt img.logo, .cuerpo > img.logo { object-fit: contain; background: var(--blanco); padding: 6%; box-sizing: border-box; }
-
-  .cuerpo > img.portada { flex: none; align-self: flex-start; width: min(50%, var(--maxFoto)); height: auto;
-                           aspect-ratio: 1; object-fit: cover; }   /* cuadrada (2026-10-28; antes 16:9 y del alto del texto) */
 
   dialog { border: 1px solid var(--borde); border-radius: 8px; padding: 16px; width: min(520px, 90vw);
            background: var(--barra); color: var(--texto); box-shadow: 0 4px 24px rgba(0,0,0,.8); }
@@ -115,10 +109,12 @@
   #kkTexto { display: block; width: 100%; height: 190px; border: 0; }   /* atribucionkk.htm; su alto, el que avisa (conecta) */
   .cuerpo h2 { margin: 0 0 8px; font-size: 1.1em; }
   .cuerpo p { margin: 0; font-size: .9em; overflow-wrap: anywhere; }   /* líneas de texto seguidas; los enlaces, aparte (p.enlaces) */
+  .cuerpo p.enlaces + p.organiza, .cuerpo p.panelInfo + p.organiza { margin-top: 6px; }   /* los eventos que organiza: tras su lugar y sus enlaces, uno por línea */
+  .cuerpo p.organiza .icono { vertical-align: -3px; margin-left: 2px; }   /* sus logos, tras su nombre */
+  .cuerpo .triangulo { position: relative; top: -1px; margin-right: -10px; border: 0; background: none; padding: 0; color: var(--blanco); font-size: calc(1em + 3px); line-height: 1; cursor: pointer; }   /* abre el panel de rol, notas y contacto: blanco, 3 px más grande, 1 px más arriba y a 4 px del texto (la línea separa 14; el usuario) */
+  .cuerpo .panelInfo { margin-top: 4px; }   /* el de las personas, un párrafo; el de los eventos, sus líneas (venue, org) */
 
   .listado { display: flex; flex-direction: column; gap: 8px; box-sizing: border-box; font-size: 18px; }   /* 2px más que el body (16px); fechas, ciudades y salas, en proporción (.85em) */
-  .listado .cuerpo { padding: 12px; background: var(--barra); border: 1px solid var(--borde); border-radius: 8px; }
-  .listado .cuerpo > img, .listado .cuerpo > .sinfoto { aspect-ratio: 16 / 9; }
 
   .linea1, .linea2 { display: flex; gap: 4px; align-items: center; }
   .linea2 label { flex: 1 1 0; min-width: 0; }
@@ -141,10 +137,6 @@
   .tira button:not(.activo):hover { background: var(--azulClaro); color: var(--negro); }   /* el botón bajo el ratón, como en la lista del mapa */
   .tira button.cero, .tira button.cero:hover { background: none; color: var(--grisClaro); cursor: default; }   /* a cero: sin clic (el contador, en el hover) */
 
-  .listado .cuerpo.linea { padding: 6px 12px; cursor: pointer; }
-  .listado .linea h2 { flex: 1; min-width: 0; margin: 0; font-size: 1em; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .listado .linea:hover { border-color: var(--enlace); }
-
   .listado.filas { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0; border-top: 1px solid var(--borde); }
   .listado.filas.conFecha { grid-template-columns: auto auto minmax(0, 1fr) auto; }
   .listado .fila { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; column-gap: 16px; align-items: center;
@@ -155,10 +147,17 @@
   .listado .fila.encontrado { outline: 0; border-left-color: var(--enlace); }
   .ruta { height: var(--altoTira); box-sizing: border-box; padding: 0 10px; line-height: calc(var(--altoTira) - 2px); font-size: .85em;   /* la de los botones de meses y días */ background: var(--grisMedio); color: var(--suave); border: 1px solid var(--borde); border-radius: 4px;
                    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ruta .icono { height: 16px; width: auto; vertical-align: -3px; }
+  .ruta .icono { height: 16px; width: auto; }
+  /* todo lo de la caja, centrado en vertical: los tramos, los ›, el icono y el contador, que es más grande (2026-11-10, el usuario: "centra en vertical todos los
+     elementos de la caja migas"; antes, sobre la línea base). Si la ruta no cabe, se cortan los tramos, cada uno con su …: el contador siempre se ve */
+  #ruta { display: flex; align-items: center; height: 100%; }
+  #ruta > * { flex: none; }
+  #ruta > .sep { white-space: pre; }   /* con sus blancos */
+  #ruta > .tramo { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  #ruta > .cuenta { margin-left: .3em; }
   .ruta .paso { color: var(--enlace); cursor: pointer; }
   .ruta .paso:hover { text-decoration: underline; }
-  .ruta .cuenta { color: var(--amarillo); font-weight: bold; }
+  .ruta .cuenta { color: var(--blanco); font-weight: bold; font-size: calc(1em + 4px); }   /* 4 px más que la ruta y en blanco (2026-11-10, el usuario: "aumenta 2px la fuente del contador de migas", "2px mas y blanco para el contador"; antes, amarillo) */
   .ruta { position: relative; padding-right: 30px; flex: 1; min-width: 0; }   /* a la derecha, el botón de copiar la url de la ruta */
   .lineaRuta { flex: 1 1 100%; min-width: 0; display: flex; gap: 4px; }   /* la ruta y, fuera de ella a la derecha, el botón list / grid */
   .rutaDer { position: absolute; top: 0; right: 8px; height: 100%; display: flex; align-items: center; }   /* el de copiar */
@@ -171,6 +170,12 @@
   .ruta .copiaRuta svg { width: 15px; height: 15px; display: block; }
   .fila span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25; }   /* todas con el mismo alto: centradas igual */
   .fila .fFecha, .fila .fLugar { color: var(--suave); font-size: .85em; font-variant-numeric: tabular-nums; }
+  .fila .fFecha, #aDias small { font-family: "Courier New", Courier, monospace; }   /* las fechas, con todas las letras del mismo ancho: alineadas (2026-11-08, el usuario) */
+  /* la fecha, 2 px más grande y más estrecha (2026-11-10, el usuario: "sube 2px la fuente de la fecha y hazla mas estrecha"): no hay un Courier estrecho en todos
+     los dispositivos, así que cada trozo de letras o números (.fLetras) se pinta al 75 % de su ancho (--estrecha) en una caja de ese ancho: --n letras de 1ch */
+  .fila .fFecha { font-size: calc(.85em + 2px); line-height: 1; --estrecha: .75; }   /* (el interlineado: la fila, del mismo alto que antes) */
+  .fila .fFecha .fLetras { display: inline-block; overflow: visible; width: calc(var(--n) * 1ch * var(--estrecha)); transform: scaleX(var(--estrecha)); transform-origin: left center; }
+  .fila .fFecha .fSigno { font-family: system-ui, sans-serif; line-height: 0; }   /* el punto y el guion, con la letra del body: en Courier ocupan una letra entera (2026-11-10, el usuario: "el . y - ocupan mucho espacio"); siguen alineadas: cada signo mide siempre lo mismo */
   .fila .fNombre { font-weight: 500; position: relative; top: -1px; }   /* su letra, mayor: sin esto queda 1px más baja que la fecha y la ciudad */
   .fila .fTexto { display: flex; align-items: center; gap: 16px; min-width: 0; }   /* el título y su ciudad, en la misma celda: el título llega hasta su ciudad */
   .fila .fNombre { flex: 0 1 auto; }
@@ -236,7 +241,7 @@
   .ciudadesMapa > span.cero, .ciudadesMapa > span.cero:hover { background: none; color: var(--grisClaro); cursor: default; }
   .ciudadesMapa .nom { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }   /* el nombre, cortado con … si no cabe */
   .ciudadesMapa .num { flex: none; }   /* a su derecha, el contador */
-  .ciudadesMapa span.atras svg { flex: none; width: 15px; height: 15px; margin-right: -3px; }   /* la primera: volver al nivel de arriba, con su doble chevron */
+  .ciudadesMapa span.atras svg { flex: none; width: 15px; height: 15px; margin-right: -3px; position: relative; top: -2px; }   /* la primera: volver al nivel de arriba, con su logo de volver, 2 px más arriba (2026-11-10, el usuario: "log back sube 2px") */
   .mapa { flex: 1; min-width: 0; height: var(--altoMapa); max-height: 24.5vh; border-radius: 6px; }
   #bMapa:disabled { opacity: .45; cursor: default; }
   .iParrilla { position: relative; top: -2px; }
@@ -261,11 +266,14 @@
   #dCerrar svg, #fCerrar svg, #aCerrar svg { display: block; width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }   /* la X dibujada: la × de la letra se descentraba según la fuente */
   #fCerrar, #aCerrar { top: 8px; }   /* el del popup, a la misma distancia arriba y a la derecha */
   #dCerrar:hover, #fCerrar:hover, #aCerrar:hover { border-radius: 4px; }   /* bajo el ratón, de círculo a cuadrado */
-  /* el de copiar el enlace: al final de la primera línea de la ficha (su título; 2026-11-01, el usuario) */
+  /* la primera línea de la ficha: el nombre, su tipo y el logo de copiar el enlace, seguidos en la misma línea, el logo a un blanco del tipo; si no caben,
+     saltan a la siguiente (2026-11-10, el usuario: "debe salir en la mismalinea : nombre+tipo+copy", "sino cabe salta", "copy ... separado 1 blanco,
+     despues del tipo de evento"). La última palabra del nombre, el tipo y el logo no se separan (.finTitulo): el logo nunca queda solo en una línea */
+  .cuerpo h2 .finTitulo { white-space: nowrap; }
   #dFuentes { position: absolute; right: 13px; bottom: 8px; width: 16px; height: 16px; border: 0; background: none; padding: 0; cursor: pointer; }
   #dFuentes svg { width: 100%; height: 100%; display: block; }
   dialog .fuentes a { display: block; margin: 8px 0; overflow-wrap: anywhere; }
-  #dCopiar { display: inline-flex; vertical-align: -2px; margin-left: 8px; border: 0; background: none; color: var(--acento); padding: 0; cursor: pointer; }
+  #dCopiar { display: inline-flex; vertical-align: -2px; margin-left: .3em; border: 0; background: none; color: var(--acento); padding: 0; cursor: pointer; }   /* .3em: un blanco */
   #dCopiar:hover { color: var(--blanco); }
   #dCopiar svg { width: 16px; height: 16px; display: block; }
 
@@ -274,7 +282,6 @@
   .detalle.filas h2 { font-weight: 500; font-size: 1.05em; }
   .detalle.filas p { color: var(--suave); }
   .detalle.filas h2 .hTipo, #ficha h2 .hTipo { color: var(--suave); font-size: .8em; font-weight: 400; margin-left: 10px; }
-  .detalle.filas .fFecha { font-variant-numeric: tabular-nums; }
   .detalle.filas .cuerpo a { font-weight: 500; }
   .detalle.filas .cuerpo > img { border-radius: 3px; }
 
@@ -307,7 +314,7 @@
   .sesion .hora, .sesion .nom { display: block; min-height: 1.2em; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }   /* el nombre entero, en el hover y en su ficha */
   .sesion .hora { color: var(--suave); font-variant-numeric: tabular-nums; }
   .sesion:hover .hora { color: inherit; }
-  @media (max-width: 800px) {
+  @media (max-width: 800px) {   /* el popup, estrecho: su límite es el del ancho de la ventana, no el del panel (720 px) */
     #agenda table { --topePrimera: 26%; font-size: 12px; }
     #agenda th, #agenda td { padding: 2px 1px; }
     #agenda tr > :first-child { padding-left: 6px; padding-right: 3px; }
@@ -322,24 +329,36 @@
     #aTitulo { font-size: .9em; }
     #aAtras, #aSigue { width: 2em; }
   }
-  @media (min-width: 801px) {
+  /* el límite del panel vertical: 720 px (2026-11-10, el usuario: "mueve el punto de ruptura para ver a media pantalla el menú lateral"; antes 800,
+     y Brave a media pantalla mide 768). El mismo en estos tres @media y en isMovil() */
+  @media (min-width: 721px) {
     .tira { flex: none; flex-wrap: wrap; gap: 2px; overflow: visible; }
     .tira button { flex: 1 0 auto; padding: 0 4px; }
     .tira[data-tira="meses"], .tira[data-tira="dias"] { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); }
     .tira[data-tira="dias"] button { grid-column: span 3; }
     .tira[data-tira="meses"] button { grid-column: span 3; order: 2; }   /* los 12 meses, de 4 en 4 */
-    .tira[data-tira="meses"] button:nth-child(-n+2), .tira[data-tira="meses"] button:last-child { grid-column: span 4; order: 1; }   /* antes, los años y YEAR en su línea */
-    .zonaMapa { --altoMapa: 178px; display: flex; flex-direction: column; min-height: 0; }
+    .tira[data-tira="meses"] button:nth-child(-n+2), .tira[data-tira="meses"] button:last-child { grid-column: span 4; order: 1; }   /* antes, los años y this year en su línea */
+    .zonaMapa { display: flex; flex-direction: column; min-height: 0; }
     .zonaMapa:has(.mapaCaja.cerrado) #bMapa { margin-bottom: 6px; }
-    .mapaCaja { flex-direction: column; min-height: 0; }
-    .mapa { flex: none; box-sizing: border-box; max-height: none; }
+    /* el mapa, a 2 px de lo de arriba (los selectores) y de lo de abajo (los países), como las celdas entre sí (2026-11-10, el usuario: "margin 2px del mapa arriba
+       y abajo"; antes 10 y 6): arriba, el hueco del panel (10 px) menos 8 */
+    .zonaMapa:has(.mapaCaja:not(.cerrado, .oculto)) { margin-top: -8px; }
+    .mapaCaja { flex-direction: column; min-height: 0; gap: 2px; }
+    .mapa { flex: none; box-sizing: border-box; height: auto; aspect-ratio: 1; max-height: none; }   /* cuadrado, del ancho del panel (2026-11-10, el usuario: "haz el mapa cuadrado, manten el mismo ancho"; antes, 142 px de alto) */
     .ciudadesMapa { flex: 0 1 auto; min-height: 0; width: auto; height: auto; max-height: none;   /* del alto de su contenido: siempre 6 líneas, por páginas */
                     grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: column; grid-template-rows: repeat(var(--filas, 1), var(--altoTira)); }   /* se llena por columnas: primero la de la izquierda (--filas, en pintaCiudades) */
     .ciudadesMapa:empty { display: none; }
   }
-  @media (min-width: 801px) and (max-height: 460px) { .zonaMapa { flex: none; } }   /* ventana baja: no cabe; scroll en el panel */
+  @media (min-width: 721px) and (max-height: 460px) { .zonaMapa { flex: none; } }   /* ventana baja: no cabe; scroll en el panel */
+  /* el listado estrecho junto al panel (menos de 600 px, como en el móvil): la fecha, más pequeña y apretada, y menos hueco entre columnas: el ancho, para el título
+     (2026-11-10, el usuario: "la fecha puede hacerse q ocupe menos ancho ?") */
+  @media (min-width: 721px) and (max-width: 920px) {
+    .listado .fila { column-gap: 8px; padding-left: 6px; padding-right: 6px; }
+    .fila .fFecha { font-size: calc(.7em + 2px); }
+    .fila .fTexto { gap: 10px; }
+  }
   /* pantalla estrecha: una columna, como la cabecera de antes: el panel arriba y debajo la barra, los dos fijos */
-  @media (max-width: 800px) {
+  @media (max-width: 720px) {
     .app { display: block; }
     .panel { height: auto; overflow: visible; flex-flow: row wrap; align-items: center; gap: 4px; padding: 4px 16px; box-shadow: none; }
     .linea1, .linea2 { flex: 0 0 100%; }
@@ -396,12 +415,9 @@ history.scrollRestoration = 'manual';   // al cargar (o recargar), arriba: a la 
 const MAX_FILAS_PANEL = 6;   // las celdas por columna del panel de países y ciudades, con back y more... (2026-11-04, el usuario: "mas de celdas por columna es 6")
 let enListado = true;   // listado o parrilla de caras (botón list; ?c=grid / ?c=list)
 const ANCHO_CARA = 110;   // = --maxFoto del CSS: tamaño máximo de las fotos
-let soloEventos = false;
-function columnasParrilla(evts){
-  soloEventos = evts;
+function columnasParrilla(){
   const div = $('parrilla'), w = div.clientWidth || window.innerWidth;
   div.style.setProperty('--cols', Math.max(4, Math.floor((w + 6) / (ANCHO_CARA + 6))));   // un evento, una cara (2026-10-28; antes dos)   // sin tope: cada cara, ANCHO_CARA como mucho (--maxFoto)
-  div.classList.toggle('evts', evts);
 }
 const EVT = 'evt';   // un evento; en el selector, festivals (rolesEvento)
 const FES = 'fes';
@@ -419,6 +435,9 @@ const TIPOS_P = Object.keys(TIPOS_PERSONA).filter(t => t != 'person');   // grou
 const LIS = 'lis';
 const MUNDIAL = 'World';
 const $ = id => document.getElementById(id);
+// la única pregunta al navegador por el móvil: pantalla estrecha (sin panel vertical; el mismo límite que los @media de 720 px del CSS, donde no caben variables)
+// y, con conDedo, también sin ratón (el dedo: una tableta ancha); la colocación solo mira el ancho, para ir con el CSS
+const isMovil = (conDedo = false) => matchMedia('(max-width: 720px)').matches || (conDedo && !matchMedia('(pointer: fine)').matches);
 
 function foto(idfoto, evento){
   const f = fotoDeId(idfoto, evento);
@@ -509,6 +528,7 @@ function cargaFilas(filas){
   pinta();
 }
 
+const porNombre = new Intl.Collator().compare;   // ordenar por nombre: el mismo orden que localeCompare, con un solo comparador (2026-11-10)
 const claveNom = (n, f) => String(n).toLowerCase().replace(/[^\p{L}\p{N}]/gu, '') + '#' + f;
 const orgsDe = e => leeVarios(e).org || [];
 const wwwDe = e => (leeVarios(e).www || [''])[0];
@@ -543,7 +563,7 @@ function proximaReg(f, solo){   // solo: días de la semana (0 = domingo) a los 
 }
 function mapaDe(e){
   const venue = venueDe(e), v = leeVarios(e), vv = venue ? leeVarios(venue) : {};
-  const dir = [(v.dir || vv.dir || [''])[0]].map(d => d == '?' ? '' : d)[0];
+  const dir = dirSala(e);
   const lugar = [e[CAMPO.city], e[CAMPO.country]].map(x => String(x || '').trim())
                 .filter(x => x && x != '-' && !dir.toLowerCase().includes(x.toLowerCase()));
   const trozos = [locDe(e), dir, ...lugar].join(', ').split(',').map(x => x.trim()).filter(Boolean);
@@ -580,7 +600,6 @@ function eventos(){
     const prox = f[0] == 'REG' ? proximaReg(fechaDe(e)) : null;
     const fecha = f[0] == 'EVT' ? [f[4], f[2], (f[3] || '').replace(/\d+/g, dos)].filter(Boolean).join('.')
                 : prox ? [prox.getFullYear(), MESES[prox.getMonth()], dos(prox.getDate())].join('.') : '';
-    const reg = f[0] == 'REG' ? textoReg(fechaDe(e)) : '';
     const orden = f[0] == 'EVT' ? (parseInt(f[4]) || 9999) * 100 + (parseInt(f[1]) || 0) : prox ? prox.getFullYear() * 100 + prox.getMonth() : 999999;
     const mes = f[0] == 'EVT' ? parseInt(f[1]) : prox ? prox.getMonth() : NaN, dia = prox ? prox.getDate() : parseInt(f[3]) || 1;
     const orgs = orgsDe(e);
@@ -588,7 +607,7 @@ function eventos(){
                          fb: url, tipo: String(e[CAMPO.tipo]).replace(/^event\s*/, '') || 'event', pos: posEvento(e),
                          ciudad: e[CAMPO.city] && e[CAMPO.city] != '-' ? String(e[CAMPO.city]).trim() : '',
                          lugar: e[CAMPO.city] && e[CAMPO.city] != '-' ? String(e[CAMPO.city]).trim() : '',
-                         sala: locDe(e), venue: (venueDe(e) || [])[CAMPO.name] || '', salaFb: urlSala(e), fecha, reg, orden, fechaOrig: fechaDe(e), noVerificado: Boolean(leeVarios(e).ext),
+                         sala: locDe(e), salaFb: urlSala(e), fecha, orden, fechaOrig: fechaDe(e), noVerificado: Boolean(leeVarios(e).ext),
                          mapa: regular(rolEvento(e[CAMPO.tipo])) || dirSala(e) ? mapaDe(e) : '', mes, dia, orgs, www: wwwDe(e) ? [wwwDe(e)] : [],
                          video: (leeVarios(e).vid || [''])[0], notas: [], coment: [], ids: [idDe(e)].filter(Boolean)};
     for (const k of claves(0)) porClave.set(k, ev);
@@ -677,10 +696,13 @@ function organizadores(){
   const organiza = new Map();
   for (const e of eventosTango()){
     if (e[CAMPO.tipo] == 'venue') continue;
-    const url = /^https?:\/\//.test(e[CAMPO.urlfb] || '') ? e[CAMPO.urlfb] : '';
+    // su Facebook y su web (la propia antes que la de una agenda; su url, si no es de Facebook): sus logos, tras su nombre (2026-11-08)
+    const u = /^https?:\/\//.test(e[CAMPO.urlfb] || '') ? e[CAMPO.urlfb] : '';
+    const webs = [...(u && !esFb(u) ? [u] : []), ...(leeVarios(e).www || []).filter(w => /^https?:\/\//.test(w))];
+    const fb = esFb(u) ? u : '', www = webs.find(w => !esAgendaWeb(w)) || webs[0] || '';
     for (const o of orgsDe(e)){
       if (!organiza.has(o)) organiza.set(o, []);
-      if (!organiza.get(o).some(x => x.nombre == e[CAMPO.name])) organiza.get(o).push({nombre: e[CAMPO.name], url});
+      if (!organiza.get(o).some(x => x.nombre == e[CAMPO.name])) organiza.get(o).push({nombre: e[CAMPO.name], fb, www});
     }
   }
   return organiza;
@@ -702,22 +724,25 @@ function enlace(href, texto, icono){
 
 // los logos de la ficha, siempre en este orden y solo los que tiene: local (mapa), fb, www, yt;
 // la imagen de la ficha abre la url del primero
-function logosFicha(d, img, texto, {mapa = '', fb = '', www = [], video = '', mapaAparte = false, fotoMapa = true, conAgendas = false}){   // mapaAparte: su enlace ya está en la línea del lugar; fotoMapa: la imagen abre el mapa
-  const dominio = u => /\.(jpe?g|png|gif|webp|avif|svg)([?#]|$)/i.test(u) ? 'img' : u.replace(/^https?:\/\/(www\.)?/, '').split('/')[0];   // una foto: img
-  const logos = [...(mapa ? [enlace(mapa, 'map', 'img/mapa.svg')] : []),
-                 ...(fb ? [enlace(fb, 'facebook', 'img/perfil.svg')] : []),
-                 ...www.filter(u => conAgendas || !esAgendaWeb(u)).map(u => enlace(u, dominio(u), 'img/web.svg')),   // no la agenda de donde salen los datos (aux.js), salvo en links: es la página fuente
-                 ...(video ? [enlace(video, 'video', 'img/yt.svg')] : [])];
-  const textos = [].concat(texto).filter(Boolean), vistos = logos.slice(mapa && mapaAparte ? 1 : 0);
-  if (textos.length || vistos.length){
+function logosFicha(d, img, {mapa = '', fb = '', www = [], video = '', fotoMapa = true, conAgendas = false, textoFb = 'facebook'}){   // fotoMapa: la imagen abre el mapa; textoFb: el texto del enlace de Facebook
+  // el texto del enlace de una web: www (2026-11-10, el usuario: "para todas las fichas, cambia los textos de los url de www por www"; antes, su dominio); una foto: img.
+  // La dirección, en el hover
+  const web = u => { const a = enlace(u, /\.(jpe?g|png|gif|webp|avif|svg)([?#]|$)/i.test(u) ? 'img' : 'www', 'img/web.svg'); a.title = u; return a; };
+  const aMapa = mapa ? [enlace(mapa, 'map', 'img/mapa.svg')] : [],
+        aFb = fb ? [enlace(fb, textoFb, 'img/perfil.svg')] : [],
+        aWww = www.filter(u => conAgendas || !esAgendaWeb(u)).map(web),   // no la agenda de donde salen los datos (aux.js), salvo en links: es la página fuente
+        aVideo = video ? [enlace(video, 'video', 'img/yt.svg')] : [];
+  const logos = [...aMapa, ...aFb, ...aVideo, ...aWww];   // el mapa y luego FB, YT, WWW (2026-11-08, el usuario)
+  if (logos.length){
     const par = document.createElement('p');
     par.className = 'enlaces';
-    par.append(...textos, ...vistos);
+    par.append(...logos);
     d.appendChild(par);
   }
   if (logos.length && img){
     img.classList.add('conEnlace');
-    const abre = logos[mapa && !fotoMapa && logos.length > 1 ? 1 : 0].href;
+    const otro = [...aFb, ...aWww, ...aVideo][0];   // la foto abre lo de antes: el mapa (fotoMapa) o su Facebook, su web o el vídeo, por este orden
+    const abre = (mapa && (fotoMapa || !otro) ? aMapa[0] : otro).href;
     img.title = abre;
     img.onclick = () => window.open(abre, '_blank', 'noopener');
   }
@@ -755,7 +780,8 @@ function iconoFila(p){   // un solo icono: su Facebook (urlfb) si lo tiene; si n
   return s;
 }
 
-const fechaListado = p => (p.fecha || '').replace(/^\d{4}\./, '') || (regular(p.roles[0]) ? '?' : '');
+// la fecha de la línea: el mes y el primer día, NOV.04 (2026-11-10, el usuario: "quita el segundo dia del listado por solo NOV.04"; antes, NOV.04-06)
+const fechaListado = p => (p.fecha || '').replace(/^\d{4}\./, '').replace(/-\d+$/, '') || (regular(p.roles[0]) ? '?' : '');
 
 // milongas por días de la semana: un solo día a la vez (diasSel, con uno o vacío = todos)
 const DIAS_SEM = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
@@ -794,14 +820,15 @@ function filasMilongas(lista){   // [{p, dia}] por fecha desde hoy: con días el
   const filas = (diasSel.size ? lista.flatMap(p => [...diasSel].map(d => ({p, dia: proximaEn(p, [d])})))
                               : lista.map(p => ({p, dia: proximaEn(p)}))).filter(x => enVista(x.dia, x.p));
   const t = x => x.dia ? x.dia.getTime() : Infinity;
-  return filas.sort((x, y) => t(x) - t(y) || horaDe(x.p).localeCompare(horaDe(y.p)) || x.p.nombre.localeCompare(y.p.nombre));
+  const hora = new Map(filas.map(x => [x.p, horaDe(x.p)]));   // la hora de cada una, una vez (no en cada comparación)
+  return filas.sort((x, y) => t(x) - t(y) || hora.get(x.p).localeCompare(hora.get(y.p)) || porNombre(x.p.nombre, y.p.nombre));
 }
 // el hover de un botón de las tiras: al momento (el title tarda), centrado sobre el botón, sin salirse de la ventana
 function tipTira(b, texto, circulo){   // circulo: solo el número, como el contador de las ciudades del mapa
   const t = $('tipTira'), propio = b.textContent;
   const fuera = () => { t.classList.add('oculto'); b.textContent = propio; b.style.flex = ''; };
   b.onmouseenter = () => {
-    if (circulo && matchMedia('(min-width: 801px)').matches){   // en el panel vertical, el número en vez del texto; la celda, de su ancho (si no, los roles se recolocan)
+    if (circulo && !isMovil()){   // en el panel vertical, el número en vez del texto; la celda, de su ancho (si no, los roles se recolocan)
       b.style.flex = '0 0 ' + b.getBoundingClientRect().width + 'px';
       b.textContent = texto;
       return;
@@ -874,52 +901,59 @@ function pintaDias(cuenta){
   });
 }
 
-function titulo(d, p, conLugar){
+function titulo(d, p){
   const h = document.createElement('h2');
   h.textContent = p.nombre;
   d.appendChild(h);
-  if (!conLugar) return;
   if (p.evento && p.tipo){
     const t = document.createElement('span');
     t.className = 'hTipo';
     t.textContent = p.tipo;
     h.appendChild(t);
   }
-  // la segunda línea: ciudad, país y el mapa (el venue va en su línea)
+  // la segunda línea: ciudad, país y el mapa (el venue va en su línea); en los eventos, sin el mapa: va al final de la ficha, con sus enlaces
+  // (2026-11-10, el usuario: "en events tb link a map debe estar al final de la ficha")
   const lugar = p.ciudad ? [p.ciudad, p.pais != '-' ? p.pais : ''].filter(Boolean).join(', ') : p.lugar;
-  if (!lugar && !p.mapa) return;
+  const mapa = !p.evento && p.mapa;
+  if (!lugar && !mapa) return;
   const par = document.createElement('p');
   par.className = 'enlaces';
-  par.append(...[lugar, p.mapa && enlace(p.mapa, 'map', 'img/mapa.svg')].filter(Boolean));
+  par.append(...[lugar, mapa && enlace(mapa, 'map', 'img/mapa.svg')].filter(Boolean));
   d.appendChild(par);
 }
 
-function rellenaEvento(c, p, conLugar){
+// el triángulo que abre y cierra un panel de la ficha, al principio de una línea (la de su lugar o, sin ella, la de su nombre); el panel, cerrado al pintar
+// (2026-11-08, el usuario; el de las personas: rol, notas y contacto; el de los eventos: venue y org)
+function trianguloPanel(panel, linea){
+  panel.classList.add('panelInfo', 'oculto');
+  const t = document.createElement('button');
+  t.type = 'button'; t.className = 'triangulo'; t.textContent = '▸'; t.title = 'info'; t.setAttribute('aria-expanded', 'false');
+  t.onclick = ev => {
+    ev.stopPropagation();
+    const abierto = !panel.classList.toggle('oculto');
+    t.textContent = abierto ? '▾' : '▸';
+    t.setAttribute('aria-expanded', String(abierto));
+  };
+  linea.prepend(t);
+}
+
+function rellenaEvento(c, p){
   const img = cara(p);
-  if (p.foto) img.className = 'portada';
   c.appendChild(img);
   const d = document.createElement('div');
   d.className = 'texto';
   c.appendChild(d);
-  titulo(d, p, conLugar);
-  const fecha = p.reg ? 'regular ' + p.reg : [p.fecha, p.noVerificado ? '(no verificado)' : ''].filter(Boolean).join(' ');   // (extrapolado del año pasado: ext)
+  titulo(d, p);
+  const lineaLugar = d.lastElementChild.tagName == 'P' ? d.lastElementChild : null;   // la de su lugar, si titulo la pone (tras el h2 del nombre)
+  // venue y org, en un panel que abre y cierra el triángulo de la línea de su ciudad, tras ella y antes de los enlaces; cerrado al pintar, como el de las personas
+  // (2026-11-10, el usuario: "events oculta con triangulo despues de ciudad y antes lo los links")
+  const panel = document.createElement('div');
   const fb = p.fb && esFb(p.fb) ? p.fb : '';
-  const enlaces = texto => logosFicha(d, img, texto, {mapa: p.mapa, fb, www: [...(p.fb && !fb ? [p.fb] : []), ...p.www.filter(u => u != p.fb)], video: p.video, mapaAparte: conLugar, fotoMapa: regular(p.roles[0])});
+  const enlaces = () => logosFicha(d, img, {mapa: p.mapa, fb, www: [...(p.fb && !fb ? [p.fb] : []), ...p.www.filter(u => u != p.fb)], video: p.video, fotoMapa: regular(p.roles[0]), textoFb: 'FB'});   // el mapa, el primero de los enlaces; Facebook, FB (2026-11-10, el usuario: "en las fichas de events usar FB en vez de facebook")
   if (p.sala){
     const par = document.createElement('p');
     par.append('venue: ', p.salaFb ? enlace(p.salaFb, p.sala) : p.sala);   // la dirección, en el enlace map
-    d.appendChild(par);
-  }
-  if (conLugar){   // la cuarta línea: la fecha y los enlaces (5 líneas: título y tipo, lugar, venue, esta y org)
-    const f = document.createElement('span');
-    f.className = 'fFecha';
-    f.textContent = fecha;
-    enlaces([fecha && f]);
-  } else for (const texto of [p.lugar, fecha]){
-    if (!texto) continue;
-    const par = document.createElement('p');
-    par.textContent = texto;
-    d.appendChild(par);
+    panel.appendChild(par);
   }
   if (p.orgs.length){
     const par = document.createElement('p');
@@ -929,21 +963,26 @@ function rellenaEvento(c, p, conLugar){
       const url = (personas.find(x => !x.evento && x.nombre == nombre && x.fb) || {}).fb;
       par.appendChild(url ? enlace(url, nombre) : document.createTextNode(nombre));
     });
-    d.appendChild(par);
+    panel.appendChild(par);
   }
-  if (!conLugar) enlaces(p.tipo);
+  if (panel.childNodes.length){
+    trianguloPanel(panel, lineaLugar || d.lastElementChild);
+    d.appendChild(panel);
+  }
+  enlaces();   // los enlaces, al final de la ficha: título y tipo, lugar, venue, org y estos; sin la fecha (2026-11-08, el usuario: "no necesitamos la fecha en el detalle del evento") (2026-11-10, el usuario: "para events los enlaces al final de la ficha"; antes, delante de org)
 }
 
 const TEXTO_ROL = {org: 'organizer', art: 'artist', vip: 'vip'};   // texto propio en app.tg (en aux.js, para app.tw)
 const textoRol = r => TEXTO_ROL[r] || (ROLES[r] && ROLES[r].nombre) || r;
 
-function rellenaPersona(c, p, conLugar){
+function rellenaPersona(c, p){
   const img = cara(p);
   c.appendChild(img);
   const d = document.createElement('div');
   d.className = 'texto';
   c.appendChild(d);
-  titulo(d, p, conLugar);
+  titulo(d, p);
+  const lineaLugar = d.lastElementChild.tagName == 'P' ? d.lastElementChild : null;    // la de su lugar, si titulo la pone (tras el h2 del nombre)
   // rol, org, comentarios y prv: un solo párrafo, seguidos y separados por " · "
   const par = document.createElement('p');
   const linea = (etiqueta, ...nodos) => {   // etiqueta (rol, org...) resaltada; sin etiqueta, solo el texto
@@ -958,12 +997,9 @@ function rellenaPersona(c, p, conLugar){
   const roles = p.roles.filter(r => ROLES[r]);
   const publicos = roles.filter(r => ROLES[r].publico), privados = roles.filter(r => !ROLES[r].publico);
   if (p.sala) linea('venue', p.salaFb ? enlace(p.salaFb, p.sala) : p.sala);
-  if (p.tipoP && p.tipoP != 'person') linea('type', p.tipoP);
+  if (p.tipoP && p.tipoP != 'person') linea('type', PRIMEROS[p.tipoP] || p.tipoP);   // como en el selector: artist couple
   if (publicos.length) linea('rol', publicos.map(textoRol).join(', '));
   if (privados.length) linea('pr', privados.map(textoRol).join(', '));
-  const eventos = organizaDe(p.nombre);
-  if (eventos.length)
-    linea('org', ...eventos.flatMap((ev, i) => [...(i ? [', '] : []), ev.url ? enlace(ev.url, ev.nombre) : ev.nombre]));
   const coments = [];
   for (const n of p.coment) for (const t of n.split(/,/).map(x => x.trim()))
     if (t && !coments.includes(t)) coments.push(t);
@@ -979,36 +1015,64 @@ function rellenaPersona(c, p, conLugar){
     if (texto && !textos.includes(texto) && !coments.includes(texto)) textos.push(texto);
   }
   if (textos.length) linea('prv', textos.join(', '));
-  if (par.childNodes.length) d.appendChild(par);
+  if (par.childNodes.length){
+    // rol, notas y contacto, en un panel que abre y cierra el triángulo al principio de la línea de su lugar (o de su nombre); cerrado al pintar (2026-11-08, el usuario)
+    trianguloPanel(par, lineaLugar || d.lastElementChild);     // (al principio de la línea de su lugar; sin ella, de su nombre: el usuario)
+    d.appendChild(par);
+  }
   const fb = p.fb && esFb(p.fb) ? p.fb : '';
-  logosFicha(d, img, '', {fb, www: [...(p.fb && !fb ? [p.fb] : []), ...urls.filter(u => !/youtu/.test(u) && u != p.fb)],
-                          video: urls.find(u => /youtu/.test(u)) || ''});
+  // (sin las webs que ya salen en la lista de sus eventos: milonguero-milonguero.com en Victoria Huang; 2026-11-08, el usuario: "estan repetidos, no ponerlos")
+  const eventos = organizaDe(p.nombre);
+  const pagina = u => String(u).toLowerCase().replace(/^https?:\/\/(www\.)?/, '').replace(/[?#].*$/, '').replace(/\/+$/, '');
+  const deEventos = new Set(eventos.flatMap(ev => [ev.fb, ev.www]).filter(Boolean).map(pagina));
+  // sus enlaces (Facebook, YouTube, sus webs), en la misma línea que su lugar: "▸ Benidorm, Spain  facebook  video" (2026-11-08, el usuario: "poner en una
+  // linea los enlaces FB YT"); sin lugar, en la suya
+  const logos = document.createElement('div');
+  logosFicha(logos, img, {fb, www: [...(p.fb && !fb ? [p.fb] : []), ...urls.filter(u => !/youtu/.test(u) && u != p.fb)].filter(u => !deEventos.has(pagina(u))),
+                              video: urls.find(u => /youtu/.test(u)) || ''});
+  if (logos.firstElementChild){
+    if (lineaLugar) lineaLugar.append(...logos.firstElementChild.childNodes);
+    else d.insertBefore(logos.firstElementChild, par.parentNode == d ? par : null);
+  }
+  // los eventos que organiza (de los eventos: su org), tras la línea de su Facebook y su YouTube: uno por línea, con un punto, su nombre y
+  // luego los logos de su Facebook y su web, si los tiene (2026-11-08, el usuario)
+  for (const ev of eventos){
+    const e = document.createElement('p');
+    e.className = 'organiza';
+    e.append('• ' + ev.nombre);
+    for (const [u, icono] of [[ev.fb, 'img/perfil.svg'], [ev.www, 'img/web.svg']]) if (u){
+      const a = enlace(u, '', icono);
+      a.title = u;
+      e.append(' ', a);
+    }
+    d.appendChild(e);
+  }
 }
 
-function rellenaLista(c, p, conLugar){
+function rellenaLista(c, p){
   const img = cara(p);
-  if (p.foto) img.className = p.logo ? 'portada logo' : 'portada';
   c.appendChild(img);
   const d = document.createElement('div');
   d.className = 'texto';
   c.appendChild(d);
-  titulo(d, p, conLugar);
-  if (p.fb) logosFicha(d, img, '', esFb(p.fb) ? {fb: p.fb} : {www: [p.fb], conAgendas: true});
+  titulo(d, p);
+  if (p.fb) logosFicha(d, img, esFb(p.fb) ? {fb: p.fb, textoFb: 'FB'} : {www: [p.fb], conAgendas: true});   // FB, como en los eventos (links está en su grupo)
 }
 
-function rellena(c, p, conLugar){ (p.lista ? rellenaLista : p.evento ? rellenaEvento : rellenaPersona)(c, p, conLugar); }
+function rellena(c, p){ (p.lista ? rellenaLista : p.evento ? rellenaEvento : rellenaPersona)(c, p); }
 
-let fichaAbierta = null;
+let fichaAbierta = null, filaAbierta = null;   // la ficha abierta y su línea del listado (la pulsada: una milonga puede salir en varios días)
 function marcaAbierta(){
   for (const f of document.querySelectorAll('.fila.abierta')) f.classList.remove('abierta');
   if (fichaAbierta) for (const f of document.querySelectorAll('.fila[data-p="' + fichaAbierta.id + '"]')) f.classList.add('abierta');
 }
 function abreFicha(p, fila){   // fila: la pulsada (una milonga puede salir en varios días)
   fichaAbierta = p;
+  filaAbierta = fila || document.getElementById('f' + p.id);
   marcaAbierta();
   $('detalle').appendChild($('dCopiar'));   // fuera de la ficha que se borra (va al final de su primera línea: pintaCopiar)
   $('dCuerpo').innerHTML = '';
-  rellena($('dCuerpo'), p, true);
+  rellena($('dCuerpo'), p);
   pintaCopiar(p);
   pintaFuentes(p);
   iluminaFicha(p);
@@ -1027,6 +1091,16 @@ function abreFicha(p, fila){   // fila: la pulsada (una milonga puede salir en v
     const tapa = d.getBoundingClientRect().bottom + 16 - f.getBoundingClientRect().top;
     if (tapa > 0) window.scrollBy({top: -tapa, behavior: 'smooth'});
   }
+}
+// los cursores ↑ y ↓ mueven la línea elegida del listado: abren la ficha de la anterior o de la siguiente; sin ninguna elegida, ↓ elige la primera
+// (2026-11-10, el usuario: "cursore en el listado , mover la linea seleccionada")
+function mueveFila(n){
+  const f = filaAbierta && filaAbierta.isConnected ? filaAbierta[n > 0 ? 'nextElementSibling' : 'previousElementSibling']
+          : n > 0 ? $('listado').querySelector('.fila') : null;
+  if (!f || !f.classList.contains('fila')) return;   // en la primera o en la última, se queda
+  abreFicha(personas[f.dataset.p], f);   // (si la ficha la tapa, abreFicha sube el listado)
+  const r = f.getBoundingClientRect();
+  if (r.bottom > innerHeight) window.scrollBy(0, r.bottom - innerHeight + 8);   // bajo la ventana: a la vista
 }
 // el enlace a la ficha: esta página con ?id=<id> (abreId), y el #k= de la clave si lo hay; publicada, el
 // Worker /w?id=<id> (push.sh escribe URL_FICHA), que lleva a tangoglobe/?id=<id>#k=<clave>
@@ -1064,8 +1138,19 @@ function pintaCopiar(p){
   const b = $('dCopiar'), id = (p.ids || [])[0];
   b.classList.toggle('oculto', !id);
   b.innerHTML = ICONO_ENLACE;
-  const linea = $('dCuerpo').querySelector('.texto > *');   // al final de la primera línea (el título)
-  if (linea) linea.appendChild(b);
+  const linea = $('dCuerpo').querySelector('.texto > *');   // la primera línea (el título): tras el nombre, su tipo y el logo; con su última palabra, juntos (.finTitulo)
+  if (linea){
+    const tipo = linea.querySelector('.hTipo'), nombre = [...linea.childNodes].filter(n => n.nodeType == Node.TEXT_NODE).pop();
+    const fin = document.createElement('span');
+    fin.className = 'finTitulo';
+    if (nombre){
+      const i = nombre.data.lastIndexOf(' ') + 1;   // la última palabra del nombre
+      fin.append(nombre.data.slice(i));
+      nombre.data = nombre.data.slice(0, i);
+    }
+    fin.append(...[tipo, b].filter(Boolean));
+    linea.append(fin);
+  }
   b.onclick = async () => {
     const url = (URL_FICHA || location.origin + location.pathname) + '?id=' + id + (URL_FICHA ? '' : location.hash);
     try { await navigator.clipboard.writeText(url); }
@@ -1095,6 +1180,7 @@ const DOCE = MESES.map((m, k) => { const d = new Date(ANYO, HOY.getMonth() + k, 
 const ordenDe = f => f.anyo * 100 + f.mes;
 const FECHAS = [{anyo: ANYO}, {doce: true}, ...DOCE, {anyo: ANYO + 1}];
 const F_DOCE = 1;
+const TEXTO_DOCE = 'this year';   // el botón de los 12 meses que vienen, y su tramo de la ruta; en minúsculas (2026-11-10, el usuario: "botones de año, camboa YEAR por this year", "this year minusculas"; antes, YEAR)
 let fechaSel = F_DOCE;
 const anyoDe = p => Math.floor(p.orden / 100);
 const enFecha = (p, i) => i === null || !p.evento || sinFecha(p.roles[0]) ||
@@ -1105,7 +1191,7 @@ function pintaFechas(cuenta, oculto){
   div.innerHTML = '';
   FECHAS.forEach((f, i) => {
     const b = document.createElement('button');
-    b.textContent = f.doce ? 'YEAR' : f.mes === undefined ? f.anyo : MESES[f.mes];
+    b.textContent = f.doce ? TEXTO_DOCE : f.mes === undefined ? f.anyo : MESES[f.mes];
     const cuantos = cuenta(i);   // el contador, solo en el hover
     tipTira(b, cuantos, true);
     b.classList.toggle('activo', i == fechaSel);
@@ -1144,7 +1230,7 @@ function iluminaFicha(p){
 function cierraFicha(){
   $('detalle').classList.add('oculto');
   iluminaFicha(null);
-  fichaAbierta = null;
+  fichaAbierta = filaAbierta = null;
   marcaAbierta();
 }
 let ciudadSel = null, porLugarMapa = new Map();
@@ -1172,7 +1258,9 @@ const ESTILO_CIUDAD = {color: COLOR_CIUDAD, fillColor: COLOR_CIUDAD, fillOpacity
 const ESTILO_LUGAR = ESTILO_CIUDAD;   // la ciudad o el lugar elegidos
 const deCiudadSel = k => k == lugarSel || (ciudadSel && (porLugarMapa.get(k) || []).some(p => ciudadDe(p) == ciudadSel));
 let _centros = null;
+const _centroDe = new Map();   // el centro de cada posición, una vez (2026-11-10: se pedía por cada persona en cada pinta)
 function centroPos(pos){
+  if (_centroDe.has(pos)) return _centroDe.get(pos);
   if (!_centros){
     _centros = new Map();
     for (const c of Object.values(typeof CIUDADES_COORD == 'undefined' ? {} : CIUDADES_COORD)){
@@ -1189,10 +1277,11 @@ function centroPos(pos){
       const d = 111.2 * Math.hypot(c[0] - pos[0], (c[1] - pos[1]) * cos);
       if (d <= dMejor){ mejor = c; dMejor = d; }
     }
+  _centroDe.set(pos, mejor || pos);
   return mejor || pos;
 }
 const clavePos = pos => centroPos(pos).map(x => x.toFixed(3)).join(',');
-const claveMarca = p => clavePos(p.pos) + (p.lista ? '|lis' : '');   // las listas, en su propia marca (su logo) aunque compartan sitio
+const claveMarca = p => p.marca || (p.marca = clavePos(p.pos) + (p.lista ? '|lis' : ''));   // las listas, en su propia marca (su logo) aunque compartan sitio; la de cada uno, una vez (su pos no cambia tras la carga)
 let MarcaCuadrada = null;
 function marcaCuadrada(pos, opciones){
   MarcaCuadrada = MarcaCuadrada || L.CircleMarker.extend({_updatePath(){
@@ -1261,12 +1350,12 @@ function encuadra(conPos){
   if (paisSel){
     const suyos = conPos.filter(p => paisSel.feature.properties.nombres.includes(p.pais));
     const bp = boundsPais(paisSel);
-    return vuela(suyos.length ? L.latLngBounds(suyos.map(p => p.pos)) : bp, bp);
+    return vuela(suyos.length ? L.latLngBounds(suyos.map(p => p.pos)) : bp, bp);     // (b son los puntos: vuela los encaja)
   }
   if (areaMapa && VISTA_AREA[areaMapa]){
     const b = L.latLngBounds(VISTA_AREA[areaMapa]);
     for (const p of conPos) b.extend(p.pos);
-    return vuela(b, null, MAS_AREA);
+    return vuela(b, null, MAS_AREA, conPos.length ? L.latLngBounds(conPos.map(p => p.pos)) : b);
   }
   if (!conPos.length) return;
   const paises = new Set(conPos.map(p => p.pais));
@@ -1283,12 +1372,21 @@ const MAS_AREA = .5;
 let vistaMapa = null;   // [centro, zoom] del último encuadre (vuela)
 const mapaMovido = () => !!(mapa && mapaAbierto && vistaMapa)
   && (Math.abs(mapa.getZoom() - vistaMapa[1]) > .01 || mapa.latLngToContainerPoint(vistaMapa[0]).distanceTo(mapa.getSize().divideBy(2)) > 2);
-function vuela(b, tope, mas = 0){
-  const PAD = Math.ceil(RADIOS[RADIOS.length - 1][1]) + 4, VERT = PAD + 26;
-  const z = x => mapa.getBoundsZoom(x, false, L.point(2 * PAD, 2 * VERT));
-  let zoom = Math.min(z(b) + mas, 10);
+function vuela(b, tope, mas = 0, puntos = b){   // puntos: los de los marcadores (b puede ser más grande: el área entera)
+  // (el margen: el círculo mayor y 4 px, también arriba y abajo; antes VERT = PAD + 26, por el botón map: en el mapa del panel, de 142 px de alto, 92 eran margen y
+  // los puntos cabían en 50; 2026-11-08, el usuario: "aumenta el zoom del mapa para tener menos padding")
+  const PAD = Math.ceil(RADIOS[RADIOS.length - 1][1]) + 4;
+  const z = x => mapa.getBoundsZoom(x, false, L.point(2 * PAD, 2 * PAD));
+  // los marcadores de los extremos, siempre dentro (2026-11-08, el usuario: "los marcadores maximos deben estar dentro del mapa, alto,bajo,derecha,izquierda"):
+  // nunca más zoom del que los encaja, y el centro movido lo justo para que quepan
+  let zoom = Math.min(z(b) + mas, z(puntos), 10);
   if (tope) zoom = Math.min(zoom, z(tope.extend(b)) + MAS_PAIS);
-  const centro = mapa.unproject(mapa.project(b.getNorthWest(), zoom).add(mapa.project(b.getSouthEast(), zoom)).divideBy(2), zoom);
+  const px = p => mapa.project(p, zoom), medio = mapa.getSize().divideBy(2);
+  const c = px(b.getNorthWest()).add(px(b.getSouthEast())).divideBy(2), nw = px(puntos.getNorthWest()), se = px(puntos.getSouthEast());
+  const entre = (v, lo, hi) => lo > hi ? (lo + hi) / 2 : Math.min(Math.max(v, lo), hi);
+  c.x = entre(c.x, se.x + PAD - medio.x, nw.x - PAD + medio.x);
+  c.y = entre(c.y, se.y + PAD - medio.y, nw.y - PAD + medio.y);
+  const centro = mapa.unproject(c, zoom);
   vistaMapa = [centro, zoom];
   if (mapa._loaded) mapa.flyTo(centro, zoom, {duration: .8});
   else mapa.setView(centro, zoom);
@@ -1434,8 +1532,9 @@ function pintaCiudades(){
   const n = new Map([...nombres.keys()].map(c => [c, lineas(c)]));
   const ciudades = [...nombres].sort((x, y) => n.get(y[0]) - n.get(x[0]) || x[1].localeCompare(y[1]));   // primero las de más líneas
   div.scrollTop = 0;
+  // back, con el logo de volver: la flecha que gira a la izquierda (2026-11-10, el usuario: "para << usa un logo de volver"; antes, el doble chevron «)
   const BACK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' +
-               '<path d="M12 5l-7 7 7 7M19 5l-7 7 7 7"/></svg>back';
+               '<path d="M9 14L4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>back';
   const navega = (clase, html, pulsa) => { const s = document.createElement('span'); s.className = clase; s.innerHTML = html; s.onclick = pulsa; return s; };
   const atras = dePais && navega('atras', BACK, () => {   // de las ciudades (con país, ciudad o lugar elegidos), a los países del área; las fechas (año y mes), los días y los roles, a cero
     lugarSel = ciudadSel = paisSel = null;
@@ -1464,14 +1563,14 @@ function pintaCiudades(){
     return s;
   });
   // por páginas, de 2 columnas: en la primera celda back, en la última more... (en pantalla estrecha, scroll)
-  const cabe = matchMedia('(min-width: 801px)').matches ? 2 * MAX_FILAS_PANEL : Infinity;
+  const cabe = !isMovil() ? 2 * MAX_FILAS_PANEL : Infinity;
   const vistas = [];   // dónde empezaba cada página anterior
   const pagina = desde => {
     const vuelve = vistas.length ? navega('atras', BACK, () => pagina(vistas.pop())) : atras;
     let sitio = cabe - (vuelve ? 1 : 0);
     const hayMas = celdas.length - desde > sitio;
     if (hayMas) sitio--;
-    const mas = hayMas && navega('mas', 'more...', () => { vistas.push(desde); pagina(desde + sitio); });
+    const mas = hayMas && navega('mas', 'more ...', () => { vistas.push(desde); pagina(desde + sitio); });
     const vista = [vuelve, ...celdas.slice(desde, desde + sitio), mas].filter(Boolean);
     if (cabe < Infinity) while (vista.length < cabe) vista.push(navega('hueco', '', null));   // siempre todas las celdas: las que falten, de relleno (2026-11-04, el usuario: "siempre 12 celdas")
     div.replaceChildren(...vista);
@@ -1482,13 +1581,7 @@ function pintaCiudades(){
   while (sel && !sel.isConnected) div.querySelector('.mas').click();   // la elegida, a la vista
 }
 
-const totalesArea = new Map();
-function totalArea(v){
-  if (!totalesArea.has(v)) totalesArea.set(v, personas.filter(p => enArea(p, v)).length);
-  return totalesArea.get(v);
-}
-
-const PRIMEROS = {[LIS]: 'links', [FES]: 'festival', [SEM]: 'seminar', [ACA]: 'academy', [MIL]: 'milonga', [PRA]: 'practica', [PEO]: 'tanguer@', org: 'organizer', art: 'artist'};
+const PRIMEROS = {[LIS]: 'sources',   /* (2026-11-10, el usuario: "cambia sources por link en el selector de tipo"; antes, links) */ [FES]: 'festival', [SEM]: 'seminar', [ACA]: 'academy', [MIL]: 'milonga', [PRA]: 'practica', [PEO]: 'tanguer@', couple: 'artist couple',   /* (2026-11-10, el usuario: "usa artis couple en vez de couple") */ org: 'organizer', art: 'artist'};
 function rutaListado(a, r, fs, dias, conRoles, n){   // la de la barra sobre el listado: área > tipo > país > ciudad > resto de selecciones (n líneas)
   const lugar = lugarSel && ((porLugarMapa.get(lugarSel) || [])[0] || personas.find(p => p.pos && claveMarca(p) == lugarSel));   // con el mapa cerrado, porLugarMapa puede no tenerlo
   const [paisC, ciudadC] = (ciudadSel || '').split('|');
@@ -1509,18 +1602,20 @@ function rutaListado(a, r, fs, dias, conRoles, n){   // la de la barra sobre el 
                   [paisSel ? paisSel.feature.properties.nombres[0] : '', aNivel(!lugarSel && !ciudadSel, () => { lugarSel = ciudadSel = null; })],
                   [ciudadSel ? ciudadC || paisC : lugar ? lugar.ciudad || lugar.lugar : '', quitaResto],
                   ...(soloBuscado && buscado ? [buscado.nombre]
-                      : [!f ? '' : f.doce ? 'YEAR' : f.mes === undefined ? f.anyo : MESES[f.mes] + ' ' + f.anyo,
+                      : [!f ? '' : f.doce ? TEXTO_DOCE : f.mes === undefined ? f.anyo : MESES[f.mes] + ' ' + f.anyo,
                          ...(dias || []).map(d => DIAS_SEM[d]),
                          ...(conRoles ? [...rolesSel].map(k => k == PTC ? 'PTC' : textoRol(k).toUpperCase()) : [])]).map(t => [t])]
                  .filter(([t]) => t);
   const d = $('ruta');
   d.replaceChildren();
+  const sep = () => { const s = document.createElement('span'); s.className = 'sep'; s.textContent = ' › '; return s; };   // en su span: se centra como los tramos (CSS)
   partes.forEach(([texto, accion], i) => {
-    if (i) d.append(' › ');
+    if (i) d.append(sep());
     const s = document.createElement('span');
+    s.className = 'tramo';
     s.textContent = texto;
     if (accion && i < partes.length - 1){   // el último tramo es donde ya estamos
-      s.className = 'paso';
+      s.classList.add('paso');
       s.onclick = () => { if (accion() !== false) pinta(); };
     }
     d.appendChild(s);
@@ -1528,10 +1623,10 @@ function rutaListado(a, r, fs, dias, conRoles, n){   // la de la barra sobre el 
   const ico = document.createElement('img');   // al final, tras otro ›, el contador con su icono
   ico.src = 'img/estadistica.svg';
   ico.className = 'icono';
-  const cuenta = document.createElement('span');   // el número, en amarillo
+  const cuenta = document.createElement('span');   // el número, en blanco y más grande (.cuenta)
   cuenta.className = 'cuenta';
   cuenta.textContent = n;
-  d.append(' › ', ico, ' ', cuenta);
+  d.append(sep(), ico, ' ', cuenta);
   const copia = document.createElement('button');   // a la derecha: copiar la url de esta ruta
   copia.className = 'copiaRuta';
   copia.title = 'copy link';
@@ -1546,7 +1641,7 @@ function rutaListado(a, r, fs, dias, conRoles, n){   // la de la barra sobre el 
   $('rutaDer').replaceChildren(copia);   // a la derecha
 }
 // la url de la ruta (lo de las migas, sin el mapa ni la vista): ?a= área, b= tipo; lo buscado, ?id=; si no, pa= país,
-// ci= ciudad (pais|ciudad), lu= lugar (su marca), f= fecha (2026, 2026-12; sin f, YEAR), w= días (0-6), r= roles
+// ci= ciudad (pais|ciudad), lu= lugar (su marca), f= fecha (2026, 2026-12; sin f, this year), w= días (0-6), r= roles
 function buscaRuta(){   // el ?... de la ruta
   const q = new URLSearchParams(), sa = $('selArea');
   const a = paisSel ? areaPrevia : sa.value || sa.dataset.inicial;
@@ -1632,10 +1727,11 @@ function pinta(){
   const baseMapa = personas.filter(p => enArea(p, aMapa) && enRol(p, r) && enFecha(p, fs) && enTiras(p)
                                          && (!paisSel || paisSel.feature.properties.nombres.includes(p.pais))
                                          && (p.area != MUNDIAL || aMapa == TODOS));
+  const dh = new Map(), desde = p => { let v = dh.get(p); if (v === undefined) dh.set(p, v = desdeHoy(p)); return v; };   // desdeHoy de cada uno, una vez (no en cada comparación)
   const lista = (soloBuscado && buscado ? base.filter(p => p === buscado)
                                         : base.filter(enSel))
-                        .sort((x, y) => !deEventos(r) ? x.nombre.localeCompare(y.nombre)
-                                      : desdeHoy(x) - desdeHoy(y) || x.nombre.localeCompare(y.nombre));
+                        .sort((x, y) => !deEventos(r) ? porNombre(x.nombre, y.nombre)
+                                      : desde(x) - desde(y) || porNombre(x.nombre, y.nombre));
   const filas = conDias && !soloBuscado ? filasMilongas(lista) : lista.map(p => ({p, dia: conDias ? proximaEn(p) : null}));
   const aCero = deTira;
   deTira = false;
@@ -1646,29 +1742,41 @@ function pinta(){
     return;
   }
   cierraFicha();
-  const lineas = suyas => conDias && !soloBuscado ? filasMilongas(suyas).length : suyas.length;
-  lineasCiudad = c => lineas(base.filter(p => ciudadDe(p) == c));   // las líneas que tendría el listado con la ciudad c (pais|ciudad)
-  lineasPais = c => lineas(base.filter(p => p.pais == c));          // o con el país c
-  agendaDe = () => personas.filter(p => enArea(p, a) && enRol(p, r) && enSel(p));
+  // las líneas que tendría el listado con cada ciudad (pais|ciudad) o cada país: en una pasada (2026-11-10; antes, un filtro del listado por cada ciudad,
+  // en cada movimiento del mapa). Las de una milonga, como en filasMilongas: una por cada día elegido en que sale
+  const nLineas = p => !conDias || soloBuscado ? 1 : diasSel.size ? [...diasSel].filter(d => enVista(proximaEn(p, [d]), p)).length : +enVista(proximaEn(p), p);
+  const nCiudad = new Map(), nPais = new Map();
+  for (const p of base){
+    const n = nLineas(p), c = ciudadDe(p);
+    nCiudad.set(c, (nCiudad.get(c) || 0) + n);
+    nPais.set(p.pais, (nPais.get(p.pais) || 0) + n);
+  }
+  lineasCiudad = c => nCiudad.get(c) || 0;
+  lineasPais = c => nPais.get(c) || 0;
+  const deSel = personas.filter(p => enArea(p, a) && enRol(p, r) && enSel(p));   // lo del área, el tipo y el lugar elegidos: para los contadores de las tiras y la agenda (una pasada, no una por botón)
+  agendaDe = () => deSel;
   baseLugares = base.filter(p => p.pos);
   const areas = [...new Set(personas.map(p => p.area))].filter(x => x != MUNDIAL)
                   .sort((x, y) => (x == '-') - (y == '-') || x.localeCompare(y));
-  opciones(sa, areas, v => v == '-' ? 'no area' : v, v => totalArea(v), 'World');
+  opciones(sa, areas, v => v == '-' ? 'no area' : v, null, 'World');   // sin contador (2026-11-08, el usuario)
   if (paisSel){ if (areaPrevia) sa.value = areaPrevia; else sa.selectedIndex = -1; }   // con un país, se sigue viendo su área; volver a elegirla funciona (pointerdown en conecta)
-  opciones($('selRol'), [{grupo: 'events', valores: [LIS, ACA, FES, SEM, MIL, PRA]},
-                         {grupo: 'community', valores: [PEO, ...TIPOS_P]}],
-           v => PRIMEROS[v] || textoRol(v));   // sin contador: el número va al final de la ruta
+  // all, community y events, y dentro de cada grupo por orden alfabético de lo que se lee (2026-11-10, el usuario: "orden alfabetico para select de tipos:
+  // all+community+events y dentro de cada uno tb orden alfabetico")
+  const nombreTipo = v => PRIMEROS[v] || textoRol(v), porTexto = vs => vs.sort((x, y) => nombreTipo(x).localeCompare(nombreTipo(y)));
+  opciones($('selRol'), [{grupo: 'community', valores: porTexto([PEO, ...TIPOS_P])},
+                         {grupo: 'events', valores: porTexto([LIS, ACA, FES, SEM, MIL, PRA])}],
+           nombreTipo);   // sin contador: el número va al final de la ruta
   estadoPintado = filas.length ? estado() : null;   // con los selectores ya como se ven
   $('fechas').classList.remove('oculto');
   $('fechas').classList.toggle('sinFechas', !conFechas && !conDias && !conRoles);
-  $('bAgendas').classList.toggle('oculto', !conDias || !(ciudadSel || lugarSel));   // milongas o prácticas de una ciudad (la marca del mapa, también: una por ciudad)
+  $('bAgendas').classList.toggle('oculto', !conDias || !(ciudadSel || lugarSel) || isMovil());   // milongas o prácticas de una ciudad (la marca del mapa, también: una por ciudad); en el móvil no (2026-11-08, el usuario)
   $('fBotones').dataset.tira = conDias ? 'dias' : conRoles ? 'roles' : 'meses';   // cada una, su rejilla en el panel vertical
   // la tira de roles privados, solo si hay datos privados (la local; en la publicada nadie los tiene)
   const hayPrivados = personas.some(p => !p.evento && p.roles.some(x => ROLES[x] && !ROLES[x].publico));
   $('rBotones').classList.toggle('oculto', !conRoles || !hayPrivados);
-  if (conDias) pintaDias(d => personas.filter(p => enArea(p, a) && enRol(p, r) && enSel(p) && enVista(proximaEn(p, d === null ? null : [d]), p)).length);
-  else if (conRoles) pintaRoles(k => personas.filter(p => enArea(p, a) && enRol(p, PEO) && enSel(p) && (k === null || conRol(p, k))).length);
-  else pintaFechas(i => personas.filter(p => enArea(p, a) && enRol(p, r) && enFecha(p, i) && enSel(p)).length, !conFechas);
+  if (conDias) pintaDias(d => deSel.filter(p => enVista(proximaEn(p, d === null ? null : [d]), p)).length);
+  else if (conRoles) pintaRoles(k => deSel.filter(p => k === null || conRol(p, k)).length);   // (conRoles: el tipo es PEO)
+  else pintaFechas(i => deSel.filter(p => enFecha(p, i)).length, !conFechas);
   pintaMapa(baseMapa, a, personas.some(p => p.pos && enArea(p, aMapa) && enRol(p, r)));   // sin las tiras: si el tipo lleva mapa
   $('bListado').innerHTML = enListado ? '☰ list' : '<span class="iParrilla">▦</span> grid';   // lo que se ve; al pulsar, lo otro
   $('bListado').title = enListado ? 'switch to grid' : 'switch to list';
@@ -1677,7 +1785,7 @@ function pinta(){
   window.scrollTo(0, 0);   // al cambiar el listado, arriba: a la vista su primera línea
   historia();
   rutaListado(areaCuenta, r, fs, dias, conRoles, enListado ? filas.length : lista.length);   // la ruta, también con la parrilla: en ella el botón list / grid
-  if (!enListado){ pintaParrilla(lista, deEventos(r) || r == LIS); return pintaVacio(filas.length, $('parrilla'), areaCuenta, r, fs, dias, conRoles); }
+  if (!enListado){ pintaParrilla(lista); return pintaVacio(filas.length, $('parrilla'), areaCuenta, r, fs, dias, conRoles); }
   const div = $('listado');
   div.innerHTML = '';
   div.classList.add('filas');
@@ -1698,7 +1806,13 @@ function pinta(){
       return s;
     };
     c.appendChild(iconoFila(p));   // el logo siempre al inicio de la línea; luego la fecha y el nombre
-    if (conFecha) span('fFecha', p.evento ? (dia ? textoDia(dia) : fechaListado(p)) : '');
+    if (conFecha){   // la fecha: las letras y los números en Courier, estrechados (.fLetras); el punto y el guion, aparte (.fSigno)
+      const f = span('fFecha', '');
+      for (const trozo of (p.evento ? (dia ? textoDia(dia) : fechaListado(p)) : '').split(/([.-])/)){
+        if (trozo == '.' || trozo == '-') span('fSigno', trozo, f);
+        else if (trozo) span('fLetras', trozo, f).style.setProperty('--n', trozo.length);   // su ancho, por letras (CSS)
+      }
+    }
     const textos = document.createElement('div');
     textos.className = 'fTexto';
     c.appendChild(textos);
@@ -1738,9 +1852,9 @@ function pintaVacio(n, div, a, r, fs, dias, conRoles){
   }
   div.appendChild(v);
 }
-function pintaParrilla(lista, evts){
+function pintaParrilla(lista){
   const div = $('parrilla');
-  columnasParrilla(evts);
+  columnasParrilla();
   div.innerHTML = '';
   for (const p of lista){
     const fig = document.createElement('figure');
@@ -1789,20 +1903,19 @@ function lugaresSug(){
           ...[...ciudades].map(([k, c]) => ({geo: 'CIT', nombre: c.nombre, pais: c.pais, ciudad: k}))];
   const n = new Map();
   for (const p of personas) for (const k of ['ARE|' + p.area, 'CON|' + p.pais, 'CIT|' + ciudadDe(p)]) n.set(k, (n.get(k) || 0) + 1);
-  geos.forEach(g => { g.clave = normaliza(g.nombre); g.n = n.get(g.geo + '|' + (g.geo == 'CIT' ? g.ciudad : g.nombre)) || 0; });
+  geos.forEach(g => { g.clave = sinAcentos(g.nombre); g.n = n.get(g.geo + '|' + (g.geo == 'CIT' ? g.ciudad : g.nombre)) || 0; });
   return geos;
 }
-const detalle = p => p.geo == 'ARE' ? 'area' : p.geo == 'CON' ? p.area : p.geo == 'CIT' ? p.pais : p.lista ? p.lugar || 'links' : p.evento ? [p.fecha, p.lugar].filter(Boolean).join(' ') || p.tipo : p.lugar || 'tanguer@';
-const normaliza = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-function sugerencias(){ personas.forEach(p => p.clave = normaliza(p.nombre)); }
+const detalle = p => p.geo == 'ARE' ? 'area' : p.geo == 'CON' ? p.area : p.geo == 'CIT' ? p.pais : p.lista ? p.lugar || PRIMEROS[LIS] : p.evento ? [p.fecha, p.lugar].filter(Boolean).join(' ') || p.tipo : p.lugar || 'tanguer@';
+function sugerencias(){ personas.forEach(p => p.clave = sinAcentos(p.nombre)); }
 function colocaSugs(){   // fixed: la lista es más ancha que el panel, que la recortaría
   const d = $('sugs'), r = $('buscar').getBoundingClientRect();
   d.style.top = r.bottom + 4 + 'px';
   d.style.left = Math.max(4, Math.min(r.left, innerWidth - d.offsetWidth - 4)) + 'px';
 }
 function muestra(){
-  const q = normaliza($('buscar').value.trim()), d = $('sugs');
-  const orden = (x, y) => x.clave.startsWith(q) == y.clave.startsWith(q) ? x.nombre.localeCompare(y.nombre) : x.clave.startsWith(q) ? -1 : 1;
+  const q = sinAcentos($('buscar').value.trim()), d = $('sugs');
+  const orden = (x, y) => x.clave.startsWith(q) == y.clave.startsWith(q) ? porNombre(x.nombre, y.nombre) : x.clave.startsWith(q) ? -1 : 1;
   const ordenGeo = (x, y) => x.clave.startsWith(q) == y.clave.startsWith(q) ? y.n - x.n || x.nombre.localeCompare(y.nombre) : x.clave.startsWith(q) ? -1 : 1;
   encontradas = !q ? [] : [...lugaresSug().filter(g => g.clave.includes(q)).sort(ordenGeo),
                            ...personas.filter(p => p.clave.includes(q)).sort(orden)].slice(0, MAX_SUGS);
@@ -1810,7 +1923,6 @@ function muestra(){
   d.innerHTML = '';
   encontradas.forEach((p, i) => {
     const o = document.createElement('div');
-    o.innerHTML = '';
     const tipo = document.createElement('span');
     tipo.className = 'tipo' + (p.geo ? ' geo' + p.geo : !p.evento && !p.lista && p.tipoP == 'person' ? ' gente' : '');
     tipo.textContent = tipoSug(p);
@@ -1925,7 +2037,7 @@ function saleEl(p, d){   // la milonga p se hace el día d (a medianoche); las d
 }
 function fichaEncima(p){   // la ficha de p, sobre la tabla: al cerrarla se sigue en la misma semana
   $('fCuerpo').innerHTML = '';
-  rellena($('fCuerpo'), p, true);
+  rellena($('fCuerpo'), p);
   $('ficha').showModal();
 }
 function botonLocal(f){   // su enlace (el de la línea venue de la ficha) o, sin él, su mapa; sin ninguno, la ficha de su primera milonga
@@ -1959,7 +2071,7 @@ function pintaAgenda(){
   const grupos = new Map();
   for (const p of agendaDe()) dias.forEach((d, k) => {
     if (!saleEl(p, d)) return;
-    const nombre = horasAgenda ? horaDe(p) : localDe(p), clave = normaliza(nombre);
+    const nombre = horasAgenda ? horaDe(p) : localDe(p), clave = sinAcentos(nombre);
     if (!grupos.has(clave)) grupos.set(clave, {nombre, celdas: dias.map(() => [])});
     grupos.get(clave).celdas[k].push(p);
   });
@@ -2028,8 +2140,16 @@ function conecta(){
   $('dCerrar').onclick = cierraFicha;
   $('bMapa').onclick = abreCierraMapa;
   $('bListado').onclick = () => { enListado = !enListado; sinEncuadre = true; pinta(); };
-  window.addEventListener('resize', () => { if (!enListado) columnasParrilla(soloEventos); });
-  document.addEventListener('keydown', e => { if (e.key == 'Escape') cierraFicha(); });
+  window.addEventListener('resize', () => { if (!enListado) columnasParrilla(); });
+  document.addEventListener('keydown', e => {
+    if (e.key == 'Escape') return cierraFicha();
+    if ((e.key != 'ArrowDown' && e.key != 'ArrowUp') || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    // los cursores, para el listado: no con la parrilla, ni con un popup abierto, ni en un selector, ni en el buscador con texto o con sugerencias (son suyos)
+    const t = e.target, deOtro = /^(SELECT|OPTION|TEXTAREA)$/.test(t.tagName) || (t.tagName == 'INPUT' && (t.value || encontradas.length));
+    if (!enListado || deOtro || document.querySelector('dialog[open]')) return;
+    e.preventDefault();   // sin mover la página
+    mueveFila(e.key == 'ArrowDown' ? 1 : -1);
+  });
   $('selArea').onchange = () => { lugarSel = ciudadSel = paisSel = null; soloBuscado = false; pinta(); };
   $('selRol').onchange = () => {   // la ciudad elegida se mantiene: el lugar pinchado en el mapa pasa a ser su ciudad
     const p = lugarSel && (porLugarMapa.get(lugarSel) || []).find(p => p.ciudad);
@@ -2106,7 +2226,7 @@ async function arranca(){
   abreRuta();
   abreId();
   sinHistoria = false;
-  if (matchMedia('(pointer: fine)').matches) $('buscar').focus({preventScroll: true});   // al cargar, el foco en search (en el móvil no: sacaría el teclado)
+  if (!isMovil(true)) $('buscar').focus({preventScroll: true});   // al cargar, el foco en search (en el móvil no: sacaría el teclado)
 }
 
 arranca();
