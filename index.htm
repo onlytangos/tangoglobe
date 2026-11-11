@@ -15,7 +15,15 @@
 <link rel="stylesheet" href="leaflet/leaflet.css">
 <script src="leaflet/leaflet.js"></script>
 <style>
-  :root { --maxFoto: 110px;   /* tamaño máximo de las fotos (= ANCHO_CARA) */ --altoTira: 27px; --altoFila: 31px;   /* la fila de los selectores y las de la barra: así las migas quedan a la altura del mapa */ color-scheme: dark;
+  /* la letra de todos los textos, Inconsolata (2026-11-11, el usuario: "hay alguna fuente que ocupe menos ancho ?", "prueba"; antes, Courier New): de ancho fijo
+     como Courier (las fechas, en columna), 0,5 em por letra (Courier, 0,6) y con eje de ancho: se estrecha de verdad (font-stretch), sin scaleX. Su copia en
+     img/inconsolata/ (fontsource 5.3.0, licencia OFL en OFL.txt; sin pedirla a Google en cada visita); lo que no tiene (coreano, japonés...), la del sistema */
+  @font-face { font-family: "Inconsolata"; font-style: normal; font-display: swap; font-weight: 200 900; font-stretch: 50% 200%;
+               src: url(img/inconsolata/inconsolata-latin-ext-wdth-normal.woff2) format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+  @font-face { font-family: "Inconsolata"; font-style: normal; font-display: swap; font-weight: 200 900; font-stretch: 50% 200%;
+               src: url(img/inconsolata/inconsolata-latin-wdth-normal.woff2) format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+  :root { --letra: "Inconsolata", "Courier New", Courier, monospace; --anchoEstrecho: 80%;   /* el listado y los títulos, estrechados: 0,4 em por letra (antes, Courier al 75 %: 0,45) */
+          --maxFoto: 110px;   /* tamaño máximo de las fotos (= ANCHO_CARA) */ --altoTira: 27px; --altoFila: 31px;   /* la fila de los selectores y las de la barra: así las migas quedan a la altura del mapa */ color-scheme: dark;
           /* la paleta: solo estos colores (en el script, con paleta()) */
           --azulOscuro: #2f5a8f; --azulClaro: #8ab4f8; --amarillo: #ffd500; --grisClaro: #999; --grisMedio: #444; --grisOscuro: #222; --negro: #000; --blanco: #fff;
           /* y los del mapa */
@@ -25,14 +33,19 @@
           --texto: var(--blanco); --suave: var(--grisClaro); --enlace: var(--azulClaro); --borde: var(--negro);
           --acento: var(--amarillo); }
   .principal { --borde: var(--grisMedio); }   /* las líneas del listado, sobre el fondo negro */
-  .panel, .barraLista, dialog, #sugs { --borde: var(--grisClaro); }   /* los controles, con borde claro */
+  dialog, #sugs { --borde: var(--grisClaro); }   /* los popups y las sugerencias del buscador, con borde claro */
+  /* los controles (los de la cabecera y el panel: buscador, tipo, cajas del total y las migas, botones), sin borde: transparente, el mismo tamaño; con el foco,
+     el amarillo de siempre (2026-11-11, el usuario: "quita el borde blanco para los controles"; antes, gris claro) */
+  .panel, .cabecera { --borde: transparent; }
   /* los controles (el panel y la barra de las migas), 2 px más grandes (2026-11-11, el usuario: "haz mas blanca para los controles y 2px mas grande"); lo que
      va en em, en proporción. Sin negrita, con la letra de los nombres del listado ("no pongas en negrita los controles, la misma fuente que los nombres en el
-     listado"). La ficha, también más grande y en negrita ("aplica tb al texto de la ficha") */
-  .panel, .barraLista, .detalle, #ficha { font-size: calc(1em + 2px); }
-  .detalle, #ficha { font-weight: bold; }
+     listado"). La ficha, también más grande ("aplica tb al texto de la ficha"; en negrita hasta el 2026-11-11: ver abajo) */
+  .panel, .cabecera, .detalle, #ficha { font-size: calc(1em + 2px); }
+  /* en negrita, solo el contador del total (.cuenta) y los títulos: los nombres del listado, el de la ficha, el de OPEN SCHEDULER y los grupos del selector de tipo;
+     el resto de los textos, sin negrita (2026-11-11, el usuario: "todos los textos de la pagina mismo estilo, sin negrita, negrita solo para el contador y los
+     titulos"; antes, también la ficha, sus enlaces, la fecha y la ciudad del listado, "max 100 elements" y las etiquetas de las sugerencias) */
   html { overflow-y: scroll; }
-  body { font-family: "Courier New", Courier, monospace; margin: 0; background: var(--fondo); color: var(--texto); }   /* todos los textos, con la letra de la fecha del listado (2026-11-11, el usuario: "usa la misma fuente para todos los terxtos"; antes, system-ui) */
+  body { font-family: var(--letra); margin: 0; background: var(--fondo); color: var(--texto); }   /* todos los textos, con la letra de la fecha del listado (2026-11-11, el usuario: "usa la misma fuente para todos los terxtos"; antes, system-ui) */
   button, select, input, textarea, .leaflet-container { font-family: inherit; font-weight: inherit; }   /* todo con la letra del body: los controles y leaflet no la heredan (ni su grosor: los botones del panel, en negrita) */
   a { color: var(--enlace); }
   html { scrollbar-color: var(--grisClaro) var(--grisMedio); }
@@ -46,32 +59,44 @@
 
   #mapa .leaflet-control-attribution { background: transparent; color: var(--grisClaro); font-size: 9px; }
   #mapa .leaflet-control-attribution a { color: inherit; }
-  .cuerpo a { text-decoration: none; font-weight: 600; }
-  .cuerpo a:hover { color: var(--texto); }
+  .cuerpo a { text-decoration: none; }
+  /* los enlaces y sus logos, al pasar el ratón, como los demás controles: fondo azul claro y letra negra (2026-11-11, el usuario: "todos los logos de enlaces mismo
+     over"; antes, la letra en blanco). El fondo, 2 px más allá del texto con una sombra: sin moverlo */
+  .cuerpo a:hover, dialog .fuentes a:hover, #dCopiar:hover, #dFuentes:hover { background: var(--azulClaro); color: var(--negro); border-radius: 3px; box-shadow: 0 0 0 2px var(--azulClaro); }
   .cuerpo p.enlaces { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 10px; }
   .cuerpo p.enlaces a { display: inline-flex; align-items: center; gap: 5px; }
   .cuerpo .icono { height: 16px; width: auto; }
-  /* dos columnas: a la izquierda el panel de control, vertical; a la derecha la barra (buscador y ruta) y el listado */
-  .app { display: grid; grid-template-columns: 300px minmax(0, 1fr); align-items: start; }   /* el panel, 300 px (2026-11-11, el usuario: "reduce el panel de izquierda 20px"; antes 320) */
-  .panel { position: sticky; top: 0; z-index: 3; box-sizing: border-box; height: 100vh; height: 100dvh; overflow-y: auto; scrollbar-width: thin;
-           display: flex; flex-direction: column; gap: 10px; padding: 8px 12px 12px; background: var(--barra); box-shadow: 1px 0 6px rgba(0,0,0,.6); }
-  .principal { min-width: 0; padding: 0 16px 16px; }
-  .barraLista { --altoTira: var(--altoFila); position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 8px;
-                margin: 0 -16px 16px; padding: 8px 16px; background: var(--barra); box-shadow: 0 1px 6px rgba(0,0,0,.6); }
+  /* arriba, la cabecera, fija y de lado a lado (2026-11-11, el usuario: "extendemos la linea de miga a toda la pantalla", "movemos los botones de paises/ciudades
+     debajo de migas en una tercera linea"): en la primera línea, el buscador (sobre el panel) y el total con sus botones (sobre el listado); en la segunda, las
+     migas, tras el tipo ("tipo en la linea 2 luego las migas"); en la tercera, los botones de áreas, países o ciudades. Debajo, dos columnas: a la izquierda el panel (el mapa y las tiras), a la derecha
+     el listado. Antes, el panel vertical desde arriba, con el buscador y los selectores, y sobre el listado la barra del total y las migas */
+  .app { display: grid; grid-template-columns: 260px minmax(0, 1fr); align-items: start; }   /* el panel, 260 px (2026-11-11, el usuario: "reduce el panel de izquierda 20px", antes 320; luego "en el panel lateral reduce en 20px el ancho", antes 300; y "reduce alto ancho del mapa en 20px": el mapa es del ancho del panel, antes 280) */
+  .cabecera { grid-column: 1 / -1; --altoTira: var(--altoFila); position: sticky; top: 0; z-index: 4; display: grid; grid-template-columns: 236px minmax(0, 1fr);
+              align-items: center; gap: 4px; padding: 8px 16px 8px 12px; background: var(--barra); box-shadow: 0 1px 6px rgba(0,0,0,.6); }   /* el buscador, del ancho de lo de dentro del panel (260 - 2 × 12, el del mapa), y el total a 4 px, como el tipo y las migas (2026-11-11, el usuario: "ajusta margin search y contador"; antes, a 28 px: donde empieza el listado) */
+  .cabecera > .lineaMigas, .cabecera > .linea3 { grid-column: 1 / -1; }
+  .cabecera > .linea3:has(.ciudadesMapa:empty) { display: none; }   /* sin botones, sin su línea */
+  .lineaMigas label { flex: none; display: flex; }   /* el tipo; tras él, las migas, lo que quede */
+  .panel { position: sticky; top: var(--altoBarra, 0px); z-index: 3; box-sizing: border-box; height: calc(100vh - var(--altoBarra, 0px)); height: calc(100dvh - var(--altoBarra, 0px));
+           overflow-y: auto; scrollbar-width: thin;
+           display: flex; flex-direction: column; gap: 10px; padding: 8px 12px 12px; background: var(--barra); box-shadow: 1px 0 6px rgba(0,0,0,.6); }   /* bajo la cabecera (--altoBarra, su alto) */
+  .principal { min-width: 0; padding: 16px; }
   select { height: var(--altoFila); box-sizing: border-box; font-size: 1em; padding: 0 6px; background: var(--tarjeta); color: var(--texto); border: 1px solid var(--borde); border-radius: 4px; }
   #buscar { font-size: 1em; padding: 0 6px; height: var(--altoFila); width: 100%; box-sizing: border-box;
              background: var(--tarjeta); color: var(--texto); border: 1px solid var(--borde); border-radius: 4px; }
   select:focus, #buscar:focus { outline: none; border-color: var(--acento); }   /* con el foco, el borde amarillo de los botones activos (2026-11-10, el usuario: "borde amarillo si select activo", "tb para el searh con foco"; antes, el azul de los enlaces) */
   #info { display: flex; }
   .busca { flex: 1 1 0; min-width: 0; }
-  #selArea, #selRol { width: 100%; box-sizing: border-box; }
+  /* al principio de la línea de las migas, con su letra (.ruta, .85em; 2026-11-11, el usuario: "select tipo mismo tamaño de letra que las migas") y de ancho fijo,
+     el del tipo más ancho ("seelctor tipo ancho fijo, ancho al texto mas ancho"; antes, un rato, el del elegido): lo mide anchoTipo con cada uno (field-sizing:
+     content) y lo fija en su style */
+  #selRol { box-sizing: border-box; font-size: .85em; width: auto; field-sizing: content; }
   #sugs { position: fixed; width: min(28em, 90vw); z-index: 2;
           background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,.6);
           max-height: calc(10 * 26px); overflow-y: auto; }
   #sugs div { height: 26px; line-height: 26px; padding: 0 8px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #sugs div.activa, #sugs div:hover { background: var(--azulOscuro); }
   #sugs small { color: var(--suave); }
-  #sugs .tipo { display: inline-block; width: 3.2em; margin-right: 6px; font-size: .75em; font-weight: 600;
+  #sugs .tipo { display: inline-block; width: 3.2em; margin-right: 6px; font-size: .75em;
                 text-align: center; color: var(--suave); border: 1px solid var(--borde); border-radius: 3px; line-height: 1.5; }
 
   #sugs .tipo.geoARE, #sugs .tipo.geoCON { background: var(--blanco); border-color: var(--blanco); color: var(--negro); }
@@ -95,7 +120,7 @@
   .yt img { width: 20px; height: 14px; }
   .cara img, .cara figcaption { cursor: pointer; }
 
-  .cuerpo > img.conEnlace { cursor: pointer; }
+  .cuerpo > .conEnlace { cursor: pointer; }   /* la foto que abre algo (su enlace o, en la ficha del listado, el popup), también sin foto (.sinfoto) */
 
   .cara.evt img.logo, .cuerpo > img.logo { object-fit: contain; background: var(--blanco); padding: 6%; box-sizing: border-box; }
 
@@ -108,6 +133,7 @@
   .cuerpo > img, .cuerpo > .sinfoto { flex: none; align-self: flex-start; width: min(50%, var(--maxFoto)); height: auto;
                                         aspect-ratio: 1; object-fit: cover; border-radius: 6px; }   /* cuadrada: el alto, el del ancho (antes el del texto) */
   .cuerpo > img { background: var(--negro); }
+  #ficha .cuerpo > img, #ficha .cuerpo > .sinfoto { width: min(50%, calc(var(--maxFoto) * 1.25)); }   /* en el popup, un 25 % más grande (2026-11-11, el usuario: "popup ficha aumenta imagen en un 25%"): 137,5 px */
   .texto { flex: 1; min-width: 0; }
   dialog .texto { padding-right: 28px; }
   dialog .texto p.enlaces { margin-top: 0; }   /* el popup de KK: sin líneas en blanco */
@@ -116,18 +142,25 @@
   .cuerpo p { margin: 0; font-size: .9em; overflow-wrap: anywhere; }   /* líneas de texto seguidas; los enlaces, aparte (p.enlaces) */
   .cuerpo p.enlaces + p.organiza, .cuerpo p.panelInfo + p.organiza { margin-top: 6px; }   /* los eventos que organiza: tras su lugar y sus enlaces, uno por línea */
   .cuerpo p.organiza .icono { vertical-align: -3px; margin-left: 2px; }   /* sus logos, tras su nombre */
-  .cuerpo .triangulo { position: relative; top: -1px; margin-right: -10px; border: 0; background: none; padding: 0; color: var(--blanco); font-size: calc(1em + 3px); line-height: 1; cursor: pointer; }   /* abre el panel de rol, notas y contacto: blanco, 3 px más grande, 1 px más arriba y a 4 px del texto (la línea separa 14; el usuario) */
+  /* abre el panel de rol, notas y contacto, a 4 px del texto (la línea separa 14; el usuario). Un triángulo relleno amarillo, del tamaño de la flecha ▼ del selector de
+     tipo y de los de back y more, que gira al abrirse; al pasar el ratón, como los demás: fondo azul claro y negro (2026-11-11, el usuario: "el triangulo de la ficha
+     como los demas tb el over"; antes, las letras ▸ y ▾ en blanco, 3 px más grandes y 1 px más arriba) */
+  .cuerpo .triangulo { position: relative; top: -1px; margin-right: -10px; border: 0; background: none; padding: 0; color: var(--acento); line-height: 1; cursor: pointer; border-radius: 3px; }
+  .cuerpo .triangulo svg { display: inline-block; vertical-align: middle; width: 11px; height: 11px; transition: transform .15s; }
+  .cuerpo .triangulo[aria-expanded="true"] svg { transform: rotate(90deg); }
+  .cuerpo .triangulo:hover { background: var(--azulClaro); color: var(--negro); box-shadow: 0 0 0 2px var(--azulClaro); }
   .cuerpo .panelInfo { margin-top: 4px; }   /* el de las personas, un párrafo; el de los eventos, sus líneas (venue, org) */
 
   .listado { display: flex; flex-direction: column; gap: 8px; box-sizing: border-box; font-size: 18px; }   /* 2px más que el body (16px); fechas, ciudades y salas, en proporción (.85em) */
 
-  .linea1, .linea2 { display: flex; gap: 4px; align-items: center; }
-  .linea2 label { flex: 1 1 0; min-width: 0; }
+  .linea1, .linea3 { display: flex; gap: 4px; align-items: center; min-width: 0; }
   #rBotones { margin-top: 20px; }   /* los roles privados, separados (con el hueco de .fechas, 24px) */
   .fechas { margin-top: 14px; display: flex; flex-direction: column; gap: 4px; align-items: stretch; justify-content: center; min-width: 0; }   /* separado de los países, 24px con el hueco del panel */
 
   .fechas.sinFechas { display: none; }
-  .tira { display: flex; gap: 2px; min-width: 0; overflow-x: auto; scrollbar-width: thin; }
+  /* entre los controles, 4 px: los de las líneas de la cabecera y los botones de las tiras (2026-11-11, el usuario: "mismo margin entre controles"; antes, 2 px
+     en las tiras). Los de la tercera línea (áreas, países, ciudades), 1 px (.ciudadesMapa) */
+  .tira { display: flex; gap: 4px; min-width: 0; overflow-x: auto; scrollbar-width: thin; }
   .fechas button, #bMapa, #bListado, #bIdioma { flex: none; font-size: .85em; padding: 3px 7px; white-space: nowrap; cursor: pointer;
                    background: var(--tarjeta); color: var(--texto); border: 1px solid var(--borde); border-radius: 4px; }
   .tira button { border: 0; border-radius: 4px; background: var(--tarjeta); color: var(--texto); }
@@ -148,11 +181,11 @@
                    padding: 5.5px 10px; border-bottom: 1px solid var(--borde); border-left: 2px solid transparent; cursor: pointer; }   /* 2026-10-26: un 10% más baja (antes 7px) */
   .listado .fila:hover { background: var(--grisOscuro); }
   .listado .fila.abierta { background: var(--acento); color: var(--negro); }
-  .listado .fila.abierta .fFecha { color: var(--grisMedio); }   /* la fecha y la ciudad (.fCiudad también es .fFecha) */
+  .listado .fila.abierta .fFecha { color: var(--negro); }   /* la fecha y la ciudad (.fCiudad también es .fFecha), como el nombre: en negro sobre el amarillo */
   .listado .fila.encontrado { outline: 0; border-left-color: var(--enlace); }
   .listado .filaMax { grid-column: 1 / -1; padding: 10px; text-align: center; color: var(--blanco); border-bottom: 1px solid var(--borde);
-                      font-size: calc(.85em + 6px); font-weight: bold; line-height: 1; }   /* la letra del nombre: Courier (la del body), su tamaño, en negrita */
-  .listado .filaMax span { display: inline-block; transform: scaleX(.75); }   /* y estrechada como él (centrada: su caja no cambia) */   /* la de "max 100 elements" (no es una .fila: los cursores no la eligen) */
+                      font-size: calc(.85em + 6px); line-height: 1; }   /* la letra del nombre: Courier (la del body), su tamaño (sin negrita: no es un título) */
+  .listado .filaMax span { display: inline-block; font-stretch: var(--anchoEstrecho); }   /* y estrechada como él (centrada: su caja no cambia) */   /* la de "max 100 elements" (no es una .fila: los cursores no la eligen) */
   .ruta { height: var(--altoTira); box-sizing: border-box; padding: 0 10px; line-height: calc(var(--altoTira) - 2px); font-size: .85em;   /* la de los botones de meses y días */ background: var(--grisMedio); color: var(--texto);   /* en blanco (2026-11-11, el usuario: "para migas, list tb"; antes, gris) */ border: 1px solid var(--borde); border-radius: 4px;
                    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ruta .icono { height: 16px; width: auto; }
@@ -168,23 +201,34 @@
      subrayado). El tramo ocupaba todo el alto de la caja y el borde salía cortado ("sale cortado arriga y abajo el borde"): su línea, más baja, y el recuadro
      por dentro (box-shadow inset), con 4 px a cada lado que no mueven el texto (margen negativo) */
   .ruta .paso { line-height: 1.5; padding: 0 4px; margin: 0 -4px; border-radius: 3px; }
-  .ruta .paso:hover { box-shadow: inset 0 0 0 1px var(--acento); }
+  .ruta .paso:hover { background: var(--azulClaro); color: var(--negro); }   /* como los botones de áreas, países y ciudades (2026-11-11, el usuario: "el over de las migas que sea igual que el over de area/pais/ciudad"; antes, el recuadro amarillo) */
   .ruta .cuenta { color: var(--blanco); font-weight: bold; font-size: calc(1em + 4px); }   /* 4 px más que la ruta y en blanco (2026-11-10, el usuario: "aumenta 2px la fuente del contador de migas", "2px mas y blanco para el contador"; antes, amarillo) */
   .ruta { position: relative; padding-right: 30px; flex: 1; min-width: 0; }   /* a la derecha, el botón de copiar la url de la ruta */
   .lineaRuta { flex: 1 1 100%; min-width: 0; display: flex; gap: 4px; }   /* la ruta y, fuera de ella a la derecha, el botón list / grid */
   /* la barra, en dos cajas (2026-11-11, el usuario: "añade otra caja debajo de las migas", "mueve las migas a esta caja", "en la caja de arriba mueve el logo kk
      y despues escribe: total listado X"): arriba, el total ("80 festivals") y los botones list, idioma y KK; debajo, las migas con su botón de copiar */
-  .barraLista { row-gap: 4px; }
   .ruta.cajaTotal { display: flex; align-items: center; gap: 8px; padding-right: 10px; }
   /* el logo KK: un botón cuadrado como el del idioma, al final de la línea (2026-11-11, el usuario: "kk en un boton cuadrado como la bandera al final de la linea1") */
   .lineaRuta #info { flex: none; width: var(--altoTira); height: var(--altoTira); box-sizing: border-box; overflow: hidden;
                      border: 1px solid var(--borde); border-radius: 4px; }   /* el borde, como el de los otros botones (2026-11-11, el usuario: "borde de KK como los otros bordes") */
-  .lineaRuta #info img { width: 100%; height: 100%; }   /* el logo (cuadrado), todo el botón (2026-11-11, el usuario: "k que ocupe todo el boton") */
+  .lineaRuta #info img { width: 100%; height: 100%; }
+  /* al pasar el ratón, la bandera y KK como list / grid, las migas y los botones de áreas, países y ciudades: fondo azul claro y letra negra (2026-11-11, el usuario:
+     "bandera y kk tb el mismo over"). KK es una imagen a sangre: se oculta y en su sitio sus letras, en negro, con la letra y el tamaño del logo (9,5 de 24) */
+  #bIdioma:hover { background: var(--azulClaro); }
+  .lineaRuta #info { position: relative; }
+  .lineaRuta #info .kkOver { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; color: var(--negro);
+                             font: 700 calc(var(--altoTira) * 9.5 / 24)/1 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+  .lineaRuta #info:hover { background: var(--azulClaro); }
+  .lineaRuta #info:hover img { visibility: hidden; }
+  .lineaRuta #info:hover .kkOver { display: flex; }
+  #selRol:hover { background: var(--azulClaro); color: var(--negro); }   /* el selector de tipo, también (2026-11-11, el usuario: "selector de tipo tb") */
+  #selRol::picker-icon { color: var(--acento); }   /* su flecha ▼, en amarillo, como los triángulos de back y more (2026-11-11, el usuario: "el del select amarillo tb") */
+  #selRol:hover::picker-icon { color: var(--negro); }   /* y su flecha */   /* el logo (cuadrado), todo el botón (2026-11-11, el usuario: "k que ocupe todo el boton") */
   /* el texto y el número, cada uno centrado en vertical en la caja (2026-11-11, el usuario: "en contador de listado no esta centrado verticalmente"): en la
      misma línea base, el número (más grande) quedaba alto */
   #total { display: flex; align-items: center; gap: .5em; height: 100%; }
   #total .tTipo { color: var(--blanco); }   /* lo que cuenta, también en blanco (2026-11-11, el usuario: "caja result todo en blanco"; antes, gris) */
-  #total > * { line-height: 1; position: relative; top: 2px; }   /* medido: sin bajarlos, 2 px altos */
+  #total > * { line-height: 1; position: relative; top: 1px; }   /* medido: sin bajarlos, 2 px altos con Courier; Inconsolata centra sus mayúsculas 0,04 em más abajo: 1 px */
   .rutaDer { position: absolute; top: 0; right: 8px; height: 100%; display: flex; align-items: center; }   /* el de copiar */
   #bListado, #bIdioma, #bMapa, #bAgendas button { height: var(--altoTira); padding: 0 8px; box-sizing: border-box; text-align: center; }
   /* list / grid y, tras él, el idioma: cuadrados, del alto de la barra, solo con su icono (☰ o ▦) o la bandera (2026-11-11, el usuario: "crea un boton cuadrado
@@ -204,28 +248,33 @@
   #bMapa { width: 100%; border: 0; }   /* sin mapa, en su fila; con mapa, dentro de él (.zonaMapa) */
   .ruta .copiaRuta { height: 100%; border: 0; background: none; color: var(--acento); padding: 0; cursor: pointer;
                      display: flex; align-items: center; }
-  .ruta .copiaRuta:hover { color: var(--blanco); }
+  /* al pasar el ratón, como los demás: fondo azul claro y el logo en negro, en una caja de la altura de los tramos de las migas (2026-11-11, el usuario: "copy link
+     mismo over que los demas"; antes, el logo en blanco) */
+  .ruta .copiaRuta { height: 1.5em; padding: 0 4px; margin-right: -4px; border-radius: 3px; }
+  .ruta .copiaRuta:hover { background: var(--azulClaro); color: var(--negro); }
   .ruta .copiaRuta svg { width: 15px; height: 15px; display: block; }
   .fila span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25; }   /* todas con el mismo alto: centradas igual */
   .fila .fFecha { color: var(--suave); font-size: .85em; font-variant-numeric: tabular-nums; }   /* la fecha y la ciudad en 3 letras (fCiudad): la misma letra */
-  .fila .fFecha, #aDias small { font-family: "Courier New", Courier, monospace; }   /* las fechas, con todas las letras del mismo ancho: alineadas (2026-11-08, el usuario) */
+  .fila .fFecha, #aDias small { font-family: var(--letra); }   /* las fechas, con todas las letras del mismo ancho: alineadas (2026-11-08, el usuario) */
   /* el título, con la letra de la fecha: Courier, el mismo tamaño, en negrita y estrechado al 75 % (2026-11-11, el usuario: "usa la misma fuente que para fecha
      en tiulo y ciudad", "la fuente del nombre parece otra ?"). Estrechar con scaleX no cambia su caja: el texto (fNomTexto) mide lo que cabe / .75 y se pinta
      al 75 %; así el … de lo que no cabe sale en su sitio */
-  .fila .fNombre { font-family: "Courier New", Courier, monospace; font-size: calc(.85em + 6px); line-height: 1; font-weight: bold; --estrecha: .75;
+  .fila .fNombre { font-family: var(--letra); font-size: calc(.85em + 6px); line-height: 1; font-weight: bold; --estrecha: 1; font-stretch: var(--anchoEstrecho);   /* (--estrecha 1: sin scaleX, lo estrecha la letra) */
                    display: flex; align-items: center; flex: 1 1 auto; }
   .fila .fNomCaja { flex: 1 1 0; min-width: 0; overflow: hidden; }
   .fila .fNomTexto { display: block; width: calc(100% / var(--estrecha)); transform: scaleX(var(--estrecha)); transform-origin: left center; }
   /* la fecha, 2 px más grande y más estrecha (2026-11-10, el usuario: "sube 2px la fuente de la fecha y hazla mas estrecha"): no hay un Courier estrecho en todos
      los dispositivos, así que cada trozo de letras o números (.fLetras) se pinta al 75 % de su ancho (--estrecha) en una caja de ese ancho: --n letras de 1ch */
-  .fila .fFecha { font-size: calc(.85em + 6px); line-height: 1; --estrecha: .75; }   /* (el interlineado: la fila, del mismo alto que antes); 4 px más (2026-11-11, el usuario: "aumentala y mas blanca", "fecha 2px mas grande") */
-  .fila .fFecha { color: var(--grisClaro); font-weight: bold; }   /* en negrita (el trazo de Courier es muy fino) y en gris (2026-11-11, el usuario: "aumentala y mas blanca", "no se ve bien la fecha mas grande y mas blanca", "pon en gris la fecha"); abierta, en gris medio */
+  .fila .fFecha { font-size: calc(.85em + 6px); line-height: 1; --estrecha: 1; font-stretch: var(--anchoEstrecho); }   /* (el interlineado: la fila, del mismo alto que antes); 4 px más (2026-11-11, el usuario: "aumentala y mas blanca", "fecha 2px mas grande") */
+  /* la fecha y la ciudad, con la letra del nombre: Courier, estrechada al 75 % y en blanco (2026-11-11, el usuario: "las fechas parecen otro tipo ?", "usa la misma
+     fuente y estilo para todas"; antes, en gris, y el punto y el guion con la letra del sistema); sin negrita: el nombre, sí (es el título) */
+  .fila .fFecha { color: var(--blanco); }
   .fila .fFecha .fLetras { display: inline-block; overflow: visible; width: calc(var(--n) * 1ch * var(--estrecha)); transform: scaleX(var(--estrecha)); transform-origin: left center; }
-  .fila .fFecha .fSigno { font-family: system-ui, sans-serif; line-height: 0; }   /* el punto y el guion, con la letra del sistema: en Courier ocupan una letra entera (2026-11-10, el usuario: "el . y - ocupan mucho espacio"); siguen alineadas: cada signo mide siempre lo mismo */
+  .fila .fFecha .fSigno { display: inline-flex; justify-content: center; width: .5ch; transform: scaleX(var(--estrecha)); }   /* el punto y el guion, en Courier y estrechados como las letras, en media letra: centrados (lo que sobra, a los dos lados); en una entera ocupaban mucho (2026-11-10, el usuario: "el . y - ocupan mucho espacio") */
   /* cada texto, centrado en vertical en su fila (2026-11-11, el usuario: "centra el contenido de cada linea del listado", "centrado verticalmente"): el centro
      de sus mayúsculas, en el centro de la fila, como el icono y la foto; sin bajarlos quedaban 2 px altos (la caja de la línea guarda sitio a los rabos: g, p) */
-  .fila .fNombre { position: relative; top: 2px; }   /* con la letra de la fecha, lo mismo que ella */
-  .fila .fFecha { position: relative; top: 2px; }
+  .fila .fNombre { position: relative; top: 0; }   /* (con Courier, 2 px; con Inconsolata, medido: centradas sin bajarlas) */   /* con la letra de la fecha, lo mismo que ella */
+  .fila .fFecha { position: relative; top: 0; }
   .fila .fTexto { display: flex; align-items: center; gap: 16px; min-width: 0; }   /* el título y su ciudad, en la misma celda: el título llega hasta su ciudad */
   .fila .fNombre { color: var(--blanco); }   /* en blanco (2026-11-11, el usuario: "baja el nivel de blanco del nombre"; luego, con la letra de la fecha, "nombre en blanco") */
   .listado .fila.abierta .fNombre { color: var(--negro); }   /* abierta, en negro sobre el amarillo, como antes */
@@ -253,18 +302,20 @@
   .leaflet-tooltip-top.tipNombre::before { border-top-color: var(--grisMedio); }
   .marcaLista { box-sizing: border-box; border-radius: 2px; background: var(--mapaMarca); color: var(--negro); }
   .marcaLista > div { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 8px; line-height: 1; }
-  .mapaCaja { position: relative; z-index: 0; display: flex; gap: 6px; }   /* a la izquierda el mapa; a la derecha los países o ciudades */
-  .zonaMapa { --altoMapa: 172px; --anchoLista: 150px; position: relative; min-width: 0; }
-  .zonaMapa:has(.mapaCaja:not(.cerrado, .oculto)) #bMapa { position: absolute; z-index: 1; top: 6px; left: 6px; width: auto; }   /* dentro del mapa, arriba a la izquierda */
-  /* las ciudades del mapa, a la izquierda en 1-2 columnas; en el hover, sus líneas del listado */
-  .ciudadesMapa { flex: none; width: var(--anchoLista); box-sizing: border-box; height: var(--altoMapa); max-height: 24.5vh;   /* el alto del mapa */
-                  overflow-y: auto; font-size: .85em; line-height: var(--altoTira); }   /* con más de los que caben, el scroll */
+  .mapaCaja { position: relative; z-index: 0; display: flex; }
+  .zonaMapa { --altoMapa: 172px; position: relative; min-width: 0; }
+  .zonaMapa:has(.mapaCaja:not(.cerrado, .oculto)) #bMapa { position: absolute; z-index: 1; top: 5px; right: 5px; width: auto; }   /* dentro del mapa, a 5 px de arriba y de la derecha (2026-11-11, el usuario: "boton map a 5px de arriba y la derecha"; antes, 6 px, y en pantalla estrecha a la izquierda) */
+  /* la tercera línea de la cabecera: los botones del nivel de abajo, primero los de más líneas en el listado: en World las áreas, en un área sus
+     países, en un país sus ciudades (de las marcas que se ven en el mapa) (2026-11-11, el usuario: "eliminamos el selector de area, y ponemos las areas como
+     botones siguiendo la misma regla que para paises/ciudades"). En la primera celda back y, si no caben, en la última more... (pintaCiudades). Antes, en
+     el panel, en dos columnas sobre el mapa */
+  .ciudadesMapa { flex: 1 1 auto; min-width: 0; display: flex; gap: 1px; overflow: hidden; font-size: .85em; }   /* entre ellos, 1 px (2026-11-11, el usuario: "areas/pais/ciudades margin 1px") */
+  .ciudadesMapa:empty { display: none; }
   .tipTira.circulo { box-sizing: border-box; min-width: 24px; height: 24px; padding: 0 5px;
                font-size: 13px; line-height: 22px; text-align: center; white-space: nowrap;   /* el contador, en un círculo (también el de meses y días) */
                background: var(--grisMedio); color: var(--texto); border: 1px solid var(--borde); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.6); }
-  .ciudadesMapa { display: grid; grid-auto-rows: var(--altoTira); align-content: start; gap: 2px; scrollbar-width: thin; }   /* el resto del margen y el hueco entre columnas, en los nombres */
   option { background: var(--grisMedio); color: var(--blanco); }
-  option:checked, option.actual { background: var(--amarillo); color: var(--negro); }   /* la elegida; .actual, mientras selArea se abre vacío (conecta) */
+  option:checked { background: var(--amarillo); color: var(--negro); }   /* la elegida */
   #selRol option:not(.grupo, :first-child) { padding-left: calc(8px + 2ch); }   /* los tipos, sangrados bajo su grupo; all no tiene grupo */
   option.grupo { color: var(--blanco); font-weight: 700; }
   /* el desplegable con la paleta, también al pasar el ratón; sin base-select, el del navegador con las opciones de arriba */
@@ -279,24 +330,36 @@
     option:checked, option:checked:hover, option:checked:focus-visible { background: var(--amarillo); color: var(--negro); font-weight: 400; }
     option.grupo { padding-top: 6px; background: none; }
   }
-  .ciudadesMapa > span { display: flex; gap: 6px; padding: 0 5px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-                       align-items: center; border-radius: 4px; background: var(--tarjeta); color: var(--texto); }   /* cada país, una celda como los meses */
+  .ciudadesMapa > span { flex: 1 0 auto; box-sizing: border-box; height: var(--altoTira); display: flex; justify-content: center; gap: 8px; padding: 0 7px; cursor: pointer;
+                       white-space: nowrap; align-items: center; border-radius: 4px; background: var(--tarjeta); color: var(--texto); }   /* cada uno, un botón como los meses: los de la página, todo el ancho de la línea, con el texto en el centro (2026-11-11, el usuario: "tercera linea que los botones ocupen todo el ancho"; antes, cada uno de su ancho) */
   .ciudadesMapa > span:hover { background: var(--azulClaro); color: var(--negro); }   /* el nombre bajo el ratón */
   .ciudadesMapa > span.atras:not(:hover), .ciudadesMapa > span.mas:not(:hover) { color: var(--amarillo); }   /* back y more..., en amarillo */
   .ciudadesMapa > span.atras, .ciudadesMapa > span.mas { justify-content: center; }
   .ciudadesMapa > span.sel, .ciudadesMapa > span.sel:hover { background: var(--acento); color: var(--negro); }   /* la ciudad elegida, del color de los botones activos */
-  .ciudadesMapa > span.hueco, .ciudadesMapa > span.hueco:hover { background: var(--tarjeta); cursor: default; }
   .ciudadesMapa > span.cero, .ciudadesMapa > span.cero:hover { background: none; color: var(--grisClaro); cursor: default; }
-  .ciudadesMapa .nom { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }   /* el nombre, cortado con … si no cabe */
+  .ciudadesMapa .nom { max-width: 16em; overflow: hidden; text-overflow: ellipsis; }   /* el nombre; uno muy largo, cortado con … */
   .ciudadesMapa .num { flex: none; }   /* a su derecha, el contador */
-  .ciudadesMapa span.atras svg { flex: none; width: 15px; height: 15px; margin-right: -3px; position: relative; top: -2px; }   /* la primera: volver al nivel de arriba, con su logo de volver, 2 px más arriba (2026-11-10, el usuario: "log back sube 2px") */
+  .ciudadesMapa span.atras svg, .ciudadesMapa span.mas svg { flex: none; width: .6em; height: .71em; display: block; }   /* del tamaño de la flecha ▼ del selector de tipo, girada (medida: 0,71 em de lado y 0,6 de fondo, con la misma letra; 2026-11-11, el usuario: "mismo tamaño") */   /* back (volver al nivel de arriba o a la página anterior) y more... (la siguiente): solo su logo, centrado */
   .mapa { flex: 1; min-width: 0; height: var(--altoMapa); max-height: 24.5vh; border-radius: 6px; }
   #bMapa:disabled { opacity: .45; cursor: default; }
-  .iParrilla { position: relative; top: -2px; }
-  .iMapa { position: relative; top: -2px; }   /* el triángulo del botón map */
+  /* list / grid: su icono, dibujado (ICONO_LISTA, ICONO_PARRILLA) y centrado en vertical con flex (2026-11-11, el usuario: "el logo de grid algo mas grande, los
+     dos logos centrados verticalmente"). Antes, las letras ☰ y ▦, el ▦ subido 2 px a mano: Courier no las tiene y cada equipo las pinta con otra letra, de otro
+     tamaño y a otra altura (aquí el ☰ quedaba 2,5 px alto). El de grid, más grande */
+  #bListado { display: inline-flex; align-items: center; justify-content: center; gap: .45em; }
+  #bListado .iBoton { display: block; flex: none; width: 13px; height: 13px; color: var(--acento); }   /* en amarillo (2026-11-11, el usuario: "el logo de list y grid amarillo"), como los de back, more... y copiar */
+  #bListado .iParrilla { width: 16px; height: 16px; }
+  #bListado:hover { background: var(--azulClaro); color: var(--negro); }   /* al pasar el ratón, como las migas y los botones de áreas, países y ciudades (2026-11-11, el usuario: "list/grid el mismo over") */
+  #bListado:hover .iBoton { color: inherit; }   /* el icono, también en negro (como back y more...) */
+  /* el triángulo del botón map, como los demás: relleno, amarillo y del tamaño de la flecha ▼ del selector de tipo (el botón, con la misma letra: .85em), hacia
+     arriba con el mapa abierto y hacia abajo cerrado; al pasar el ratón, el botón en azul claro y negro (2026-11-11, el usuario: "triangulo del boton map como los
+     demas"; antes, las letras ▴ y ▾, subidas 2 px) */
+  #bMapa { display: inline-flex; align-items: center; justify-content: center; gap: .45em; }
+  .iMapa { display: block; flex: none; width: .71em; height: .6em; color: var(--acento); }
+  #bMapa:not(:disabled):hover { background: var(--azulClaro); color: var(--negro); }
+  #bMapa:hover .iMapa { color: inherit; }
   .vacio { padding: 24px 12px; text-align: center; color: var(--suave); }   /* el listado a cero */
   .vacio button { margin-top: 10px; font-size: .9em; padding: 4px 10px; cursor: pointer; background: var(--tarjeta); color: var(--texto); border: 1px solid var(--borde); border-radius: 4px; }
-  @media (max-width: 600px) { .zonaMapa { --altoMapa: 122px; --anchoLista: 110px; } }
+  @media (max-width: 600px) { .zonaMapa { --altoMapa: 122px; } }
   .aviso { color: var(--suave); }
   .oculto { display: none !important; }
 
@@ -305,24 +368,23 @@
 
   .detalle { position: sticky; top: calc(var(--altoBarra, 0px) + 16px); z-index: 1;
              box-shadow: 0 -16px 0 var(--fondo), 0 16px 0 var(--fondo); }
-  .detalle .texto { margin-right: 30px; }
   .detalle.larga { position: relative; top: auto; }   /* sin scroll propio: la que no cabe en la ventana no se queda fija, se lee bajando la página */
+  .detalle .texto { margin-right: 30px; }
   .detalle .texto > * { margin: 0; line-height: 22px; }   /* título, fecha, org, enlaces...: todas las líneas con el mismo interlineado */
   .detalle .texto p.enlaces { margin-top: 0; row-gap: 0; }
   #dCerrar, #fCerrar, #aCerrar { position: absolute; top: 6px; right: 8px; box-sizing: border-box; width: 26px; height: 26px; padding: 0; border: 2px solid currentColor; border-radius: 50%;
-             display: flex; align-items: center; justify-content: center; background: none; color: var(--blanco); cursor: pointer; }
+             display: flex; align-items: center; justify-content: center; background: none; color: var(--acento); cursor: pointer; }   /* en amarillo, como los demás logos (2026-11-11, el usuario: "logo cerrar es amarillo"; antes, blanco) */
   #dCerrar svg, #fCerrar svg, #aCerrar svg { display: block; width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }   /* la X dibujada: la × de la letra se descentraba según la fuente */
   #fCerrar, #aCerrar { top: 8px; }   /* el del popup, a la misma distancia arriba y a la derecha */
-  #dCerrar:hover, #fCerrar:hover, #aCerrar:hover { border-radius: 4px; }   /* bajo el ratón, de círculo a cuadrado */
+  #dCerrar:hover, #fCerrar:hover, #aCerrar:hover { border-radius: 4px; background: var(--azulClaro); border-color: var(--azulClaro); color: var(--negro); }   /* bajo el ratón, de círculo a cuadrado y azul claro con la X negra, como los demás (2026-11-11, el usuario: "over de cerrar tb azul") */
   /* la primera línea de la ficha: el nombre, su tipo y el logo de copiar el enlace, seguidos en la misma línea, el logo a un blanco del tipo; si no caben,
      saltan a la siguiente (2026-11-10, el usuario: "debe salir en la mismalinea : nombre+tipo+copy", "sino cabe salta", "copy ... separado 1 blanco,
      despues del tipo de evento"). La última palabra del nombre, el tipo y el logo no se separan (.finTitulo): el logo nunca queda solo en una línea */
   .cuerpo h2 .finTitulo { white-space: nowrap; }
-  #dFuentes { position: absolute; right: 13px; bottom: 8px; width: 16px; height: 16px; border: 0; background: none; padding: 0; cursor: pointer; }
+  #dFuentes { position: absolute; right: 13px; bottom: 8px; width: 16px; height: 16px; border: 0; background: none; padding: 0; cursor: pointer; color: var(--azulClaro); }   /* su logo, del color del texto (currentColor): en negro al pasar el ratón */
   #dFuentes svg { width: 100%; height: 100%; display: block; }
   dialog .fuentes a { display: block; margin: 8px 0; overflow-wrap: anywhere; }
   #dCopiar { display: inline-flex; vertical-align: -2px; margin-left: .3em; border: 0; background: none; color: var(--acento); padding: 0; cursor: pointer; }   /* .3em: un blanco */
-  #dCopiar:hover { color: var(--blanco); }
   #dCopiar svg { width: 16px; height: 16px; display: block; }
 
   .detalle.filas { background: var(--fondo); border: 0; border-radius: 0; border-top: 1px solid var(--borde);
@@ -333,10 +395,9 @@
   /* el título de la ficha, con la letra del nombre del listado: Courier en negrita, su tamaño y estrechado al 75 % (2026-11-11, el usuario: "titulo de la ficha ,
      misma fuentes que nombre del listado"). Todo el título (con su tipo) mide lo que cabe / .75 y se pinta al 75 %: sus líneas cortan donde deben; el botón
      de copiar, a su ancho (sin estrechar) */
-  .detalle h2, .detalle.filas h2, #ficha h2 { font-size: calc(.85em + 6px); font-weight: bold; --estrecha: .75;
+  .detalle h2, .detalle.filas h2, #ficha h2 { font-size: calc(.85em + 6px); font-weight: bold; --estrecha: 1; font-stretch: var(--anchoEstrecho);
                                              width: calc(100% / var(--estrecha)); transform: scaleX(var(--estrecha)); transform-origin: left top; }
   .detalle h2 #dCopiar { transform: scaleX(calc(1 / var(--estrecha))); margin: 0 3px 0 calc(.3em + 3px); }   /* ensanchado, 3 px más a cada lado */
-  .detalle.filas .cuerpo a { font-weight: bold; }
   .detalle.filas .cuerpo > img { border-radius: 3px; }
 
   /* pantalla ancha: el panel vertical. Bajo los selectores, el mapa; debajo los países o ciudades en 2 columnas, del alto de
@@ -345,7 +406,9 @@
   #bAgendas { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 20px; }   /* sin sitio para los dos, uno en cada línea; separados de los días como estos del mapa (24px con el hueco de .fechas) */
   #bAgendas button { flex: 1 1 auto; }
   #bAgendas button:hover, #aAtras:hover, #aSigue:hover { background: var(--azulClaro); color: var(--negro); }
-  #agenda { box-sizing: border-box; width: min(1280px, calc(100vw - 16px)); max-width: none; max-height: calc(100dvh - 16px); margin: 8px auto; padding: 0; overflow: hidden; }
+  /* OPEN SCHEDULER, a toda la pantalla, de ancho y de alto (2026-11-11, el usuario: "haz open ocupe todo el ancho alto de la pantalla"; antes, hasta 1280 px de
+     ancho, con 8 px de margen y del alto de su contenido): sin margen, sin borde ni esquinas redondas; lo que no cabe, con el scroll de su tabla (#aScroll) */
+  #agenda { box-sizing: border-box; width: 100vw; height: 100vh; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; border-radius: 0; overflow: hidden; }
   #agenda[open] { display: flex; flex-direction: column; }
   #aCabeza { flex: none; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 8px; padding: 6px 12px; }   /* el título, el cursor en el centro del popup y, en la tercera columna, la X */
   #aTitulo { margin: 0; font-size: 1em; }
@@ -386,30 +449,20 @@
   /* el límite del panel vertical: 720 px (2026-11-10, el usuario: "mueve el punto de ruptura para ver a media pantalla el menú lateral"; antes 800,
      y Brave a media pantalla mide 768). El mismo en estos tres @media y en isMovil() */
   @media (min-width: 721px) {
-    .tira { flex: none; flex-wrap: wrap; gap: 2px; overflow: visible; }
+    .tira { flex: none; flex-wrap: wrap; gap: 4px; overflow: visible; }
     .tira button { flex: 1 0 auto; padding: 0 4px; }
     .tira[data-tira="meses"], .tira[data-tira="dias"] { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); }
     .tira[data-tira="dias"] button { grid-column: span 3; }
     .tira[data-tira="meses"] button { grid-column: span 3; order: 2; }   /* los 12 meses, de 4 en 4 */
     .tira[data-tira="meses"] button:nth-child(-n+2), .tira[data-tira="meses"] button:last-child { grid-column: span 4; order: 1; }   /* antes, los años y this year en su línea */
-    .zonaMapa { display: flex; flex-direction: column; min-height: 0; }
-    .zonaMapa:has(.mapaCaja.cerrado) #bMapa { margin-bottom: 6px; }
-    /* el mapa, a 2 px de lo de arriba (los selectores) y de lo de abajo (los países), como las celdas entre sí (2026-11-10, el usuario: "margin 2px del mapa arriba
-       y abajo"; antes 10 y 6): arriba, el hueco del panel (10 px) menos 8 */
-    .zonaMapa:has(.mapaCaja:not(.cerrado, .oculto)) { margin-top: -8px; }
-    .mapaCaja { flex-direction: column; min-height: 0; gap: 2px; }
-    /* el mapa, debajo de los países (2026-11-11, el usuario: "pon el mapa debajo de los botones de paises"); su botón, también: cerrado, bajo los países;
-       abierto, dentro del mapa, arriba a la derecha ("boton map arriba derecha"): bajo las --filas de países (cada una, su alto y 2 px de hueco) y 6 px */
-    .ciudadesMapa { order: -1; }
-    #bMapa { order: 1; }
-    .zonaMapa:has(.mapaCaja.cerrado) #bMapa { margin-bottom: 0; margin-top: 6px; }
-    .zonaMapa:has(.mapaCaja:not(.cerrado, .oculto)) #bMapa { top: calc(var(--filas, 0) * (var(--altoTira) + 2px) + 6px); left: auto; right: 6px; }
+    /* arriba del panel, el mapa, cuadrado (2026-11-11, el usuario: "manten el mapa cuadrado, mismo alto que ancho"; antes, bajo los países), y su botón dentro,
+       arriba a la derecha ("boton map arriba derecha"); cerrado, el botón en su fila. No encoge: si no cabe en la ventana, el scroll del panel */
+    .zonaMapa { flex: none; display: flex; flex-direction: column; }
+    .mapaCaja { flex-direction: column; }
     .mapa { flex: none; box-sizing: border-box; height: auto; aspect-ratio: 1; max-height: none; }   /* cuadrado, del ancho del panel (2026-11-10, el usuario: "haz el mapa cuadrado, manten el mismo ancho"; antes, 142 px de alto) */
-    .ciudadesMapa { flex: 0 1 auto; min-height: 0; width: auto; height: auto; max-height: none;   /* del alto de su contenido: siempre 6 líneas, por páginas */
-                    grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: column; grid-template-rows: repeat(var(--filas, 1), var(--altoTira)); }   /* se llena por columnas: primero la de la izquierda (--filas, en pintaCiudades) */
-    .ciudadesMapa:empty { display: none; }
+    /* el mapa no se mueve (2026-11-11, el usuario: "el mapa no tiene scroll"): si no cabe todo, el scroll es el de lo de debajo (meses, días, roles, scheduler) */
+    .fechas { flex: 0 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: thin; justify-content: flex-start; }
   }
-  @media (min-width: 721px) and (max-height: 460px) { .zonaMapa { flex: none; } }   /* ventana baja: no cabe; scroll en el panel */
   /* el listado estrecho junto al panel (menos de 600 px, como en el móvil): la fecha, más pequeña y apretada, y menos hueco entre columnas: el ancho, para el título
      (2026-11-10, el usuario: "la fecha puede hacerse q ocupe menos ancho ?") */
   @media (min-width: 721px) and (max-width: 920px) {
@@ -418,34 +471,39 @@
     .detalle h2, .detalle.filas h2, #ficha h2 { font-size: calc(.7em + 6px); }   /* el de la ficha, como el del listado */
     .fila .fTexto { gap: 10px; }
   }
-  /* pantalla estrecha: una columna, como la cabecera de antes: el panel arriba y debajo la barra, los dos fijos */
+  /* pantalla estrecha: una columna: la cabecera arriba, sus líneas una bajo otra, y debajo el panel, los dos fijos */
   @media (max-width: 720px) {
     .app { display: block; }
-    .panel { height: auto; overflow: visible; flex-flow: row wrap; align-items: center; gap: 4px; padding: 4px 16px; box-shadow: none; }
-    .linea1, .linea2 { flex: 0 0 100%; }
+    .cabecera { grid-template-columns: minmax(0, 1fr); }   /* con el mismo padding que la ancha: alineada con el panel */
+    .ciudadesMapa { overflow-x: auto; scrollbar-width: thin; }   /* aquí, todos, con scroll (sin more...) */
+    /* el mapa, de todo el ancho, con el mismo padding que en el panel vertical (8 px arriba, 12 a los lados; 2026-11-11, el usuario: "cuando la pantalla cambia y
+       el mapa pasa a ocupar todo el ancho el padding para el mapa debe mantenerse"; antes, 4 px arriba y 16 a los lados) */
+    .panel { height: auto; overflow: visible; flex-flow: row wrap; align-items: center; gap: 4px; box-shadow: none; }
     .zonaMapa, .fechas { flex: 0 0 100%; min-width: 0; }
     #rBotones, #bAgendas, .fechas { margin-top: 0; }
-    .mapaCaja.cerrado { display: none; }   /* aquí cerrar el mapa libera sitio: se van los dos */
-    .barraLista { top: var(--altoPanel, 0px); gap: 4px 8px; padding: 6px 16px; }
+    .mapaCaja.cerrado { display: none; }   /* aquí cerrar el mapa libera sitio */
     .detalle { top: calc(var(--altoPanel, 0px) + var(--altoBarra, 0px) + 16px); }
   }
 </style>
 </head>
 <body>
 <div class="app">
- <aside id="panel" class="panel">
+ <header id="cabecera" class="cabecera">
   <div class="linea1">
     <span class="busca"><input id="buscar" type="search" placeholder="search tango…" autocomplete="off"><div id="sugs" class="oculto"></div></span>
   </div>
-  <div class="linea2">
-    <label><select id="selRol" data-inicial="fes"></select></label>
-    <label><select id="selArea" data-inicial="Asia"></select></label>
-  </div>
+  <div class="lineaRuta"><div class="ruta cajaTotal"><span id="total"></span></div><button id="bListado">list</button><span class="selIdioma"><button id="bIdioma" type="button" aria-label="language" aria-haspopup="true" aria-expanded="false"></button><div id="menuIdioma" class="menuIdioma oculto" role="menu"></div></span><a id="info" href="#"><img src="img/koko.svg" alt="KoKo Tango"><span class="kkOver" aria-hidden="true">KK</span></a></div>
+  <div class="lineaRuta lineaMigas"><label><select id="selRol" data-inicial="fes"></select></label><div class="ruta"><span id="ruta"></span><span id="rutaDer" class="rutaDer"></span></div></div>
+  <div class="linea3"><div id="ciudadesMapa" class="ciudadesMapa"></div></div>
+  <!-- el área elegida: sin selector a la vista (2026-11-11, el usuario: "eliminamos el selector de area"); se elige con sus botones (pintaCiudades) y aquí se
+       guarda, con sus opciones (pinta) y su ?a= (deUrl, buscaRuta) -->
+  <select id="selArea" class="oculto" data-inicial="Asia" aria-hidden="true" tabindex="-1"></select>
+ </header>
+ <aside id="panel" class="panel">
   <div class="zonaMapa">
-    <button id="bMapa" title="show / hide the map">map</button>
+    <button id="bMapa">map</button>
     <div id="mapaCaja" class="mapaCaja oculto">
       <div id="mapa" class="mapa"></div>
-      <div id="ciudadesMapa" class="ciudadesMapa"></div>
     </div>
     <div id="mapaAviso" class="aviso oculto"></div>
   </div>
@@ -456,24 +514,19 @@
   </div>
  </aside>
  <main class="principal">
-  <div id="barraLista" class="barraLista">
-    <div class="lineaRuta"><div class="ruta cajaTotal"><span id="total"></span></div><button id="bListado" title="switch to grid">☰ list</button><span class="selIdioma"><button id="bIdioma" type="button" aria-label="language" aria-haspopup="true" aria-expanded="false"></button><div id="menuIdioma" class="menuIdioma oculto" role="menu"></div></span><a id="info" href="#" title="KoKo Tango"><img src="img/koko.svg" alt="KoKo Tango"></a></div>
-    <div class="lineaRuta"><div class="ruta"><span id="ruta"></span><span id="rutaDer" class="rutaDer"></span></div></div>
-  </div>
-  <div id="detalle" class="detalle oculto"><button id="dCerrar" title="close"><svg viewBox="0 0 14 14"><path d="M1.5 1.5l11 11M12.5 1.5l-11 11"/></svg></button><button id="dCopiar" title="copy link"></button><div id="dCuerpo" class="cuerpo"></div><button id="dFuentes" class="oculto" title="sources"><svg viewBox="0 0 24 24" fill="none" stroke="#8ab4f8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14V6M12 6c0-3 5-3.5 6 1v2M12 6c0-3-5-3.5-6 1v2"/><path d="M3.5 14h17c0 3.8-3.5 5.5-8.5 5.5S3.5 17.8 3.5 14zM8.5 22h7"/></svg></button></div>
+  <div id="detalle" class="detalle oculto"><button id="dCerrar" aria-label="close"><svg viewBox="0 0 14 14"><path d="M1.5 1.5l11 11M12.5 1.5l-11 11"/></svg></button><button id="dCopiar" aria-label="copy link"></button><div id="dCuerpo" class="cuerpo"></div><button id="dFuentes" class="oculto" aria-label="sources"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14V6M12 6c0-3 5-3.5 6 1v2M12 6c0-3-5-3.5-6 1v2"/><path d="M3.5 14h17c0 3.8-3.5 5.5-8.5 5.5S3.5 17.8 3.5 14zM8.5 22h7"/></svg></button></div>
   <div id="parrilla" class="parrilla oculto"></div>
   <div id="listado" class="listado"></div>
  </main>
 </div>
 <div id="tipTira" class="tipTira oculto"></div>
-<dialog id="agenda"><button id="aCerrar" title="close"><svg viewBox="0 0 14 14"><path d="M1.5 1.5l11 11M12.5 1.5l-11 11"/></svg></button><div id="aCabeza"><h2 id="aTitulo"></h2><div><button id="aAtras" title="previous week">‹</button><button id="aSigue" title="next week">›</button></div></div><div id="aScroll"><table><thead><tr id="aDias"></tr></thead><tbody id="aFilas"></tbody></table></div></dialog>
-<dialog id="ficha"><button id="fCerrar" title="close"><svg viewBox="0 0 14 14"><path d="M1.5 1.5l11 11M12.5 1.5l-11 11"/></svg></button><div id="fCuerpo" class="cuerpo"></div></dialog>
+<dialog id="agenda"><button id="aCerrar" aria-label="close"><svg viewBox="0 0 14 14"><path d="M1.5 1.5l11 11M12.5 1.5l-11 11"/></svg></button><div id="aCabeza"><h2 id="aTitulo"></h2><div><button id="aAtras" aria-label="previous week">‹</button><button id="aSigue" aria-label="next week">›</button></div></div><div id="aScroll"><table><thead><tr id="aDias"></tr></thead><tbody id="aFilas"></tbody></table></div></dialog>
+<dialog id="ficha"><button id="fCerrar" aria-label="close"><svg viewBox="0 0 14 14"><path d="M1.5 1.5l11 11M12.5 1.5l-11 11"/></svg></button><div id="fCuerpo" class="cuerpo"></div></dialog>
 
 <script>
 const FOTOS = 'foto';
 const TODOS = '*';
 history.scrollRestoration = 'manual';   // al cargar (o recargar), arriba: a la vista la primera línea del listado
-const MAX_FILAS_PANEL = 6;   // las celdas por columna del panel de países y ciudades, con back y more... (2026-11-04, el usuario: "mas de celdas por columna es 6")
 let enListado = true;   // listado o parrilla de caras (botón list; ?c=grid / ?c=list)
 const ANCHO_CARA = 110;   // = --maxFoto del CSS: tamaño máximo de las fotos
 function columnasParrilla(){
@@ -788,11 +841,11 @@ function enlace(href, texto, icono){
 function logosFicha(d, img, {mapa = '', fb = '', www = [], video = '', fotoMapa = true, conAgendas = false, textoFb = 'facebook'}){   // fotoMapa: la imagen abre el mapa; textoFb: el texto del enlace de Facebook
   // el texto del enlace de una web: www (2026-11-10, el usuario: "para todas las fichas, cambia los textos de los url de www por www"; antes, su dominio); una foto: img.
   // La dirección, en el hover
-  const web = u => { const a = enlace(u, /\.(jpe?g|png|gif|webp|avif|svg)([?#]|$)/i.test(u) ? 'img' : 'www', 'img/web.svg'); a.title = u; return a; };
+  const web = u => { const a = enlace(u, /\.(jpe?g|png|gif|webp|avif|svg)([?#]|$)/i.test(u) ? 'img' : 'www', 'img/web.svg'); return a; };
   const aMapa = mapa ? [enlace(mapa, 'map', 'img/mapa.svg')] : [],
         aFb = fb ? [enlace(fb, textoFb, 'img/perfil.svg')] : [],
         aWww = www.filter(u => conAgendas || !esAgendaWeb(u)).map(web),   // no la agenda de donde salen los datos (aux.js), salvo en links: es la página fuente
-        aVideo = video ? [enlace(video, 'video', 'img/yt.svg')] : [];
+        aVideo = video ? [enlace(video, 'YT', 'img/yt.svg')] : [];   // YT (2026-11-11, el usuario: "cambia video por YT")
   const logos = [...aMapa, ...aFb, ...aVideo, ...aWww];   // el mapa y luego FB, YT, WWW (2026-11-08, el usuario)
   if (logos.length){
     const par = document.createElement('p');
@@ -804,7 +857,6 @@ function logosFicha(d, img, {mapa = '', fb = '', www = [], video = '', fotoMapa 
     img.classList.add('conEnlace');
     const otro = [...aFb, ...aWww, ...aVideo][0];   // la foto abre lo de antes: el mapa (fotoMapa) o su Facebook, su web o el vídeo, por este orden
     const abre = (mapa && (fotoMapa || !otro) ? aMapa[0] : otro).href;
-    img.title = abre;
     img.onclick = () => window.open(abre, '_blank', 'noopener');
   }
 }
@@ -823,7 +875,7 @@ function logoEspecial(){
   const i = document.createElement('img');
   i.src = 'img/especial.svg';
   i.className = 'logoEspecial';
-  i.alt = i.title = 'special milonga';
+  i.alt = 'special milonga';
   return i;
 }
 function iconoFila(p){   // un solo icono: su Facebook (urlfb) si lo tiene; si no, su web
@@ -834,7 +886,7 @@ function iconoFila(p){   // un solo icono: su Facebook (urlfb) si lo tiene; si n
   const web = fb ? '' : [p.fb, ...(p.www || []), ...notas].find(u => u && esEnlace(u) && !esFb(u) && !/youtu/.test(u) && (p.lista || !esAgendaWeb(u)));
   if (fb || web){
     const a = enlace(fb || web, '', fb ? 'img/perfil.svg' : 'img/web.svg');
-    a.title = fb ? 'facebook' : 'web';
+    a.setAttribute('aria-label', fb ? 'facebook' : 'web');
     a.onclick = e => e.stopPropagation();
     s.appendChild(a);
   }
@@ -988,11 +1040,11 @@ function titulo(d, p){
 function trianguloPanel(panel, linea){
   panel.classList.add('panelInfo', 'oculto');
   const t = document.createElement('button');
-  t.type = 'button'; t.className = 'triangulo'; t.textContent = '▸'; t.title = 'info'; t.setAttribute('aria-expanded', 'false');
+  t.type = 'button'; t.className = 'triangulo'; t.setAttribute('aria-label', 'info'); t.setAttribute('aria-expanded', 'false');
+  t.innerHTML = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M1 0l10 6-10 6z" fill="currentColor"/></svg>';   // ▶; abierto, girado a ▼ (CSS)
   t.onclick = ev => {
     ev.stopPropagation();
     const abierto = !panel.classList.toggle('oculto');
-    t.textContent = abierto ? '▾' : '▸';
     t.setAttribute('aria-expanded', String(abierto));
   };
   linea.prepend(t);
@@ -1103,7 +1155,7 @@ function rellenaPersona(c, p){
     e.append('• ' + ev.nombre);
     for (const [u, icono] of [[ev.fb, 'img/perfil.svg'], [ev.www, 'img/web.svg']]) if (u){
       const a = enlace(u, '', icono);
-      a.title = u;
+      a.setAttribute('aria-label', u);
       e.append(' ', a);
     }
     d.appendChild(e);
@@ -1134,6 +1186,10 @@ function abreFicha(p, fila){   // fila: la pulsada (una milonga puede salir en v
   $('detalle').appendChild($('dCopiar'));   // fuera de la ficha que se borra (va al final de su primera línea: pintaCopiar)
   $('dCuerpo').innerHTML = '';
   rellena($('dCuerpo'), p);
+  // la foto abre la ficha en el popup, con la información desplegada (2026-11-11, el usuario: "click en la imagen de la ficha popup de la ficha con la informacion
+  // expandida"; antes, el mapa o su enlace, que es lo que sigue haciendo la foto del popup)
+  const foto = $('dCuerpo').querySelector(':scope > img, :scope > .sinfoto');
+  if (foto){ foto.classList.add('conEnlace'); foto.onclick = () => fichaExpandida(p); }
   pintaCopiar(p);
   pintaFuentes(p);
   iluminaFicha(p);
@@ -1166,6 +1222,10 @@ function mueveFila(n){
 // el enlace a la ficha: esta página con ?id=<id> (abreId), y el #k= de la clave si lo hay; publicada, el
 // Worker /w?id=<id> (push.sh escribe URL_FICHA), que lleva a tangoglobe/?id=<id>#k=<clave>
 const URL_FICHA = 'https://tangoinfo-eventos.55tgb.workers.dev/w';
+// los iconos del botón list / grid: tres rayas (☰) y un cuadrado partido en 3 × 3 (▦)
+const ICONO_LISTA = '<svg class="iBoton" viewBox="0 0 16 16" aria-hidden="true"><path d="M1 3h14M1 8h14M1 13h14" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
+const ICONO_PARRILLA = '<svg class="iBoton iParrilla" viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 1.5h13v13h-13zM5.83 1.5v13M10.17 1.5v13M1.5 5.83h13M1.5 10.17h13" ' +
+                       'fill="none" stroke="currentColor" stroke-width="1.5"/></svg>';
 const ICONO_ENLACE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
                      '<rect x="8" y="8" width="13" height="13" rx="2.5"/><path d="M16 8V5.5A2.5 2.5 0 0 0 13.5 3h-8A2.5 2.5 0 0 0 3 5.5v8A2.5 2.5 0 0 0 5.5 16H8"/></svg>';
 const ICONO_HECHO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
@@ -1222,10 +1282,10 @@ function pintaCopiar(p){
 }
 const midoBarra = new ResizeObserver(() => {
   const css = document.documentElement.style;
-  css.setProperty('--altoBarra', $('barraLista').offsetHeight + 'px');
+  css.setProperty('--altoBarra', $('cabecera').offsetHeight + 'px');   // la cabecera: el panel y la ficha, debajo
   css.setProperty('--altoPanel', $('panel').offsetHeight + 'px');   // solo cuenta en pantalla estrecha, con el panel encima
 });
-midoBarra.observe($('barraLista'));
+midoBarra.observe($('cabecera'));
 midoBarra.observe($('panel'));
 
 function desdeHoy(p){
@@ -1404,11 +1464,13 @@ const abrevCiudad = p => p.ciudad && typeof CIUDADES_ABREV != 'undefined' && CIU
 let lugarSel = null, sinEncuadre = false, areaPrevia = null;
 let mapaAbierto = true;
 let mapaPendiente = null;
+// el triángulo del botón map: hacia arriba con el mapa abierto (al pulsarlo, se cierra), hacia abajo cerrado
+const iconoMapa = () => '<svg class="iMapa" viewBox="0 0 12 10" aria-hidden="true"><path d="' + (mapaAbierto ? 'M0 10L6 0l6 10z' : 'M0 0h12L6 10z') + '" fill="currentColor"/></svg>';
 function abreCierraMapa(){   // abrir o cerrar el mapa no toca lo elegido: la ruta (las migas) sigue igual
   mapaAbierto = !mapaAbierto;
   $('mapaCaja').classList.toggle('cerrado', !mapaAbierto);
   $('mapa').classList.toggle('oculto', !mapaAbierto);
-  $('bMapa').innerHTML = '<span class="iMapa">' + (mapaAbierto ? '▴' : '▾') + '</span> map';
+  $('bMapa').innerHTML = iconoMapa() + tr('map');
   if (!mapaAbierto) return;
   if (!mapa || mapaPendiente){
     const [lista, area, conMapa] = mapaPendiente || [posMapa, areaMapa || TODOS, true];
@@ -1548,15 +1610,47 @@ function vuela(b, tope, mas = 0, puntos = b){   // puntos: los de los marcadores
   let zoom = Math.min(z(b) + mas, z(puntos), 10);
   if (tope) zoom = Math.min(zoom, z(tope.extend(b)) + MAS_PAIS);
   const px = p => mapa.project(p, zoom), medio = mapa.getSize().divideBy(2);
-  const c = px(b.getNorthWest()).add(px(b.getSouthEast())).divideBy(2), nw = px(puntos.getNorthWest()), se = px(puntos.getSouthEast());
-  const entre = (v, lo, hi) => lo > hi ? (lo + hi) / 2 : Math.min(Math.max(v, lo), hi);
-  c.x = entre(c.x, se.x + PAD - medio.x, nw.x - PAD + medio.x);
-  c.y = entre(c.y, se.y + PAD - medio.y, nw.y - PAD + medio.y);
+  // el centro, el de los círculos de los extremos: el más alto, el más bajo, el de más a la izquierda y el de más a la derecha, cada uno con su radio (2026-11-11,
+  // el usuario: "centra el mapa en funcion de circulo mas alto y bajo, mas a la izq y mas a la derecha"): el mismo margen a cada lado. Las marcas, las de dentro
+  // de puntos, con 0,02° de holgura (centroPos las lleva al centro de su ciudad, a menos de 1 km). Sin ninguna (un país sin puntos), el de b, movido lo justo
+  // para que quepan los puntos (antes, siempre así: con un área, el centro de su vista)
+  const holgura = L.latLngBounds([puntos.getSouth() - .02, puntos.getWest() - .02], [puntos.getNorth() + .02, puntos.getEast() + .02]);
+  const radio = m => m.getRadius ? m.getRadius() + (m.options.weight || 0) / 2 : 7;   // un círculo (o un cuadrado de zona): su radio y medio borde; una lista, su logo de 13 px
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const m of marcadores.values()){
+    if (!holgura.contains(m.getLatLng())) continue;
+    const q = px(m.getLatLng()), r = radio(m);
+    x0 = Math.min(x0, q.x - r); y0 = Math.min(y0, q.y - r); x1 = Math.max(x1, q.x + r); y1 = Math.max(y1, q.y + r);
+  }
+  let c;
+  if (x0 <= x1) c = L.point((x0 + x1) / 2, (y0 + y1) / 2);
+  else {
+    const nw = px(puntos.getNorthWest()), se = px(puntos.getSouthEast());
+    const entre = (v, lo, hi) => lo > hi ? (lo + hi) / 2 : Math.min(Math.max(v, lo), hi);
+    c = px(b.getNorthWest()).add(px(b.getSouthEast())).divideBy(2);
+    c.x = entre(c.x, se.x + PAD - medio.x, nw.x - PAD + medio.x);
+    c.y = entre(c.y, se.y + PAD - medio.y, nw.y - PAD + medio.y);
+  }
   const centro = mapa.unproject(c, zoom);
   vistaMapa = [centro, zoom];
-  if (mapa._loaded) mapa.flyTo(centro, zoom, {duration: .8});
+  if (mapa._loaded && !sinVuelo) mapa.flyTo(centro, zoom, {duration: .8});
   else mapa.setView(centro, zoom);
 }
+// otro tamaño del mapa (el zoom del navegador, la ventana, el paso a pantalla estrecha): Leaflet lo sabe (invalidateSize) y, si no se ha movido a mano, se
+// encuadra otra vez, sin vuelo: los marcadores, con su margen (PAD) (2026-11-11, el usuario: "cuidado con el resize del zoom, debemos actualizar el mapa para
+// mantener el padding"). Antes, Leaflet solo seguía la ventana y con el encuadre de otro tamaño
+let sinVuelo = false, tamMapa = '';
+new ResizeObserver(() => {
+  const div = $('mapa'), t = div.clientWidth + 'x' + div.clientHeight;
+  if (t == tamMapa) return;
+  tamMapa = t;
+  if (!mapa || !mapaAbierto || !div.clientWidth || !div.clientHeight) return;   // cerrado u oculto: al abrirlo, abreCierraMapa
+  const movido = mapaMovido();   // con el tamaño de antes (el que aún sabe Leaflet)
+  mapa.invalidateSize({pan: false});
+  if (movido || !posMapa.length) return;
+  sinVuelo = true;
+  try { encuadra(posMapa); } finally { sinVuelo = false; }
+}).observe($('mapa'));
 function pintaMapa(lista, area, conMapa){
   $('mapaAviso').classList.add('oculto');
   try { pintaMapa0(lista, area, conMapa); }
@@ -1567,7 +1661,6 @@ function avisoMapa(texto){
   $('mapaCaja').classList.add('oculto');
   $('bMapa').disabled = true;
   $('bMapa').textContent = '• map';
-  $('bMapa').title = tr('map: not available');
   $('mapaAviso').textContent = texto;
   $('mapaAviso').classList.remove('oculto');
 }
@@ -1587,16 +1680,15 @@ function creaPaises(){
 function pintaMapa0(lista, area, conMapa){
   const div = $('mapa'), caja = $('mapaCaja'), conPos = posMapa = lista.filter(p => p.pos), hay = conPos.length || conMapa;
   $('bMapa').disabled = !hay;
-  $('bMapa').innerHTML = (!hay ? '•' : '<span class="iMapa">' + (mapaAbierto ? '▴' : '▾') + '</span>') + ' ' + tr('map');
-  $('bMapa').title = tr(!hay ? 'map: not applicable here' : 'show / hide the map');
+  $('bMapa').innerHTML = (!hay ? '• ' : iconoMapa()) + tr('map');
   caja.classList.toggle('cerrado', !mapaAbierto);
   div.classList.toggle('oculto', !mapaAbierto);
   if (!mapaAbierto){ caja.classList.toggle('oculto', !hay); mapaPendiente = [lista, area, conMapa]; return pintaCiudades(); }
   mapaPendiente = null;
   areaMapa = area == TODOS ? null : area;
-  if (typeof L == 'undefined') return avisoMapa('no se ha podido cargar Leaflet (leaflet/leaflet.js)');
+  if (typeof L == 'undefined'){ avisoMapa('no se ha podido cargar Leaflet (leaflet/leaflet.js)'); return pintaCiudades(); }
   caja.classList.toggle('oculto', !hay);
-  if (!hay) return;
+  if (!hay) return pintaCiudades();   // sin mapa, los botones siguen (las áreas; los países y ciudades, de lo que tenga marca)
   if (!mapa){
     mapa = L.map(div, {worldCopyJump: true, zoomSnap: .25, zoomControl: false});   // sin el + y el -: zoom con la rueda, el pellizco o el doble clic
     mapa.attributionControl.setPrefix(false);
@@ -1659,11 +1751,10 @@ function pintaMapa0(lista, area, conMapa){
   pintaCiudades();   // y otra vez al acabar de encuadrar (moveend)
 }
 
-// los lugares de las marcas que se ven en el mapa, en su panel a la derecha del mapa: en el nivel de área los
-// países (de baseLugares: todo el listado sin el país); con un país, una ciudad o un lugar elegidos, sus ciudades.
-// Primero los de más líneas en el listado (lineasCiudad y lineasPais, de pinta); con más de los que caben, el
-// scroll. Al lado de cada nombre, ese número; al pulsarlo, se elige
-let lineasCiudad = () => 0, lineasPais = () => 0, baseLugares = [];
+// los botones de la tercera línea de la cabecera (2026-11-11; antes, en el panel, sobre el mapa): en World las áreas (de todo el listado); en un área, los
+// países de las marcas que se ven en el mapa (de baseLugares: todo el listado sin el país); con un país, una ciudad o un lugar elegidos, sus ciudades.
+// Primero los de más líneas en el listado (lineasArea, lineasPais y lineasCiudad, de pinta). Al lado de cada nombre, ese número; al pulsarlo, se elige
+let lineasCiudad = () => 0, lineasPais = () => 0, lineasArea = () => 0, baseLugares = [], areasLista = [];
 // al pulsar una ciudad de la lista (con líneas en el listado) o elegirla en el buscador (CIT): como su marca,
 // la ciudad c (pais|ciudad) elegida en el listado y en el mapa, con su país
 function eligeCiudad(c, nombre){
@@ -1687,29 +1778,67 @@ function eligePais(pais){
   etiqueta(boundsPais(l).getCenter(), l.feature.properties.pais, 'pais');
   pinta();
 }
+// el selector de tipo, de ancho fijo: el de su tipo más ancho, medido con cada uno (con field-sizing: content, su ancho es el del elegido, con su relleno y su flecha).
+// Solo si cambian sus textos (el idioma)
+let textosTipo = '';
+function anchoTipo(){
+  const sel = $('selRol'), opciones = [...sel.options].filter(o => !o.disabled), clave = opciones.map(o => o.textContent).join('|');
+  if (clave == textosTipo) return;
+  textosTipo = clave;
+  const antes = sel.value;
+  sel.style.width = '';
+  let ancho = 0;
+  for (const o of opciones){ sel.value = o.value; ancho = Math.max(ancho, sel.getBoundingClientRect().width); }
+  sel.value = antes;
+  sel.style.width = Math.ceil(ancho) - 20 + 'px';   // 20 px menos (2026-11-11, el usuario: "20px menos para el selector tipo"): sobraba el relleno de la flecha
+}
+// al pulsar un área (en World): como elegirla en el selector de antes
+function eligeArea(area){
+  $('selArea').value = area;
+  lugarSel = ciudadSel = paisSel = null;
+  soloBuscado = false;
+  pinta();
+}
+const areaActual = () => $('selArea').value || $('selArea').dataset.inicial || TODOS;
+const nombreArea = v => tr(v == '-' ? 'no area' : v);
 function pintaCiudades(){
-  const div = $('ciudadesMapa'), vista = mapa && mapaAbierto ? mapa.getBounds() : null, nombres = new Map(), dePais = !!(ciudadSel || lugarSel || paisSel);   // con país, ciudad o lugar elegidos: las ciudades (del país); si no, países
-  for (const p of dePais ? posMapa : baseLugares){   // las ciudades, de lo que pinta el mapa (con un país elegido, solo las suyas); los países, de todo el listado
+  const div = $('ciudadesMapa'), dePais = !!(ciudadSel || lugarSel || paisSel), deMundo = !dePais && areaActual() == TODOS;   // con país, ciudad o lugar elegidos: sus ciudades; en World, las áreas; si no, los países del área
+  const vista = mapa && mapaAbierto && !$('mapaCaja').classList.contains('oculto') ? mapa.getBounds() : null, nombres = new Map();
+  if (deMundo) for (const x of areasLista) nombres.set(x, nombreArea(x));   // las áreas, todas las que tienen líneas (sin mirar el mapa)
+  else for (const p of dePais ? posMapa : baseLugares){   // las ciudades, de lo que pinta el mapa (con un país elegido, solo las suyas); los países, de todo el listado
     if (vista && !vista.contains(centroPos(p.pos))) continue;   // con el mapa oculto, todos: la lista sigue viva
     if (dePais && p.ciudad) nombres.set(ciudadDe(p), p.ciudad);
     else if (!dePais && p.pais && p.pais != '-') nombres.set(p.pais, nombrePais(p.pais));
   }
-  const lineas = dePais ? lineasCiudad : lineasPais, elige = dePais ? eligeCiudad : eligePais;
+  const lineas = deMundo ? lineasArea : dePais ? lineasCiudad : lineasPais, elige = deMundo ? eligeArea : dePais ? eligeCiudad : eligePais;
   const n = new Map([...nombres.keys()].map(c => [c, lineas(c)]));
-  const ciudades = [...nombres].sort((x, y) => n.get(y[0]) - n.get(x[0]) || x[1].localeCompare(y[1]));   // primero las de más líneas
-  div.scrollTop = 0;
-  // back, con el logo de volver: la flecha que gira a la izquierda (2026-11-10, el usuario: "para << usa un logo de volver"; antes, el doble chevron «)
-  const BACK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' +
-               '<path d="M9 14L4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>' + tr('back');
-  const navega = (clase, html, pulsa) => { const s = document.createElement('span'); s.className = clase; s.innerHTML = html; s.onclick = pulsa; return s; };
-  const atras = dePais && navega('atras', BACK, () => {   // de las ciudades (con país, ciudad o lugar elegidos), a los países del área; las fechas (año y mes), los días y los roles, a cero
+  const ciudades = [...nombres].filter(([c]) => !deMundo || n.get(c))   // las áreas, solo las que tienen líneas
+                               .sort((x, y) => n.get(y[0]) - n.get(x[0]) || x[1].localeCompare(y[1]));   // primero las de más líneas
+  div.scrollLeft = 0;
+  // back y more..., solo con su logo (2026-11-11, el usuario: "cambia back y more por logos"; antes, el logo y el texto): triángulos llenos como la flecha ▼ del
+  // selector de tipo, en amarillo ("vamos a usar triangulos como el del select de tipo, tb en amarillo"): back ◀ (al nivel de arriba o a la página anterior),
+  // more... ▶. Antes, un rato, la flecha de volver (que sustituyó al «, 2026-11-10) y una flecha a la derecha
+  const BACK = '<svg viewBox="0 0 10 12"><path d="M10 0L0 6l10 6z" fill="currentColor"/></svg>';
+  const MAS = '<svg viewBox="0 0 10 12"><path d="M0 0l10 6L0 12z" fill="currentColor"/></svg>';
+  const navega = (clase, html, pulsa, nombre) => {   // nombre: el que lee el lector de pantalla (sin title: el usuario no los quiere en estos botones)
+    const s = document.createElement('span');
+    s.className = clase;
+    s.innerHTML = html;
+    s.onclick = pulsa;
+    if (nombre){ s.setAttribute('role', 'button'); s.setAttribute('aria-label', nombre); }
+    return s;
+  };
+  // back: de las ciudades (con país, ciudad o lugar elegidos) a los países del área; de los países, a las áreas (World). Las fechas (año y mes), los días y
+  // los roles, a cero
+  const atras = !deMundo && navega('atras', BACK, () => {
+    if (!dePais) $('selArea').value = TODOS;
     lugarSel = ciudadSel = paisSel = null;
     fechaSel = F_DOCE;
     diasSel.clear();
     rolesSel.clear();
     soloBuscado = false;
     pinta();
-  });
+  }, tr('back'));
   const lugar = lugarSel && (porLugarMapa.get(lugarSel) || [])[0];
   const elegida = ciudadSel || (lugar ? ciudadDe(lugar) : null);   // la ciudad elegida (o la del lugar elegido)
   const celdas = ciudades.map(([c, nombre]) => {
@@ -1728,27 +1857,29 @@ function pintaCiudades(){
     };
     return s;
   });
-  // por páginas, de 2 columnas: en la primera celda back, en la última more... (en pantalla estrecha, scroll)
-  const cabe = !isMovil() ? 2 * MAX_FILAS_PANEL : Infinity;
+  // por páginas, las que quepan en la línea: en el primer botón back y, si no caben todas, en el último more... (en pantalla estrecha, todas, con scroll)
+  const porPaginas = !isMovil();
   const vistas = [];   // dónde empezaba cada página anterior
   const pagina = desde => {
-    const vuelve = vistas.length ? navega('atras', BACK, () => pagina(vistas.pop())) : atras;
-    let sitio = cabe - (vuelve ? 1 : 0);
-    const hayMas = celdas.length - desde > sitio;
-    if (hayMas) sitio--;
-    const mas = hayMas && navega('mas', tr('more ...'), () => { vistas.push(desde); pagina(desde + sitio); });
-    const vista = [vuelve, ...celdas.slice(desde, desde + sitio), mas].filter(Boolean);
-    if (cabe < Infinity) while (vista.length < cabe) vista.push(navega('hueco', '', null));   // siempre todas las celdas: las que falten, de relleno (2026-11-04, el usuario: "siempre 12 celdas")
-    div.replaceChildren(...vista);
-    div.closest('.zonaMapa').style.setProperty('--filas', Math.ceil(vista.length / 2));   // en su caja: la lista lo hereda y el botón map sabe dónde empieza el mapa
+    const vuelve = vistas.length ? navega('atras', BACK, () => pagina(vistas.pop()), tr('back')) : atras;
+    const resto = celdas.slice(desde);
+    div.replaceChildren(...[vuelve, ...resto].filter(Boolean));
+    if (!porPaginas || div.scrollWidth <= div.clientWidth) return;
+    let cuantas = resto.length;
+    div.append(navega('mas', MAS, () => { vistas.push(desde); pagina(desde + cuantas); }, tr('more ...')));
+    while (cuantas > 1 && div.scrollWidth > div.clientWidth) resto[--cuantas].remove();   // las que no caben, fuera (al menos una por página)
   };
   pagina(0);
   const sel = celdas.find(s => s.classList.contains('sel'));
-  while (sel && !sel.isConnected) div.querySelector('.mas').click();   // la elegida, a la vista
+  while (sel && !sel.isConnected && div.querySelector('.mas')) div.querySelector('.mas').click();   // la elegida, a la vista
+  anchoBotones = div.clientWidth;
 }
+// otro ancho de la línea (la ventana): otra vez las páginas
+let anchoBotones = 0;
+new ResizeObserver(() => { if ($('ciudadesMapa').clientWidth != anchoBotones && personas.length) pintaCiudades(); }).observe($('ciudadesMapa'));
 
 const PRIMEROS = {[LIS]: 'sources',   /* (2026-11-10, el usuario: "cambia sources por link en el selector de tipo"; antes, links) */ [FES]: 'festival', [SEM]: 'seminar', [ACA]: 'academy', [MIL]: 'milonga', [PRA]: 'practica', [PEO]: 'tanguer@', couple: 'artist couple',   /* (2026-11-10, el usuario: "usa artis couple en vez de couple") */ org: 'organizer', art: 'artist'};
-function rutaListado(a, r, fs, dias, conRoles, n){   // la de la barra sobre el listado: área > tipo > país > ciudad > resto de selecciones (n líneas)
+function rutaListado(a, r, fs, dias, conRoles, n){   // la de la cabecera, tras el selector del tipo: World > área > país > ciudad > resto de selecciones (n líneas)
   const lugar = lugarSel && ((porLugarMapa.get(lugarSel) || [])[0] || personas.find(p => p.pos && claveMarca(p) == lugarSel));   // con el mapa cerrado, porLugarMapa puede no tenerlo
   const [paisC, ciudadC] = (ciudadSel || '').split('|');
   const f = fs !== null ? FECHAS[fs] : null;
@@ -1763,8 +1894,11 @@ function rutaListado(a, r, fs, dias, conRoles, n){   // la de la barra sobre el 
     sinEncuadre = quieto;
     return !igual;
   };
-  const partes = [[tr(a == TODOS ? 'World' : a == '-' ? 'no area' : a), aNivel(!lugarSel && !ciudadSel && !paisSel, () => { lugarSel = ciudadSel = paisSel = null; })],
-                  [tr(r == TODOS ? 'all' : PRIMEROS[r] || textoRol(r))],   // el tipo, sin clic: se cambia en su selector
+  // el tipo, primero (2026-11-11, el usuario: "el orden de las migas es primero del tipo"): es su selector, delante de las migas en la misma línea ("tipo en
+  // la linea 2 luego las migas"); aquí no se repite. Antes, área > tipo > país... World, siempre el primer tramo ("world forma parte de las migas"): al
+  // pulsarlo, a las áreas; antes, en su lugar el área elegida
+  const partes = [[tr('World'), aNivel(a == TODOS && !lugarSel && !ciudadSel && !paisSel, () => { $('selArea').value = TODOS; lugarSel = ciudadSel = paisSel = null; })],
+                  [a == TODOS ? '' : tr(a == '-' ? 'no area' : a), aNivel(!lugarSel && !ciudadSel && !paisSel, () => { lugarSel = ciudadSel = paisSel = null; })],
                   [paisSel ? nombrePais(paisSel.feature.properties.nombres[0]) : '', aNivel(!lugarSel && !ciudadSel, () => { lugarSel = ciudadSel = null; })],
                   [ciudadSel ? ciudadC || paisC : lugar ? lugar.ciudad || lugar.lugar : '', quitaResto],
                   ...(soloBuscado && buscado ? [buscado.nombre]
@@ -1795,7 +1929,7 @@ function rutaListado(a, r, fs, dias, conRoles, n){   // la de la barra sobre el 
                              ...(corta ? [pieza('tTipo', '· ' + tr('showing {n}').replace('{n}', MAX_LISTADO))] : []));
   const copia = document.createElement('button');   // a la derecha: copiar la url de esta ruta
   copia.className = 'copiaRuta';
-  copia.title = tr('copy link');
+  copia.setAttribute('aria-label', tr('copy link'));
   copia.innerHTML = ICONO_ENLACE;
   copia.onclick = async () => {
     const url = urlRuta();
@@ -1911,14 +2045,16 @@ function pinta(){
   // las líneas que tendría el listado con cada ciudad (pais|ciudad) o cada país: en una pasada (2026-11-10; antes, un filtro del listado por cada ciudad,
   // en cada movimiento del mapa). Las de una milonga, como en filasMilongas: una por cada día elegido en que sale
   const nLineas = p => !conDias || soloBuscado ? 1 : diasSel.size ? [...diasSel].filter(d => enVista(proximaEn(p, [d]), p)).length : +enVista(proximaEn(p), p);
-  const nCiudad = new Map(), nPais = new Map();
+  const nCiudad = new Map(), nPais = new Map(), nArea = new Map();
   for (const p of base){
     const n = nLineas(p), c = ciudadDe(p);
     nCiudad.set(c, (nCiudad.get(c) || 0) + n);
     nPais.set(p.pais, (nPais.get(p.pais) || 0) + n);
+    nArea.set(p.area, (nArea.get(p.area) || 0) + n);
   }
   lineasCiudad = c => nCiudad.get(c) || 0;
   lineasPais = c => nPais.get(c) || 0;
+  lineasArea = x => (nArea.get(x) || 0) + (nArea.get(MUNDIAL) || 0);   // las de World salen en todas (enArea)
   const deSel = personas.filter(p => enArea(p, a) && enRol(p, r) && enSel(p));   // lo del área, el tipo y el lugar elegidos: para los contadores de las tiras y la agenda (una pasada, no una por botón)
   agendaDe = () => deSel;
   baseLugares = base.filter(p => p.pos);
@@ -1927,14 +2063,16 @@ function pinta(){
   const hayPrivados = personas.some(p => !p.evento && p.roles.some(x => ROLES[x] && !ROLES[x].publico));
   const areas = [...new Set(personas.map(p => p.area))].filter(x => x != MUNDIAL && (x != '-' || hayPrivados))
                   .sort((x, y) => (x == '-') - (y == '-') || x.localeCompare(y));
-  opciones(sa, areas, v => tr(v == '-' ? 'no area' : v), null, tr('World'));   // sin contador (2026-11-08, el usuario)
-  if (paisSel){ if (areaPrevia) sa.value = areaPrevia; else sa.selectedIndex = -1; }   // con un país, se sigue viendo su área; volver a elegirla funciona (pointerdown en conecta)
+  areasLista = areas;   // sus botones, en World (pintaCiudades)
+  opciones(sa, areas, nombreArea, null, tr('World'));   // sin contador (2026-11-08, el usuario)
+  if (paisSel){ if (areaPrevia) sa.value = areaPrevia; else sa.selectedIndex = -1; }   // con un país, se guarda su área
   // all, community y events, y dentro de cada grupo por orden alfabético de lo que se lee (2026-11-10, el usuario: "orden alfabetico para select de tipos:
   // all+community+events y dentro de cada uno tb orden alfabetico")
   const nombreTipo = v => PRIMEROS[v] || textoRol(v), porTexto = vs => vs.sort((x, y) => nombreTipo(x).localeCompare(nombreTipo(y)));
   opciones($('selRol'), [{grupo: tr('community'), valores: porTexto([PEO, ...TIPOS_P])},
                          {grupo: tr('events'), valores: porTexto([LIS, ACA, FES, SEM, MIL, PRA])}],
            v => tr(nombreTipo(v)), null, tr('all'));   // sin contador: el número va al final de la ruta. El orden, el del inglés
+  anchoTipo();
   estadoPintado = filas.length ? estado() : null;   // con los selectores ya como se ven
   $('fechas').classList.remove('oculto');
   $('fechas').classList.toggle('sinFechas', !conFechas && !conDias && !conRoles);
@@ -1945,8 +2083,7 @@ function pinta(){
   else if (conRoles) pintaRoles(k => deSel.filter(p => k === null || conRol(p, k)).length);   // (conRoles: el tipo es PEO)
   else pintaFechas(i => deSel.filter(p => enFecha(p, i)).length, !conFechas);
   pintaMapa(baseMapa, a, personas.some(p => p.pos && enArea(p, aMapa) && enRol(p, r)));   // sin las tiras: si el tipo lleva mapa
-  $('bListado').innerHTML = enListado ? '☰ ' + tr('list') : '<span class="iParrilla">▦</span> ' + tr('grid');   // lo que se ve; al pulsar, lo otro. Con su texto (2026-11-11, el usuario: "quita list/grid deja solo el logo" y luego "vuelve a poner list/grid")
-  $('bListado').title = tr(enListado ? 'switch to grid' : 'switch to list');
+  $('bListado').innerHTML = enListado ? ICONO_LISTA + tr('list') : ICONO_PARRILLA + tr('grid');   // lo que se ve; al pulsar, lo otro. Con su texto (2026-11-11, el usuario: "quita list/grid deja solo el logo" y luego "vuelve a poner list/grid")
   $('parrilla').classList.toggle('oculto', enListado);
   $('listado').classList.toggle('oculto', !enListado);
   window.scrollTo(0, 0);   // al cambiar el listado, arriba: a la vista su primera línea
@@ -1973,7 +2110,7 @@ function pinta(){
       return s;
     };
     c.appendChild(iconoFila(p));   // el logo siempre al inicio de la línea; luego la fecha y el nombre
-    if (conFecha){   // la fecha: las letras y los números en Courier, estrechados (.fLetras); el punto y el guion, aparte (.fSigno)
+    if (conFecha){   // la fecha: las letras y los números, estrechados (.fLetras); el punto y el guion, en media letra (.fSigno)
       const f = span('fFecha', '');
       for (const trozo of (p.evento ? (dia ? textoDia(dia) : fechaListado(p)) : '').split(/([.-])/)){
         if (trozo == '.' || trozo == '-') span('fSigno', trozo, f);
@@ -2048,7 +2185,6 @@ function pintaParrilla(lista){
       yt.href = p.video;
       yt.target = '_blank';
       yt.rel = 'noopener';
-      yt.title = 'video on YouTube';
       yt.innerHTML = '<img src="img/yt.svg" alt="YouTube">';
       fig.appendChild(yt);
     }
@@ -2198,7 +2334,7 @@ function muestraInfo(){
   $('fCuerpo').innerHTML = '';
   const d = document.createElement('div');
   d.className = 'texto';
-  d.innerHTML = '<iframe id="kkTexto" src="atribucionkk.htm?v=public version&letra=tg" title="KoKoTango"></iframe>' +   // el mismo que tangoworld
+  d.innerHTML = '<iframe id="kkTexto" src="atribucionkk.htm?v=public version&letra=tg" aria-label="KoKoTango"></iframe>' +   // el mismo que tangoworld
                 '<p class="enlaces"><a id="aTw" href="#" target="_blank" rel="noopener">⇒ go to tangoworld</a></p>';   // con la ruta de las migas
   $('fCuerpo').appendChild(d);
   $('aTw').onclick = () => { $('aTw').href = urlRuta(true); };
@@ -2215,6 +2351,10 @@ function saleEl(p, d){   // la milonga p se hace el día d (a medianoche); las d
   const e = leeEvt(p.fechaOrig);
   return e ? !!e.ini && e.ini <= d && d <= e.fin : saleReg(p.fechaOrig, d);
 }
+function fichaExpandida(p){   // la ficha de p en el popup, con el panel de rol, notas y contacto abierto (sus triángulos, pulsados)
+  fichaEncima(p);
+  $('fCuerpo').querySelectorAll('.triangulo[aria-expanded="false"]').forEach(t => t.click());
+}
 function fichaEncima(p){   // la ficha de p, sobre la tabla: al cerrarla se sigue en la misma semana
   $('fCuerpo').innerHTML = '';
   rellena($('fCuerpo'), p);
@@ -2228,12 +2368,11 @@ function botonLocal(f){   // su enlace (el de la línea venue de la ficha) o, si
   b.onclick = () => url ? window.open(url, '_blank', 'noopener') : fichaEncima(ps[0]);
   return b;
 }
-function botonSesion(p){   // por locales, dos líneas: la hora (y la estrella de las especiales, que no tienen hora) y el nombre; por horas, una: el local, y la milonga en el hover. Al pulsar, su ficha encima de la tabla
+function botonSesion(p){   // por locales, dos líneas: la hora (y la estrella de las especiales, que no tienen hora) y el nombre; por horas, una: el local (sin title: 2026-11-11, el usuario: "quita los title de las tablas open"). Al pulsar, su ficha encima de la tabla
   const b = document.createElement('button');
   const linea = clase => { const s = document.createElement('span'); s.className = clase; b.appendChild(s); return s; };
   const primera = linea(horasAgenda ? 'nom' : 'hora');
   b.className = 'sesion';
-  b.title = p.nombre;
   if (especial(p)) primera.appendChild(logoEspecial());
   if (horasAgenda) primera.append(localDe(p));
   else {
@@ -2334,7 +2473,6 @@ function conecta(){
     e.preventDefault();   // sin mover la página
     mueveFila(e.key == 'ArrowDown' ? 1 : -1);
   });
-  $('selArea').onchange = () => { lugarSel = ciudadSel = paisSel = null; soloBuscado = false; pinta(); };
   $('selRol').onchange = () => {   // la ciudad elegida se mantiene: el lugar pinchado en el mapa pasa a ser su ciudad
     const p = lugarSel && (porLugarMapa.get(lugarSel) || []).find(p => p.ciudad);
     if (p) ciudadSel = ciudadDe(p);
@@ -2342,25 +2480,6 @@ function conecta(){
     soloBuscado = false;
     pinta();
   };
-  // volver a elegir el área que ya se ve quita el país (change no salta): en base-select, con el clic en su opción
-  if (CSS.supports('appearance', 'base-select')) $('selArea').addEventListener('click', e => {
-    const o = e.target.closest('option');
-    if (o && o.value == $('selArea').value && (paisSel || ciudadSel || lugarSel)) $('selArea').onchange();
-  });
-  else {   // en el desplegable del navegador, vacío mientras está abierto: cualquier opción salta
-    let areaAntes = null;
-    $('selArea').addEventListener('pointerdown', () => {
-      if ($('selArea').selectedIndex < 0) return;
-      areaAntes = $('selArea').value;
-      $('selArea').selectedOptions[0].classList.add('actual');
-      $('selArea').selectedIndex = -1;
-    });
-    $('selArea').addEventListener('blur', () => {
-      if ($('selArea').selectedIndex < 0 && areaAntes !== null) $('selArea').value = areaAntes;
-      for (const o of $('selArea').options) o.classList.remove('actual');
-      areaAntes = null;
-    });
-  }
 }
 
 function deUrl(){

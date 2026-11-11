@@ -507,6 +507,7 @@ var CIUDADES_ABREV = {
 "Philippines|Makati": "MKC",
 "Philippines|Manila": "MNL",
 "Philippines|Muntinlupa City": "MNT",
+"Philippines|Quezon City": "QZT",
 "Poland|Brzeg": "BRG",
 "Poland|Gdynia": "GDY",
 "Poland|Gronity": "GRT",
