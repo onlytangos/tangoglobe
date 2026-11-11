@@ -44,7 +44,8 @@
   /* en negrita, solo el contador del total (.cuenta) y los títulos: los nombres del listado, el de la ficha, el de OPEN SCHEDULER y los grupos del selector de tipo;
      el resto de los textos, sin negrita (2026-11-11, el usuario: "todos los textos de la pagina mismo estilo, sin negrita, negrita solo para el contador y los
      titulos"; antes, también la ficha, sus enlaces, la fecha y la ciudad del listado, "max 100 elements" y las etiquetas de las sugerencias) */
-  html { overflow-y: scroll; }
+  html { overflow-y: scroll; }   /* la de la página, siempre: el listado no cambia de ancho al cambiar su largo */
+  html:has(dialog[open]) { overflow-y: hidden; }   /* con un panel abierto (OPEN SCHEDULER, la ficha, KK), sin ella: solo la del panel, automática, si la necesita (2026-11-11, el usuario: "para los paneles la barra de scroll ponla automatica") */
   body { font-family: var(--letra); margin: 0; background: var(--fondo); color: var(--texto); }   /* todos los textos, con la letra de la fecha del listado (2026-11-11, el usuario: "usa la misma fuente para todos los terxtos"; antes, system-ui) */
   button, select, input, textarea, .leaflet-container { font-family: inherit; font-weight: inherit; }   /* todo con la letra del body: los controles y leaflet no la heredan (ni su grosor: los botones del panel, en negrita) */
   a { color: var(--enlace); }
@@ -402,42 +403,61 @@
   #bAgendas button:hover, #aAtras:hover, #aSigue:hover { background: var(--azulClaro); color: var(--negro); }
   /* OPEN SCHEDULER, a toda la pantalla, de ancho y de alto (2026-11-11, el usuario: "haz open ocupe todo el ancho alto de la pantalla"; antes, hasta 1280 px de
      ancho, con 8 px de margen y del alto de su contenido): sin margen, sin borde ni esquinas redondas; lo que no cabe, con el scroll de su tabla (#aScroll) */
-  #agenda { box-sizing: border-box; width: 100vw; height: 100vh; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; border-radius: 0; overflow: hidden; }
+  /* (con inset 0 y sin ancho ni alto: el de la ventana sin su barra de scroll; con 100vw, la incluía y el botón de cerrar quedaba debajo de ella, fuera; 2026-11-11, el
+     usuario: "cerrar del panel open esta fuera del panel") */
+  #agenda { box-sizing: border-box; inset: 0; width: auto; height: auto; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; border-radius: 0; overflow: hidden; }
   #agenda[open] { display: flex; flex-direction: column; }
-  #aCabeza { flex: none; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 8px; padding: 6px 12px; }   /* el título, el cursor en el centro del popup y, en la tercera columna, la X */
-  #aTitulo { margin: 0; font-size: 1em; }
-  #aScroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
-  #agenda table { --borde: var(--grisMedio); --topePrimera: 30%; display: grid; grid-template-columns: fit-content(var(--topePrimera)) repeat(7, minmax(0, 1fr)); width: 100%; font-size: .85em; }   /* la primera, del ancho de su contenido (con tope: si no, se come los días); los días, iguales */
-  #agenda thead, #agenda tbody, #agenda tr { display: contents; }
-  #agenda th, #agenda td { box-sizing: border-box; padding: 3px; border-top: 1px solid var(--borde); border-left: 1px solid var(--borde); overflow-wrap: anywhere; font-weight: 400; }
-  #agenda tr > :first-child { padding-left: 12px; padding-right: 8px; border-left: 0; text-align: left; }
-  #agenda td.vacio { grid-column: 1 / -1; padding: 12px; color: var(--suave); }
-  #aDias th { position: sticky; top: 0; z-index: 1; background: var(--barra); color: var(--suave); text-align: center; align-content: center; font-variant-numeric: tabular-nums; }
-  #aDias small { font-size: .9em; }
-  #aDias .hoy { background: var(--acento); color: var(--negro); }
+  /* con el formato de la tabla de Beto (img/seoul.jpg; 2026-11-11, el usuario: "para los paneles open usa este formato"): sobre blanco, el título grande en el
+     centro y la semana en rojo a la derecha; la fila de los días en verde, arriba y otra vez abajo; los locales (o las horas) en amarillo, a la izquierda y otra
+     vez a la derecha; las filas, blancas y grises alternas; en cada celda, el nombre de la milonga en azul y debajo su horario (20:00 ~ 24:30), centrados y en
+     las líneas que necesiten. En negrita, los títulos: el de la tabla, los días, los locales y los nombres. Antes, oscuro como el resto, con la hora sobre el
+     nombre, cortado si no cabía. Sus colores, los de la tabla de Beto, solo aquí */
+  #agenda { --agFondo: #fff; --agTexto: #000; --agLinea: #555; --agDias: #92d050; --agLocal: #ffd966; --agGris: #e7e6e6; --agNombre: #1c2fc4; --agSemana: #e0191e;
+            background: var(--agFondo); color: var(--agTexto); }
+  #aCabeza { flex: none; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 8px; padding: 10px 52px 10px 12px; }   /* el cursor, el título en el centro y la semana; a la derecha, sitio para la X */
+  #aCursor { justify-self: start; display: flex; }
+  #aTitulo { margin: 0; font-size: 1.6em; font-weight: bold; text-align: center; }
+  #aSemana { justify-self: end; color: var(--agSemana); font-weight: bold; white-space: nowrap; }
+  #aCerrar { background: var(--barra); }   /* sobre el blanco, con el fondo oscuro de la página: su X amarilla se ve */
+  #aScroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; padding: 0 12px 12px; }
+  #agenda table { --topePrimera: 14%; display: grid; grid-template-columns: fit-content(var(--topePrimera)) repeat(7, minmax(0, 1fr)) fit-content(var(--topePrimera));
+                  width: 100%; font-size: .85em; border-right: 1px solid var(--agLinea); border-bottom: 1px solid var(--agLinea); }   /* los locales, del ancho de su nombre (con tope); los días, iguales */
+  #agenda thead, #agenda tbody, #agenda tfoot, #agenda tr { display: contents; }
+  #agenda th, #agenda td { box-sizing: border-box; padding: 4px; border-top: 1px solid var(--agLinea); border-left: 1px solid var(--agLinea); overflow-wrap: anywhere;
+                           font-weight: 400; text-align: center; align-content: center; }
+  #agenda tbody tr:nth-child(even) td { background: var(--agGris); }
+  #agenda tbody th { background: var(--agLocal); font-weight: bold; }
+  #aDias th, #aPie th { background: var(--agDias); font-weight: bold; }
+  #aDias th { position: sticky; top: 0; z-index: 1; }
+  #aDias small { display: block; font-size: .85em; font-weight: 400; font-variant-numeric: tabular-nums; }   /* bajo el día, su fecha */
+  #aDias .hoy { background: var(--acento); }
+  #agenda td.vacio { grid-column: 1 / -1; padding: 12px; }
   #aAtras, #aSigue { width: 2.6em; height: var(--altoTira); margin: 0 2px; padding: 0; font-size: 1.2em; line-height: 1; cursor: pointer;
-                     background: var(--tarjeta); color: var(--texto); border: 1px solid var(--borde); border-radius: 4px; }
-  .sesion { display: block; box-sizing: border-box; width: 100%; padding: 2px 4px; border: 0; border-radius: 3px; font-size: inherit; text-align: left; cursor: pointer;
-            background: var(--tarjeta); color: var(--texto); }
-  .sesion + .sesion { margin-top: 2px; }
+                     background: var(--tarjeta); color: var(--texto); border: 1px solid var(--tarjeta); border-radius: 4px; }
+  .sesion { display: block; box-sizing: border-box; width: 100%; padding: 2px 4px; border: 0; border-radius: 3px; font-size: inherit; text-align: center; cursor: pointer;
+            background: none; color: inherit; }
+  .sesion + .sesion { margin-top: 4px; }
   .sesion:hover { background: var(--azulClaro); color: var(--negro); }
-  .sesion.local { padding: 2px 4px; text-align: left; }   /* el nombre del local, en la primera columna */
-  .sesion .hora, .sesion .nom { display: block; min-height: 1.2em; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }   /* el nombre entero, en el hover y en su ficha */
-  .sesion .hora { color: var(--suave); font-variant-numeric: tabular-nums; }
-  .sesion:hover .hora { color: inherit; }
+  .sesion .nom, .sesion .hora { display: block; line-height: 1.25; }
+  .sesion .nom { color: var(--agNombre); font-weight: bold; }   /* el nombre de la milonga, en azul */
+  .sesion:hover .nom { color: inherit; }
+  .sesion .hora { font-variant-numeric: tabular-nums; }
+  .sesion.local { font-weight: bold; }   /* el nombre del local */
   @media (max-width: 800px) {   /* el popup, estrecho: su límite es el del ancho de la ventana, no el del panel (720 px) */
-    #agenda table { --topePrimera: 26%; font-size: 12px; }
+    #agenda table { --topePrimera: 26%; font-size: 12px; grid-template-columns: fit-content(var(--topePrimera)) repeat(7, minmax(0, 1fr)); }
+    #agenda .aDer { display: none; }   /* sin sitio, los locales solo a la izquierda */
     #agenda th, #agenda td { padding: 2px 1px; }
-    #agenda tr > :first-child { padding-left: 6px; padding-right: 3px; }
     #agenda td.vacio { padding: 12px; }
-    .sesion { padding: 2px 0; text-align: center; }
-    .sesion .hora, .sesion .nom { font-size: min(12px, 3.3vw); }   /* en las 7 columnas, la hora entera */
-    .sesion .hora { color: inherit; }
+    #aScroll { padding: 0 4px 4px; }
+    .sesion { padding: 2px 0; }
+    .sesion .hora, .sesion .nom { font-size: min(12px, 3.3vw); }
     .sesion .logoEspecial { margin-right: 0; }
+    #aTitulo { font-size: 1.2em; }
   }
-  @media (max-width: 600px) {   /* junto al cursor, una línea: solo el lugar */
-    .aRol { display: none; }
-    #aTitulo { font-size: .9em; }
+  @media (max-width: 600px) {
+    #aCabeza { grid-template-columns: auto minmax(0, 1fr); }   /* el cursor y el título; la semana, debajo */
+    #aSemana { grid-column: 1 / -1; justify-self: center; }
+    #aTitulo { font-size: 1em; }
     #aAtras, #aSigue { width: 2em; }
   }
   /* el límite del panel vertical: 720 px (2026-11-10, el usuario: "mueve el punto de ruptura para ver a media pantalla el menú lateral"; antes 800,
@@ -515,7 +535,7 @@
  </main>
 </div>
 <div id="tipTira" class="tipTira oculto"></div>
-<dialog id="agenda"><button id="aCerrar" aria-label="close"><svg viewBox="0 0 14 14"><path d="M1.5 1.5l11 11M12.5 1.5l-11 11"/></svg></button><div id="aCabeza"><h2 id="aTitulo"></h2><div><button id="aAtras" aria-label="previous week">‹</button><button id="aSigue" aria-label="next week">›</button></div></div><div id="aScroll"><table><thead><tr id="aDias"></tr></thead><tbody id="aFilas"></tbody></table></div></dialog>
+<dialog id="agenda"><button id="aCerrar" aria-label="close"><svg viewBox="0 0 14 14"><path d="M1.5 1.5l11 11M12.5 1.5l-11 11"/></svg></button><div id="aCabeza"><div id="aCursor"><button id="aAtras" aria-label="previous week">‹</button><button id="aSigue" aria-label="next week">›</button></div><h2 id="aTitulo"></h2><span id="aSemana"></span></div><div id="aScroll"><table><thead><tr id="aDias"></tr></thead><tbody id="aFilas"></tbody><tfoot><tr id="aPie"></tr></tfoot></table></div></dialog>
 <dialog id="ficha"><button id="fCerrar" aria-label="close"><svg viewBox="0 0 14 14"><path d="M1.5 1.5l11 11M12.5 1.5l-11 11"/></svg></button><div id="fCuerpo" class="cuerpo"></div></dialog>
 
 <script>
@@ -2363,17 +2383,21 @@ function botonLocal(f){   // su enlace (el de la línea venue de la ficha) o, si
   b.onclick = () => url ? window.open(url, '_blank', 'noopener') : fichaEncima(ps[0]);
   return b;
 }
-function botonSesion(p){   // por locales, dos líneas: la hora (y la estrella de las especiales, que no tienen hora) y el nombre; por horas, una: el local (sin title: 2026-11-11, el usuario: "quita los title de las tablas open"). Al pulsar, su ficha encima de la tabla
+// el horario de una regular, 20:00 ~ 24:30 (su fecha REG lleva 2000-2430; solo el inicio, 20:00); y las semanas de una mensual, (1st, 3rd), como en la de Beto
+const horario = p => { const m = ((leeReg(p.fechaOrig) || {}).hora || '').match(/^(\d\d)(\d\d)(?:-(\d\d)(\d\d))?$/); return m ? m[1] + ':' + m[2] + (m[3] ? ' ~ ' + m[3] + ':' + m[4] : '') : ''; };
+const ORDINAL = {1: '1st', 2: '2nd', 3: '3rd', 4: '4th', 5: '5th', L: 'last'};
+const semanasMes = p => { const r = leeReg(p.fechaOrig); return r && r.frec == 'M' && r.semanas.length ? '(' + r.semanas.map(x => ORDINAL[x] || x).join(', ') + ')' : ''; };
+const horaTexto = h => h == '9999' ? 'no time' : h.slice(0, 2) + ':' + h.slice(2);   // la hora de inicio (horaDe, hhmm), como en la tabla: 20:00
+function botonSesion(p){   // dos líneas: el nombre (en azul, con la estrella de las especiales y las semanas de las mensuales) y, debajo, su horario o, por horas, su local.
+  // Sin title (2026-11-11, el usuario: "quita los title de las tablas open"). Al pulsar, su ficha encima de la tabla
   const b = document.createElement('button');
   const linea = clase => { const s = document.createElement('span'); s.className = clase; b.appendChild(s); return s; };
-  const primera = linea(horasAgenda ? 'nom' : 'hora');
   b.className = 'sesion';
-  if (especial(p)) primera.appendChild(logoEspecial());
-  if (horasAgenda) primera.append(localDe(p));
-  else {
-    if (horaDe(p) != '9999') primera.append(horaDe(p));
-    linea('nom').textContent = p.nombre;
-  }
+  const nom = linea('nom');
+  if (especial(p)) nom.appendChild(logoEspecial());
+  nom.append([p.nombre, semanasMes(p)].filter(Boolean).join(' '));
+  const debajo = horasAgenda ? localDe(p) : horario(p);
+  if (debajo) linea('hora').textContent = debajo;
   b.onclick = () => fichaEncima(p);
   return b;
 }
@@ -2390,35 +2414,44 @@ function pintaAgenda(){
     grupos.get(clave).celdas[k].push(p);
   });
   const filas = [...grupos.values()].sort((x, y) => x.nombre.localeCompare(y.nombre));   // por horas, 9999 (sin hora) al final
-  const donde = textoDonde($('selArea').value), nombreRol = PRIMEROS[$('selRol').value] + 's';
+  const donde = textoDonde($('selArea').value), tipo = PRIMEROS[$('selRol').value] || 'milonga', nombreRol = tipo + 's';
   const celda = (tipo, clase) => {
     const c = document.createElement(tipo);
     if (clase) c.className = clase;
     return c;
   };
   const claseDia = d => d.getTime() == hoy.getTime() ? 'hoy' : '';
-  const rol = celda('span', 'aRol');
-  rol.textContent = nombreRol + ' in ';
-  $('aTitulo').replaceChildren(rol, donde);
-  const cabeza = celda('th');
-  cabeza.textContent = horasAgenda ? 'time' : 'venue';
-  $('aDias').replaceChildren(cabeza, ...dias.map(d => {
+  // como la de Beto: "Seoul Tango Milonga Schedule", y la semana a la derecha (NOV.10 - NOV.16)
+  $('aTitulo').textContent = donde + ' Tango ' + tipo[0].toUpperCase() + tipo.slice(1) + ' Schedule';
+  const fechaCorta = d => MESES[d.getMonth()] + '.' + dos(d.getDate());
+  $('aSemana').textContent = fechaCorta(dias[0]) + ' - ' + fechaCorta(dias[6]);
+  // la fila de los días, arriba (con su fecha) y abajo; a los lados, Place (o Time)
+  const esquina = derecha => { const c = celda('th', derecha ? 'aDer' : ''); c.textContent = horasAgenda ? 'Time' : 'Place'; return c; };
+  const DIAS_LARGOS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  $('aDias').replaceChildren(esquina(false), ...dias.map(d => {
     const c = celda('th', claseDia(d)), f = celda('small');
-    f.append(MESES[d.getMonth()] + '.', document.createElement('wbr'), dos(d.getDate()));   // sin sitio, en dos líneas
-    c.append(DIAS_SEM[d.getDay()], document.createElement('br'), f);
+    f.textContent = fechaCorta(d);
+    c.append(DIAS_LARGOS[d.getDay()], f);
     return c;
-  }));
+  }), esquina(true));
+  $('aPie').replaceChildren(esquina(false), ...dias.map(d => { const c = celda('th'); c.textContent = DIAS_LARGOS[d.getDay()]; return c; }), esquina(true));
+  // cada local (o cada hora), a la izquierda y otra vez a la derecha
+  const cabezaFila = (f, derecha) => {
+    const c = celda('th', derecha ? 'aDer' : '');
+    if (horasAgenda) c.textContent = horaTexto(f.nombre);
+    else c.appendChild(botonLocal(f));
+    c.scope = 'row';
+    return c;
+  };
   $('aFilas').replaceChildren(...filas.map(f => {
-    const tr = celda('tr'), local = celda('th');
-    if (horasAgenda) local.textContent = f.nombre == '9999' ? 'no time' : f.nombre;
-    else local.appendChild(botonLocal(f));
-    local.scope = 'row';
-    tr.appendChild(local);
+    const tr = celda('tr');
+    tr.appendChild(cabezaFila(f, false));
     for (const ps of f.celdas){
       const c = celda('td');
       ps.sort((x, y) => horaDe(x).localeCompare(horaDe(y)) || localDe(x).localeCompare(localDe(y)) || x.nombre.localeCompare(y.nombre)).forEach(p => c.appendChild(botonSesion(p)));
       tr.appendChild(c);
     }
+    tr.appendChild(cabezaFila(f, true));
     return tr;
   }));
   if (!filas.length){
