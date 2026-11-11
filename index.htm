@@ -26,9 +26,14 @@
           --acento: var(--amarillo); }
   .principal { --borde: var(--grisMedio); }   /* las líneas del listado, sobre el fondo negro */
   .panel, .barraLista, dialog, #sugs { --borde: var(--grisClaro); }   /* los controles, con borde claro */
+  /* los controles (el panel y la barra de las migas), 2 px más grandes (2026-11-11, el usuario: "haz mas blanca para los controles y 2px mas grande"); lo que
+     va en em, en proporción. Sin negrita, con la letra de los nombres del listado ("no pongas en negrita los controles, la misma fuente que los nombres en el
+     listado"). La ficha, también más grande y en negrita ("aplica tb al texto de la ficha") */
+  .panel, .barraLista, .detalle, #ficha { font-size: calc(1em + 2px); }
+  .detalle, #ficha { font-weight: bold; }
   html { overflow-y: scroll; }
-  body { font-family: system-ui, sans-serif; margin: 0; background: var(--fondo); color: var(--texto); }
-  button, select, input, textarea, .leaflet-container { font-family: inherit; }   /* todo con la letra del body: los controles y leaflet no la heredan */
+  body { font-family: "Courier New", Courier, monospace; margin: 0; background: var(--fondo); color: var(--texto); }   /* todos los textos, con la letra de la fecha del listado (2026-11-11, el usuario: "usa la misma fuente para todos los terxtos"; antes, system-ui) */
+  button, select, input, textarea, .leaflet-container { font-family: inherit; font-weight: inherit; }   /* todo con la letra del body: los controles y leaflet no la heredan (ni su grosor: los botones del panel, en negrita) */
   a { color: var(--enlace); }
   html { scrollbar-color: var(--grisClaro) var(--grisMedio); }
   ::selection { background: var(--azulClaro); color: var(--negro); }
@@ -47,7 +52,7 @@
   .cuerpo p.enlaces a { display: inline-flex; align-items: center; gap: 5px; }
   .cuerpo .icono { height: 16px; width: auto; }
   /* dos columnas: a la izquierda el panel de control, vertical; a la derecha la barra (buscador y ruta) y el listado */
-  .app { display: grid; grid-template-columns: 320px minmax(0, 1fr); align-items: start; }
+  .app { display: grid; grid-template-columns: 300px minmax(0, 1fr); align-items: start; }   /* el panel, 300 px (2026-11-11, el usuario: "reduce el panel de izquierda 20px"; antes 320) */
   .panel { position: sticky; top: 0; z-index: 3; box-sizing: border-box; height: 100vh; height: 100dvh; overflow-y: auto; scrollbar-width: thin;
            display: flex; flex-direction: column; gap: 10px; padding: 8px 12px 12px; background: var(--barra); box-shadow: 1px 0 6px rgba(0,0,0,.6); }
   .principal { min-width: 0; padding: 0 16px 16px; }
@@ -123,7 +128,7 @@
 
   .fechas.sinFechas { display: none; }
   .tira { display: flex; gap: 2px; min-width: 0; overflow-x: auto; scrollbar-width: thin; }
-  .fechas button, #bMapa, #bListado { flex: none; font-size: .85em; padding: 3px 7px; white-space: nowrap; cursor: pointer;
+  .fechas button, #bMapa, #bListado, #bIdioma { flex: none; font-size: .85em; padding: 3px 7px; white-space: nowrap; cursor: pointer;
                    background: var(--tarjeta); color: var(--texto); border: 1px solid var(--borde); border-radius: 4px; }
   .tira button { border: 0; border-radius: 4px; background: var(--tarjeta); color: var(--texto); }
   .tira button { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.25; padding: 0 7px;
@@ -137,15 +142,18 @@
   .tira button:not(.activo):hover { background: var(--azulClaro); color: var(--negro); }   /* el botón bajo el ratón, como en la lista del mapa */
   .tira button.cero, .tira button.cero:hover { background: none; color: var(--grisClaro); cursor: default; }   /* a cero: sin clic (el contador, en el hover) */
 
-  .listado.filas { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0; border-top: 1px solid var(--borde); }
-  .listado.filas.conFecha { grid-template-columns: auto auto minmax(0, 1fr) auto; }
+  .listado.filas { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; gap: 0; border-top: 1px solid var(--borde); }
+  .listado.filas.conFecha { grid-template-columns: auto auto auto minmax(0, 1fr) auto; }   /* icono, fecha, ciudad (3 letras), título y foto */
   .listado .fila { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; column-gap: 16px; align-items: center;
                    padding: 5.5px 10px; border-bottom: 1px solid var(--borde); border-left: 2px solid transparent; cursor: pointer; }   /* 2026-10-26: un 10% más baja (antes 7px) */
   .listado .fila:hover { background: var(--grisOscuro); }
   .listado .fila.abierta { background: var(--acento); color: var(--negro); }
-  .listado .fila.abierta .fFecha, .listado .fila.abierta .fLugar { color: var(--grisMedio); }
+  .listado .fila.abierta .fFecha { color: var(--grisMedio); }   /* la fecha y la ciudad (.fCiudad también es .fFecha) */
   .listado .fila.encontrado { outline: 0; border-left-color: var(--enlace); }
-  .ruta { height: var(--altoTira); box-sizing: border-box; padding: 0 10px; line-height: calc(var(--altoTira) - 2px); font-size: .85em;   /* la de los botones de meses y días */ background: var(--grisMedio); color: var(--suave); border: 1px solid var(--borde); border-radius: 4px;
+  .listado .filaMax { grid-column: 1 / -1; padding: 10px; text-align: center; color: var(--blanco); border-bottom: 1px solid var(--borde);
+                      font-size: calc(.85em + 6px); font-weight: bold; line-height: 1; }   /* la letra del nombre: Courier (la del body), su tamaño, en negrita */
+  .listado .filaMax span { display: inline-block; transform: scaleX(.75); }   /* y estrechada como él (centrada: su caja no cambia) */   /* la de "max 100 elements" (no es una .fila: los cursores no la eligen) */
+  .ruta { height: var(--altoTira); box-sizing: border-box; padding: 0 10px; line-height: calc(var(--altoTira) - 2px); font-size: .85em;   /* la de los botones de meses y días */ background: var(--grisMedio); color: var(--texto);   /* en blanco (2026-11-11, el usuario: "para migas, list tb"; antes, gris) */ border: 1px solid var(--borde); border-radius: 4px;
                    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ruta .icono { height: 16px; width: auto; }
   /* todo lo de la caja, centrado en vertical: los tramos, los ›, el icono y el contador, que es más grande (2026-11-10, el usuario: "centra en vertical todos los
@@ -156,33 +164,74 @@
   #ruta > .tramo { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   #ruta > .cuenta { margin-left: .3em; }
   .ruta .paso { color: var(--enlace); cursor: pointer; }
-  .ruta .paso:hover { text-decoration: underline; }
+  /* lo que se puede pulsar: recuadro amarillo al pasar el ratón (2026-11-11, el usuario: "over sobre las migas, recuadro amarillo, si son clikables"; antes,
+     subrayado). El tramo ocupaba todo el alto de la caja y el borde salía cortado ("sale cortado arriga y abajo el borde"): su línea, más baja, y el recuadro
+     por dentro (box-shadow inset), con 4 px a cada lado que no mueven el texto (margen negativo) */
+  .ruta .paso { line-height: 1.5; padding: 0 4px; margin: 0 -4px; border-radius: 3px; }
+  .ruta .paso:hover { box-shadow: inset 0 0 0 1px var(--acento); }
   .ruta .cuenta { color: var(--blanco); font-weight: bold; font-size: calc(1em + 4px); }   /* 4 px más que la ruta y en blanco (2026-11-10, el usuario: "aumenta 2px la fuente del contador de migas", "2px mas y blanco para el contador"; antes, amarillo) */
   .ruta { position: relative; padding-right: 30px; flex: 1; min-width: 0; }   /* a la derecha, el botón de copiar la url de la ruta */
   .lineaRuta { flex: 1 1 100%; min-width: 0; display: flex; gap: 4px; }   /* la ruta y, fuera de ella a la derecha, el botón list / grid */
+  /* la barra, en dos cajas (2026-11-11, el usuario: "añade otra caja debajo de las migas", "mueve las migas a esta caja", "en la caja de arriba mueve el logo kk
+     y despues escribe: total listado X"): arriba, el total ("80 festivals") y los botones list, idioma y KK; debajo, las migas con su botón de copiar */
+  .barraLista { row-gap: 4px; }
+  .ruta.cajaTotal { display: flex; align-items: center; gap: 8px; padding-right: 10px; }
+  /* el logo KK: un botón cuadrado como el del idioma, al final de la línea (2026-11-11, el usuario: "kk en un boton cuadrado como la bandera al final de la linea1") */
+  .lineaRuta #info { flex: none; width: var(--altoTira); height: var(--altoTira); box-sizing: border-box; overflow: hidden;
+                     border: 1px solid var(--borde); border-radius: 4px; }   /* el borde, como el de los otros botones (2026-11-11, el usuario: "borde de KK como los otros bordes") */
+  .lineaRuta #info img { width: 100%; height: 100%; }   /* el logo (cuadrado), todo el botón (2026-11-11, el usuario: "k que ocupe todo el boton") */
+  /* el texto y el número, cada uno centrado en vertical en la caja (2026-11-11, el usuario: "en contador de listado no esta centrado verticalmente"): en la
+     misma línea base, el número (más grande) quedaba alto */
+  #total { display: flex; align-items: center; gap: .5em; height: 100%; }
+  #total .tTipo { color: var(--blanco); }   /* lo que cuenta, también en blanco (2026-11-11, el usuario: "caja result todo en blanco"; antes, gris) */
+  #total > * { line-height: 1; position: relative; top: 2px; }   /* medido: sin bajarlos, 2 px altos */
   .rutaDer { position: absolute; top: 0; right: 8px; height: 100%; display: flex; align-items: center; }   /* el de copiar */
-  #bListado, #bMapa, #bAgendas button { height: var(--altoTira); padding: 0 8px; box-sizing: border-box; text-align: center; }
-  #bListado { width: 4.6em; }   /* cabe "▦ grid" */
+  #bListado, #bIdioma, #bMapa, #bAgendas button { height: var(--altoTira); padding: 0 8px; box-sizing: border-box; text-align: center; }
+  /* list / grid y, tras él, el idioma: cuadrados, del alto de la barra, solo con su icono (☰ o ▦) o la bandera (2026-11-11, el usuario: "crea un boton cuadrado
+     para list, crea otro boton despues tb cuadrado con un selector para idioma solo con la bandera: ingles, coreano, chino, japones") */
+  #bIdioma { width: var(--altoTira); padding: 0; display: flex; align-items: center; justify-content: center; }
+  #bListado { width: auto; padding: 0 8px; white-space: nowrap; }   /* con su texto: lo que mida */
+  /* el idioma: un botón como el de list, con la bandera; al desplegar, un solo recuadro gris de su mismo ancho con las cuatro (2026-11-11, el usuario: "quita
+     el recuadro gris detras de la bandera ... de forma que al desplegar sea del mismo ancho", "el tamaño de antes, un solo recuadro gris para todo el
+     deplegable, el control como estaba igual que el boton lsit") */
+  .selIdioma { position: relative; flex: none; }
+  .menuIdioma { position: absolute; top: calc(100% + 4px); left: 0; width: var(--altoTira); box-sizing: border-box; z-index: 10; display: flex; flex-direction: column;
+                align-items: center; gap: 8px; padding: 8px 0; background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 4px; box-shadow: 0 1px 4px rgba(0,0,0,.6); }
+  .menuIdioma button { padding: 0; border: 0; background: none; cursor: pointer; display: block; }
+  #bIdioma img, .menuIdioma img { width: 20px; height: 14px; object-fit: cover; display: block; border-radius: 2px; }
+  .menuIdioma button:hover img { outline: 2px solid var(--acento); }   /* al pasar el ratón, borde amarillo (2026-11-11, el usuario: "borde amarillo para el over sobre las banderas") */
+  .menuIdioma button.activo img { outline: 2px solid var(--acento); }   /* el elegido */
   #bMapa { width: 100%; border: 0; }   /* sin mapa, en su fila; con mapa, dentro de él (.zonaMapa) */
   .ruta .copiaRuta { height: 100%; border: 0; background: none; color: var(--acento); padding: 0; cursor: pointer;
                      display: flex; align-items: center; }
   .ruta .copiaRuta:hover { color: var(--blanco); }
   .ruta .copiaRuta svg { width: 15px; height: 15px; display: block; }
   .fila span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25; }   /* todas con el mismo alto: centradas igual */
-  .fila .fFecha, .fila .fLugar { color: var(--suave); font-size: .85em; font-variant-numeric: tabular-nums; }
+  .fila .fFecha { color: var(--suave); font-size: .85em; font-variant-numeric: tabular-nums; }   /* la fecha y la ciudad en 3 letras (fCiudad): la misma letra */
   .fila .fFecha, #aDias small { font-family: "Courier New", Courier, monospace; }   /* las fechas, con todas las letras del mismo ancho: alineadas (2026-11-08, el usuario) */
+  /* el título, con la letra de la fecha: Courier, el mismo tamaño, en negrita y estrechado al 75 % (2026-11-11, el usuario: "usa la misma fuente que para fecha
+     en tiulo y ciudad", "la fuente del nombre parece otra ?"). Estrechar con scaleX no cambia su caja: el texto (fNomTexto) mide lo que cabe / .75 y se pinta
+     al 75 %; así el … de lo que no cabe sale en su sitio */
+  .fila .fNombre { font-family: "Courier New", Courier, monospace; font-size: calc(.85em + 6px); line-height: 1; font-weight: bold; --estrecha: .75;
+                   display: flex; align-items: center; flex: 1 1 auto; }
+  .fila .fNomCaja { flex: 1 1 0; min-width: 0; overflow: hidden; }
+  .fila .fNomTexto { display: block; width: calc(100% / var(--estrecha)); transform: scaleX(var(--estrecha)); transform-origin: left center; }
   /* la fecha, 2 px más grande y más estrecha (2026-11-10, el usuario: "sube 2px la fuente de la fecha y hazla mas estrecha"): no hay un Courier estrecho en todos
      los dispositivos, así que cada trozo de letras o números (.fLetras) se pinta al 75 % de su ancho (--estrecha) en una caja de ese ancho: --n letras de 1ch */
-  .fila .fFecha { font-size: calc(.85em + 2px); line-height: 1; --estrecha: .75; }   /* (el interlineado: la fila, del mismo alto que antes) */
+  .fila .fFecha { font-size: calc(.85em + 6px); line-height: 1; --estrecha: .75; }   /* (el interlineado: la fila, del mismo alto que antes); 4 px más (2026-11-11, el usuario: "aumentala y mas blanca", "fecha 2px mas grande") */
+  .fila .fFecha { color: var(--grisClaro); font-weight: bold; }   /* en negrita (el trazo de Courier es muy fino) y en gris (2026-11-11, el usuario: "aumentala y mas blanca", "no se ve bien la fecha mas grande y mas blanca", "pon en gris la fecha"); abierta, en gris medio */
   .fila .fFecha .fLetras { display: inline-block; overflow: visible; width: calc(var(--n) * 1ch * var(--estrecha)); transform: scaleX(var(--estrecha)); transform-origin: left center; }
-  .fila .fFecha .fSigno { font-family: system-ui, sans-serif; line-height: 0; }   /* el punto y el guion, con la letra del body: en Courier ocupan una letra entera (2026-11-10, el usuario: "el . y - ocupan mucho espacio"); siguen alineadas: cada signo mide siempre lo mismo */
-  .fila .fNombre { font-weight: 500; position: relative; top: -1px; }   /* su letra, mayor: sin esto queda 1px más baja que la fecha y la ciudad */
+  .fila .fFecha .fSigno { font-family: system-ui, sans-serif; line-height: 0; }   /* el punto y el guion, con la letra del sistema: en Courier ocupan una letra entera (2026-11-10, el usuario: "el . y - ocupan mucho espacio"); siguen alineadas: cada signo mide siempre lo mismo */
+  /* cada texto, centrado en vertical en su fila (2026-11-11, el usuario: "centra el contenido de cada linea del listado", "centrado verticalmente"): el centro
+     de sus mayúsculas, en el centro de la fila, como el icono y la foto; sin bajarlos quedaban 2 px altos (la caja de la línea guarda sitio a los rabos: g, p) */
+  .fila .fNombre { position: relative; top: 2px; }   /* con la letra de la fecha, lo mismo que ella */
+  .fila .fFecha { position: relative; top: 2px; }
   .fila .fTexto { display: flex; align-items: center; gap: 16px; min-width: 0; }   /* el título y su ciudad, en la misma celda: el título llega hasta su ciudad */
-  .fila .fNombre { flex: 0 1 auto; }
+  .fila .fNombre { color: var(--blanco); }   /* en blanco (2026-11-11, el usuario: "baja el nivel de blanco del nombre"; luego, con la letra de la fecha, "nombre en blanco") */
+  .listado .fila.abierta .fNombre { color: var(--negro); }   /* abierta, en negro sobre el amarillo, como antes */
   .logoEspecial { height: 1em; width: 1em; margin-right: 6px; vertical-align: -.12em; }
   .cara figcaption img.logoEspecial { display: inline; width: 1em; height: 1em; aspect-ratio: auto; background: none; }   /* no es una foto de la cara */
   .listado .fila.abierta .logoEspecial { filter: brightness(0); }   /* la estrella, sobre el amarillo */
-  .fila .fLugar { flex: none; margin-left: auto; text-align: right; max-width: 18em; }
   .fila .fIconos { display: flex; align-self: center; min-width: 16px; }
   .fila .fIconos img { height: 16px; width: 16px; display: block; }
   /* el logo de la fila con su propio hover (como en el detalle): sobre él se resalta el logo, no la fila */
@@ -195,7 +244,6 @@
   .fila .fMini.logo { object-fit: contain; background: var(--blanco); }
   @media (max-width: 600px) {
     .fila .fTexto { flex-direction: column; align-items: stretch; gap: 0; }   /* la ciudad, bajo el título */
-    .fila .fLugar { margin-left: 0; text-align: left; max-width: none; }
     .listado .fila { column-gap: 8px; }   /* el ancho, para el título */
     .fila .fMini { min-height: 2.3em; }   /* las dos líneas de la fila: con este mínimo, su columna ya mide la miniatura entera */
   }
@@ -279,10 +327,16 @@
 
   .detalle.filas { background: var(--fondo); border: 0; border-radius: 0; border-top: 1px solid var(--borde);
                    border-bottom: 1px solid var(--borde); padding: 14px 10px; }
-  .detalle.filas h2 { font-weight: 500; font-size: 1.05em; }
+  .detalle.filas h2 { font-weight: bold; font-size: 1.05em; }
   .detalle.filas p { color: var(--suave); }
-  .detalle.filas h2 .hTipo, #ficha h2 .hTipo { color: var(--suave); font-size: .8em; font-weight: 400; margin-left: 10px; }
-  .detalle.filas .cuerpo a { font-weight: 500; }
+  .detalle.filas h2 .hTipo, #ficha h2 .hTipo { color: var(--suave); font-size: .8em; margin-left: 10px; }
+  /* el título de la ficha, con la letra del nombre del listado: Courier en negrita, su tamaño y estrechado al 75 % (2026-11-11, el usuario: "titulo de la ficha ,
+     misma fuentes que nombre del listado"). Todo el título (con su tipo) mide lo que cabe / .75 y se pinta al 75 %: sus líneas cortan donde deben; el botón
+     de copiar, a su ancho (sin estrechar) */
+  .detalle h2, .detalle.filas h2, #ficha h2 { font-size: calc(.85em + 6px); font-weight: bold; --estrecha: .75;
+                                             width: calc(100% / var(--estrecha)); transform: scaleX(var(--estrecha)); transform-origin: left top; }
+  .detalle h2 #dCopiar { transform: scaleX(calc(1 / var(--estrecha))); margin: 0 3px 0 calc(.3em + 3px); }   /* ensanchado, 3 px más a cada lado */
+  .detalle.filas .cuerpo a { font-weight: bold; }
   .detalle.filas .cuerpo > img { border-radius: 3px; }
 
   /* pantalla ancha: el panel vertical. Bajo los selectores, el mapa; debajo los países o ciudades en 2 columnas, del alto de
@@ -344,6 +398,12 @@
        y abajo"; antes 10 y 6): arriba, el hueco del panel (10 px) menos 8 */
     .zonaMapa:has(.mapaCaja:not(.cerrado, .oculto)) { margin-top: -8px; }
     .mapaCaja { flex-direction: column; min-height: 0; gap: 2px; }
+    /* el mapa, debajo de los países (2026-11-11, el usuario: "pon el mapa debajo de los botones de paises"); su botón, también: cerrado, bajo los países;
+       abierto, dentro del mapa, arriba a la derecha ("boton map arriba derecha"): bajo las --filas de países (cada una, su alto y 2 px de hueco) y 6 px */
+    .ciudadesMapa { order: -1; }
+    #bMapa { order: 1; }
+    .zonaMapa:has(.mapaCaja.cerrado) #bMapa { margin-bottom: 0; margin-top: 6px; }
+    .zonaMapa:has(.mapaCaja:not(.cerrado, .oculto)) #bMapa { top: calc(var(--filas, 0) * (var(--altoTira) + 2px) + 6px); left: auto; right: 6px; }
     .mapa { flex: none; box-sizing: border-box; height: auto; aspect-ratio: 1; max-height: none; }   /* cuadrado, del ancho del panel (2026-11-10, el usuario: "haz el mapa cuadrado, manten el mismo ancho"; antes, 142 px de alto) */
     .ciudadesMapa { flex: 0 1 auto; min-height: 0; width: auto; height: auto; max-height: none;   /* del alto de su contenido: siempre 6 líneas, por páginas */
                     grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: column; grid-template-rows: repeat(var(--filas, 1), var(--altoTira)); }   /* se llena por columnas: primero la de la izquierda (--filas, en pintaCiudades) */
@@ -354,7 +414,8 @@
      (2026-11-10, el usuario: "la fecha puede hacerse q ocupe menos ancho ?") */
   @media (min-width: 721px) and (max-width: 920px) {
     .listado .fila { column-gap: 8px; padding-left: 6px; padding-right: 6px; }
-    .fila .fFecha { font-size: calc(.7em + 2px); }
+    .fila .fFecha, .fila .fNombre, .listado .filaMax { font-size: calc(.7em + 6px); }   /* 4 px más, como la ancha (2026-11-11, el usuario); el título, como la fecha */
+    .detalle h2, .detalle.filas h2, #ficha h2 { font-size: calc(.7em + 6px); }   /* el de la ficha, como el del listado */
     .fila .fTexto { gap: 10px; }
   }
   /* pantalla estrecha: una columna, como la cabecera de antes: el panel arriba y debajo la barra, los dos fijos */
@@ -374,7 +435,6 @@
 <div class="app">
  <aside id="panel" class="panel">
   <div class="linea1">
-    <a id="info" href="#" title="KoKo Tango"><img src="img/koko.svg" alt="KoKo Tango"></a>
     <span class="busca"><input id="buscar" type="search" placeholder="search tango…" autocomplete="off"><div id="sugs" class="oculto"></div></span>
   </div>
   <div class="linea2">
@@ -397,7 +457,8 @@
  </aside>
  <main class="principal">
   <div id="barraLista" class="barraLista">
-    <div class="lineaRuta"><div class="ruta"><span id="ruta"></span><span id="rutaDer" class="rutaDer"></span></div><button id="bListado" title="switch to grid">list</button></div>
+    <div class="lineaRuta"><div class="ruta cajaTotal"><span id="total"></span></div><button id="bListado" title="switch to grid">☰ list</button><span class="selIdioma"><button id="bIdioma" type="button" aria-label="language" aria-haspopup="true" aria-expanded="false"></button><div id="menuIdioma" class="menuIdioma oculto" role="menu"></div></span><a id="info" href="#" title="KoKo Tango"><img src="img/koko.svg" alt="KoKo Tango"></a></div>
+    <div class="lineaRuta"><div class="ruta"><span id="ruta"></span><span id="rutaDer" class="rutaDer"></span></div></div>
   </div>
   <div id="detalle" class="detalle oculto"><button id="dCerrar" title="close"><svg viewBox="0 0 14 14"><path d="M1.5 1.5l11 11M12.5 1.5l-11 11"/></svg></button><button id="dCopiar" title="copy link"></button><div id="dCuerpo" class="cuerpo"></div><button id="dFuentes" class="oculto" title="sources"><svg viewBox="0 0 24 24" fill="none" stroke="#8ab4f8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14V6M12 6c0-3 5-3.5 6 1v2M12 6c0-3-5-3.5-6 1v2"/><path d="M3.5 14h17c0 3.8-3.5 5.5-8.5 5.5S3.5 17.8 3.5 14zM8.5 22h7"/></svg></button></div>
   <div id="parrilla" class="parrilla oculto"></div>
@@ -859,7 +920,7 @@ function pintaRoles(cuenta){
     div.innerHTML = '';
     for (const k of claves){
       const b = document.createElement('button');
-      b.textContent = k === null ? 'ALL' : k == PTC ? 'PTC' : textoRol(k).toUpperCase();   // en mayúsculas, como meses y días
+      b.textContent = k === null ? tr('ALL') : k == PTC ? 'PTC' : tr(textoRol(k)).toUpperCase();   // en mayúsculas, como meses y días
       const cuantos = cuenta(k);   // el contador, solo en el hover: en su círculo, como el de meses y días
       tipTira(b, cuantos, true);
       b.classList.toggle('activo', k === null ? !rolesSel.size : rolesSel.has(k));
@@ -885,7 +946,7 @@ function pintaDias(cuenta){
   const hoy = new Date().getDay();
   [null, ...[0, 1, 2, 3, 4, 5, 6].map(k => (hoy + k) % 7)].forEach(d => {
     const b = document.createElement('button');
-    b.textContent = d === null ? 'WEEK' : DIAS_SEM[d];
+    b.textContent = tr(d === null ? 'WEEK' : DIAS_SEM[d]);
     const cuantos = cuenta(d);   // el contador, solo en el hover
     tipTira(b, cuantos, true);
     b.classList.toggle('activo', d === null ? !diasSel.size : diasSel.has(d));
@@ -1180,7 +1241,7 @@ const DOCE = MESES.map((m, k) => { const d = new Date(ANYO, HOY.getMonth() + k, 
 const ordenDe = f => f.anyo * 100 + f.mes;
 const FECHAS = [{anyo: ANYO}, {doce: true}, ...DOCE, {anyo: ANYO + 1}];
 const F_DOCE = 1;
-const TEXTO_DOCE = 'this year';   // el botón de los 12 meses que vienen, y su tramo de la ruta; en minúsculas (2026-11-10, el usuario: "botones de año, camboa YEAR por this year", "this year minusculas"; antes, YEAR)
+const TEXTO_DOCE = 'one year';   // (2026-11-11, el usuario: "cambia this year por next year", "cambiar por one year")   // el botón de los 12 meses que vienen, y su tramo de la ruta; en minúsculas (2026-11-10, el usuario: "botones de año, camboa YEAR por this year", "this year minusculas"; antes, YEAR)
 let fechaSel = F_DOCE;
 const anyoDe = p => Math.floor(p.orden / 100);
 const enFecha = (p, i) => i === null || !p.evento || sinFecha(p.roles[0]) ||
@@ -1191,7 +1252,7 @@ function pintaFechas(cuenta, oculto){
   div.innerHTML = '';
   FECHAS.forEach((f, i) => {
     const b = document.createElement('button');
-    b.textContent = f.doce ? TEXTO_DOCE : f.mes === undefined ? f.anyo : MESES[f.mes];
+    b.textContent = f.doce ? tr(TEXTO_DOCE) : f.mes === undefined ? f.anyo : tr(MESES[f.mes]);
     const cuantos = cuenta(i);   // el contador, solo en el hover
     tipTira(b, cuantos, true);
     b.classList.toggle('activo', i == fechaSel);
@@ -1234,7 +1295,112 @@ function cierraFicha(){
   marcaAbierta();
 }
 let ciudadSel = null, porLugarMapa = new Map();
+// el idioma (2026-11-11, el usuario): un botón con la bandera del elegido; al pulsarlo, las cuatro. Se guarda en este navegador (localStorage, si se puede) y va
+// en <html lang>; los textos de los controles, en ese idioma (TEXTOS)
+const IDIOMAS = [{k: 'en', nombre: 'English'}, {k: 'ko', nombre: '한국어'}, {k: 'zh', nombre: '中文'}, {k: 'ja', nombre: '日本語'}];
+let idioma = (() => { try { return localStorage.getItem('tg.idioma'); } catch (e) { return null; } })();
+if (!IDIOMAS.some(i => i.k == idioma)) idioma = 'en';
+const bandera = k => '<img src="img/bandera-' + k + '.svg" alt="">';
+// los textos de los controles en cada idioma (2026-11-11, el usuario: "crear tablas de idiomas, al cambiar el selctor cambiar los textos para el idioma
+// aplicado, solo en los controles, no en el lsitado ni en detalle"): la clave es el texto en inglés; lo que falta, en inglés. Solo con tr(), donde se pintan
+// los controles (el listado y la ficha usan los mismos MESES y DIAS_SEM, sin traducir). Los países, con el navegador (nombrePais)
+const TEXTOS = {
+  ko: {'search tango…': '탱고 검색…', 'all': '전체', 'ALL': '전체', 'community': '커뮤니티', 'events': '이벤트',
+       'sources': '정보원', 'festival': '페스티벌', 'seminar': '세미나', 'academy': '아카데미', 'milonga': '밀롱가', 'practica': '쁘락띠까',
+       'tanguer@': '땅게로', 'artist couple': '아티스트 커플', 'group': '그룹', 'organizer': '주최자', 'artist': '아티스트',
+       'tangoDJ': '탱고 DJ', 'writer': '작가', 'teacher': '강사', 'shop': '상점', 'hostel': '숙소', 'milonguera': '밀롱게라', 'dancer': '댄서', 'source': '정보원',
+       'World': '전 세계', 'Asia': '아시아', 'Europe': '유럽', 'America': '아메리카', 'Africa': '아프리카', 'Oceania': '오세아니아', 'no area': '지역 없음',
+       'map': '지도', 'back': '뒤로', 'more ...': '더 보기 …', 'one year': '1년', 'WEEK': '이번 주',
+       'JAN': '1월', 'FEB': '2월', 'MAR': '3월', 'APR': '4월', 'MAY': '5월', 'JUN': '6월', 'JUL': '7월', 'AUG': '8월', 'SEP': '9월', 'OCT': '10월', 'NOV': '11월', 'DEC': '12월',
+       'SUN': '일', 'MON': '월', 'TUE': '화', 'WED': '수', 'THU': '목', 'FRI': '금', 'SAT': '토',
+       'OPEN SCHEDULER BY VENUE': '장소별 일정 보기', 'OPEN SCHEDULER BY TIME': '시간별 일정 보기',
+       'switch to grid': '격자로 보기', 'switch to list': '목록으로 보기', 'show / hide the map': '지도 보이기 / 숨기기', 'map: not applicable here': '여기서는 지도 없음',
+       'map: not available': '지도를 쓸 수 없음', 'copy link': '링크 복사', 'language': '언어', 'items': '항목', 'showing {n}': '{n}개 표시', 'list': '목록', 'grid': '격자'},
+  zh: {'search tango…': '搜索探戈…', 'all': '全部', 'ALL': '全部', 'community': '社群', 'events': '活动',
+       'sources': '信息源', 'festival': '探戈节', 'seminar': '研讨会', 'academy': '学院', 'milonga': '米隆加', 'practica': '练习会',
+       'tanguer@': '探戈舞者', 'artist couple': '艺术家舞伴', 'group': '团体', 'organizer': '主办方', 'artist': '艺术家',
+       'tangoDJ': '探戈DJ', 'writer': '作者', 'teacher': '老师', 'shop': '商店', 'hostel': '住宿', 'milonguera': '米隆加舞者', 'dancer': '舞者', 'source': '信息源',
+       'World': '全世界', 'Asia': '亚洲', 'Europe': '欧洲', 'America': '美洲', 'Africa': '非洲', 'Oceania': '大洋洲', 'no area': '无地区',
+       'map': '地图', 'back': '返回', 'more ...': '更多 …', 'one year': '一年', 'WEEK': '本周',
+       'JAN': '1月', 'FEB': '2月', 'MAR': '3月', 'APR': '4月', 'MAY': '5月', 'JUN': '6月', 'JUL': '7月', 'AUG': '8月', 'SEP': '9月', 'OCT': '10月', 'NOV': '11月', 'DEC': '12月',
+       'SUN': '周日', 'MON': '周一', 'TUE': '周二', 'WED': '周三', 'THU': '周四', 'FRI': '周五', 'SAT': '周六',
+       'OPEN SCHEDULER BY VENUE': '按场地查看日程', 'OPEN SCHEDULER BY TIME': '按时间查看日程',
+       'switch to grid': '网格视图', 'switch to list': '列表视图', 'show / hide the map': '显示 / 隐藏地图', 'map: not applicable here': '此处无地图',
+       'map: not available': '地图不可用', 'copy link': '复制链接', 'language': '语言', 'items': '项', 'showing {n}': '显示 {n}', 'list': '列表', 'grid': '网格'},
+  ja: {'search tango…': 'タンゴを検索…', 'all': 'すべて', 'ALL': 'すべて', 'community': 'コミュニティ', 'events': 'イベント',
+       'sources': '情報源', 'festival': 'フェスティバル', 'seminar': 'セミナー', 'academy': 'アカデミー', 'milonga': 'ミロンガ', 'practica': 'プラクティカ',
+       'tanguer@': 'タンゲーロ', 'artist couple': 'アーティストカップル', 'group': 'グループ', 'organizer': '主催者', 'artist': 'アーティスト',
+       'tangoDJ': 'タンゴDJ', 'writer': 'ライター', 'teacher': '講師', 'shop': 'ショップ', 'hostel': '宿泊', 'milonguera': 'ミロンゲーラ', 'dancer': 'ダンサー', 'source': '情報源',
+       'World': '全世界', 'Asia': 'アジア', 'Europe': 'ヨーロッパ', 'America': 'アメリカ大陸', 'Africa': 'アフリカ', 'Oceania': 'オセアニア', 'no area': '地域なし',
+       'map': '地図', 'back': '戻る', 'more ...': 'もっと …', 'one year': '1年', 'WEEK': '今週',
+       'JAN': '1月', 'FEB': '2月', 'MAR': '3月', 'APR': '4月', 'MAY': '5月', 'JUN': '6月', 'JUL': '7月', 'AUG': '8月', 'SEP': '9月', 'OCT': '10月', 'NOV': '11月', 'DEC': '12月',
+       'SUN': '日', 'MON': '月', 'TUE': '火', 'WED': '水', 'THU': '木', 'FRI': '金', 'SAT': '土',
+       'OPEN SCHEDULER BY VENUE': '会場別スケジュール', 'OPEN SCHEDULER BY TIME': '時間別スケジュール',
+       'switch to grid': 'グリッド表示', 'switch to list': 'リスト表示', 'show / hide the map': '地図の表示 / 非表示', 'map: not applicable here': 'ここでは地図なし',
+       'map: not available': '地図は使えません', 'copy link': 'リンクをコピー', 'language': '言語', 'items': '件', 'showing {n}': '{n}件を表示', 'list': 'リスト', 'grid': 'グリッド'}
+};
+const tr = t => (TEXTOS[idioma] || {})[t] || t;
+// el nombre de un país en el idioma elegido: su código ISO (paises.js) y el del navegador (Intl.DisplayNames); los que no tienen código propio, aquí
+const PAISES_SIN_ISO = {England: {ko: '잉글랜드', zh: '英格兰', ja: 'イングランド'}, Scotland: {ko: '스코틀랜드', zh: '苏格兰', ja: 'スコットランド'},
+                        Wales: {ko: '웨일스', zh: '威尔士', ja: 'ウェールズ'}};
+let isoPais = null;
+const nombresRegion = {};
+function nombrePais(n){
+  if (idioma == 'en' || !n) return n;
+  if (PAISES_SIN_ISO[n]) return PAISES_SIN_ISO[n][idioma] || n;
+  if (!isoPais){
+    isoPais = new Map();
+    for (const f of typeof PAISES_GEO != 'undefined' ? PAISES_GEO.features : [])
+      if (f.properties.iso) for (const x of f.properties.nombres) isoPais.set(x, f.properties.iso);
+  }
+  const iso = isoPais.get(n);
+  try {
+    if (!nombresRegion[idioma]) nombresRegion[idioma] = new Intl.DisplayNames([idioma], {type: 'region'});
+    return iso && nombresRegion[idioma].of(iso) || n;
+  } catch (e) { return n; }
+}
+function textosFijos(){   // los del html: el buscador y los botones de la agenda
+  $('buscar').placeholder = tr('search tango…');
+  $('bAgenda').textContent = tr('OPEN SCHEDULER BY VENUE');
+  $('bAgenda2').textContent = tr('OPEN SCHEDULER BY TIME');
+}
+function abreIdioma(abre){
+  $('menuIdioma').classList.toggle('oculto', !abre);
+  $('bIdioma').setAttribute('aria-expanded', abre);
+}
+function pintaIdioma(){
+  document.documentElement.lang = idioma;
+  $('bIdioma').innerHTML = bandera(idioma);
+  $('bIdioma').setAttribute('aria-label', tr('language') + ': ' + IDIOMAS.find(i => i.k == idioma).nombre);
+  textosFijos();
+  $('menuIdioma').replaceChildren(...IDIOMAS.map(i => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('role', 'menuitem');
+    b.setAttribute('aria-label', i.nombre);
+    b.classList.toggle('activo', i.k == idioma);
+    b.innerHTML = bandera(i.k);
+    b.onclick = () => {
+      idioma = i.k;
+      try { localStorage.setItem('tg.idioma', idioma); } catch (e) {}
+      abreIdioma(false);
+      pintaIdioma();
+      pinta();   // los controles, con sus textos en el idioma nuevo
+    };
+    return b;
+  }));
+}
 const ciudadDe = p => p.pais + '|' + (p.ciudad || '');
+// el listado, 100 líneas como mucho; la última, "max 100 elements" (2026-11-11, el usuario: "max numero de elementos en el listado es 100, ultima linea poner
+// max 100 elementos"). La parrilla, entera
+const MAX_LISTADO = 100;
+// lo que cuenta el total: el tipo en plural (en inglés; academy, academies; all, items) o, en otro idioma, su nombre en él
+const PLURAL = {academy: 'academies', all: 'items', sources: 'sources', 'tanguer@': 'tanguer@s'};
+const textoCuenta = (tipo, n) => idioma != 'en' ? tr(tipo == 'all' ? 'items' : tipo)
+                                 : n == 1 ? (tipo == 'all' ? 'item' : tipo) : PLURAL[tipo] || tipo + 's';
+// la ciudad en 3 letras (CIUDADES_ABREV, de paises.js: la genera import/paisesgeo.py); sin ella en la tabla, las 3 primeras letras de su nombre (o de su lugar)
+const abrevCiudad = p => p.ciudad && typeof CIUDADES_ABREV != 'undefined' && CIUDADES_ABREV[ciudadDe(p)]
+                         || (p.ciudad || p.lugar || '').normalize('NFD').replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase();
 let lugarSel = null, sinEncuadre = false, areaPrevia = null;
 let mapaAbierto = true;
 let mapaPendiente = null;
@@ -1401,7 +1567,7 @@ function avisoMapa(texto){
   $('mapaCaja').classList.add('oculto');
   $('bMapa').disabled = true;
   $('bMapa').textContent = '• map';
-  $('bMapa').title = 'map: not available';
+  $('bMapa').title = tr('map: not available');
   $('mapaAviso').textContent = texto;
   $('mapaAviso').classList.remove('oculto');
 }
@@ -1421,8 +1587,8 @@ function creaPaises(){
 function pintaMapa0(lista, area, conMapa){
   const div = $('mapa'), caja = $('mapaCaja'), conPos = posMapa = lista.filter(p => p.pos), hay = conPos.length || conMapa;
   $('bMapa').disabled = !hay;
-  $('bMapa').innerHTML = (!hay ? '•' : '<span class="iMapa">' + (mapaAbierto ? '▴' : '▾') + '</span>') + ' map';
-  $('bMapa').title = !hay ? 'map: not applicable here' : 'show / hide the map';
+  $('bMapa').innerHTML = (!hay ? '•' : '<span class="iMapa">' + (mapaAbierto ? '▴' : '▾') + '</span>') + ' ' + tr('map');
+  $('bMapa').title = tr(!hay ? 'map: not applicable here' : 'show / hide the map');
   caja.classList.toggle('cerrado', !mapaAbierto);
   div.classList.toggle('oculto', !mapaAbierto);
   if (!mapaAbierto){ caja.classList.toggle('oculto', !hay); mapaPendiente = [lista, area, conMapa]; return pintaCiudades(); }
@@ -1526,7 +1692,7 @@ function pintaCiudades(){
   for (const p of dePais ? posMapa : baseLugares){   // las ciudades, de lo que pinta el mapa (con un país elegido, solo las suyas); los países, de todo el listado
     if (vista && !vista.contains(centroPos(p.pos))) continue;   // con el mapa oculto, todos: la lista sigue viva
     if (dePais && p.ciudad) nombres.set(ciudadDe(p), p.ciudad);
-    else if (!dePais && p.pais && p.pais != '-') nombres.set(p.pais, p.pais);
+    else if (!dePais && p.pais && p.pais != '-') nombres.set(p.pais, nombrePais(p.pais));
   }
   const lineas = dePais ? lineasCiudad : lineasPais, elige = dePais ? eligeCiudad : eligePais;
   const n = new Map([...nombres.keys()].map(c => [c, lineas(c)]));
@@ -1534,7 +1700,7 @@ function pintaCiudades(){
   div.scrollTop = 0;
   // back, con el logo de volver: la flecha que gira a la izquierda (2026-11-10, el usuario: "para << usa un logo de volver"; antes, el doble chevron «)
   const BACK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' +
-               '<path d="M9 14L4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>back';
+               '<path d="M9 14L4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>' + tr('back');
   const navega = (clase, html, pulsa) => { const s = document.createElement('span'); s.className = clase; s.innerHTML = html; s.onclick = pulsa; return s; };
   const atras = dePais && navega('atras', BACK, () => {   // de las ciudades (con país, ciudad o lugar elegidos), a los países del área; las fechas (año y mes), los días y los roles, a cero
     lugarSel = ciudadSel = paisSel = null;
@@ -1551,7 +1717,7 @@ function pintaCiudades(){
     s.classList.toggle('sel', dePais && c == elegida);
     const nom = document.createElement('span'), num = document.createElement('span');
     nom.className = 'nom';
-    nom.textContent = nom.title = nombre;
+    nom.textContent = nombre;   // sin title (2026-11-11, el usuario: "quita el title sobre paises")
     num.className = 'num';
     num.textContent = n.get(c);
     s.append(nom, num);
@@ -1570,11 +1736,11 @@ function pintaCiudades(){
     let sitio = cabe - (vuelve ? 1 : 0);
     const hayMas = celdas.length - desde > sitio;
     if (hayMas) sitio--;
-    const mas = hayMas && navega('mas', 'more ...', () => { vistas.push(desde); pagina(desde + sitio); });
+    const mas = hayMas && navega('mas', tr('more ...'), () => { vistas.push(desde); pagina(desde + sitio); });
     const vista = [vuelve, ...celdas.slice(desde, desde + sitio), mas].filter(Boolean);
     if (cabe < Infinity) while (vista.length < cabe) vista.push(navega('hueco', '', null));   // siempre todas las celdas: las que falten, de relleno (2026-11-04, el usuario: "siempre 12 celdas")
     div.replaceChildren(...vista);
-    div.style.setProperty('--filas', Math.ceil(vista.length / 2));
+    div.closest('.zonaMapa').style.setProperty('--filas', Math.ceil(vista.length / 2));   // en su caja: la lista lo hereda y el botón map sabe dónde empieza el mapa
   };
   pagina(0);
   const sel = celdas.find(s => s.classList.contains('sel'));
@@ -1597,14 +1763,14 @@ function rutaListado(a, r, fs, dias, conRoles, n){   // la de la barra sobre el 
     sinEncuadre = quieto;
     return !igual;
   };
-  const partes = [[a == TODOS ? 'World' : a == '-' ? 'no area' : a, aNivel(!lugarSel && !ciudadSel && !paisSel, () => { lugarSel = ciudadSel = paisSel = null; })],
-                  [r == TODOS ? 'all' : PRIMEROS[r] || textoRol(r)],   // el tipo, sin clic: se cambia en su selector
-                  [paisSel ? paisSel.feature.properties.nombres[0] : '', aNivel(!lugarSel && !ciudadSel, () => { lugarSel = ciudadSel = null; })],
+  const partes = [[tr(a == TODOS ? 'World' : a == '-' ? 'no area' : a), aNivel(!lugarSel && !ciudadSel && !paisSel, () => { lugarSel = ciudadSel = paisSel = null; })],
+                  [tr(r == TODOS ? 'all' : PRIMEROS[r] || textoRol(r))],   // el tipo, sin clic: se cambia en su selector
+                  [paisSel ? nombrePais(paisSel.feature.properties.nombres[0]) : '', aNivel(!lugarSel && !ciudadSel, () => { lugarSel = ciudadSel = null; })],
                   [ciudadSel ? ciudadC || paisC : lugar ? lugar.ciudad || lugar.lugar : '', quitaResto],
                   ...(soloBuscado && buscado ? [buscado.nombre]
-                      : [!f ? '' : f.doce ? TEXTO_DOCE : f.mes === undefined ? f.anyo : MESES[f.mes] + ' ' + f.anyo,
-                         ...(dias || []).map(d => DIAS_SEM[d]),
-                         ...(conRoles ? [...rolesSel].map(k => k == PTC ? 'PTC' : textoRol(k).toUpperCase()) : [])]).map(t => [t])]
+                      : [!f ? '' : f.doce ? tr(TEXTO_DOCE) : f.mes === undefined ? f.anyo : tr(MESES[f.mes]) + ' ' + f.anyo,
+                         ...(dias || []).map(d => tr(DIAS_SEM[d])),
+                         ...(conRoles ? [...rolesSel].map(k => k == PTC ? 'PTC' : tr(textoRol(k)).toUpperCase()) : [])]).map(t => [t])]
                  .filter(([t]) => t);
   const d = $('ruta');
   d.replaceChildren();
@@ -1620,16 +1786,16 @@ function rutaListado(a, r, fs, dias, conRoles, n){   // la de la barra sobre el 
     }
     d.appendChild(s);
   });
-  const ico = document.createElement('img');   // al final, tras otro ›, el contador con su icono
-  ico.src = 'img/estadistica.svg';
-  ico.className = 'icono';
-  const cuenta = document.createElement('span');   // el número, en blanco y más grande (.cuenta)
-  cuenta.className = 'cuenta';
-  cuenta.textContent = n;
-  d.append(sep(), ico, ' ', cuenta);
+  // en la caja de arriba (antes, al final de las migas): el número, en blanco y más grande (.cuenta), y lo que cuenta, en gris: "80 festivals"; con más de
+  // 100 en el listado, "· showing 100" (2026-11-11, el usuario: "sugerencia para representar total listado", "haz la 1"; antes, "total listado 80")
+  const pieza = (clase, texto) => { const e = document.createElement('span'); e.className = clase; e.textContent = texto; return e; };
+  const tipo = r == TODOS ? 'all' : PRIMEROS[r] || textoRol(r);
+  const corta = enListado && n > MAX_LISTADO;
+  $('total').replaceChildren(pieza('cuenta', n), pieza('tTipo', textoCuenta(tipo, n)),
+                             ...(corta ? [pieza('tTipo', '· ' + tr('showing {n}').replace('{n}', MAX_LISTADO))] : []));
   const copia = document.createElement('button');   // a la derecha: copiar la url de esta ruta
   copia.className = 'copiaRuta';
-  copia.title = 'copy link';
+  copia.title = tr('copy link');
   copia.innerHTML = ICONO_ENLACE;
   copia.onclick = async () => {
     const url = urlRuta();
@@ -1756,30 +1922,31 @@ function pinta(){
   const deSel = personas.filter(p => enArea(p, a) && enRol(p, r) && enSel(p));   // lo del área, el tipo y el lugar elegidos: para los contadores de las tiras y la agenda (una pasada, no una por botón)
   agendaDe = () => deSel;
   baseLugares = base.filter(p => p.pos);
-  const areas = [...new Set(personas.map(p => p.area))].filter(x => x != MUNDIAL)
+  // la tira de roles privados y el área 'no area' (las fichas sin país), solo si hay datos privados: la local; en la publicada nadie los tiene (2026-11-11, el
+  // usuario: "quita 'no area' de los datos publicos"; esas fichas siguen en World y en la búsqueda)
+  const hayPrivados = personas.some(p => !p.evento && p.roles.some(x => ROLES[x] && !ROLES[x].publico));
+  const areas = [...new Set(personas.map(p => p.area))].filter(x => x != MUNDIAL && (x != '-' || hayPrivados))
                   .sort((x, y) => (x == '-') - (y == '-') || x.localeCompare(y));
-  opciones(sa, areas, v => v == '-' ? 'no area' : v, null, 'World');   // sin contador (2026-11-08, el usuario)
+  opciones(sa, areas, v => tr(v == '-' ? 'no area' : v), null, tr('World'));   // sin contador (2026-11-08, el usuario)
   if (paisSel){ if (areaPrevia) sa.value = areaPrevia; else sa.selectedIndex = -1; }   // con un país, se sigue viendo su área; volver a elegirla funciona (pointerdown en conecta)
   // all, community y events, y dentro de cada grupo por orden alfabético de lo que se lee (2026-11-10, el usuario: "orden alfabetico para select de tipos:
   // all+community+events y dentro de cada uno tb orden alfabetico")
   const nombreTipo = v => PRIMEROS[v] || textoRol(v), porTexto = vs => vs.sort((x, y) => nombreTipo(x).localeCompare(nombreTipo(y)));
-  opciones($('selRol'), [{grupo: 'community', valores: porTexto([PEO, ...TIPOS_P])},
-                         {grupo: 'events', valores: porTexto([LIS, ACA, FES, SEM, MIL, PRA])}],
-           nombreTipo);   // sin contador: el número va al final de la ruta
+  opciones($('selRol'), [{grupo: tr('community'), valores: porTexto([PEO, ...TIPOS_P])},
+                         {grupo: tr('events'), valores: porTexto([LIS, ACA, FES, SEM, MIL, PRA])}],
+           v => tr(nombreTipo(v)), null, tr('all'));   // sin contador: el número va al final de la ruta. El orden, el del inglés
   estadoPintado = filas.length ? estado() : null;   // con los selectores ya como se ven
   $('fechas').classList.remove('oculto');
   $('fechas').classList.toggle('sinFechas', !conFechas && !conDias && !conRoles);
   $('bAgendas').classList.toggle('oculto', !conDias || !(ciudadSel || lugarSel) || isMovil());   // milongas o prácticas de una ciudad (la marca del mapa, también: una por ciudad); en el móvil no (2026-11-08, el usuario)
   $('fBotones').dataset.tira = conDias ? 'dias' : conRoles ? 'roles' : 'meses';   // cada una, su rejilla en el panel vertical
-  // la tira de roles privados, solo si hay datos privados (la local; en la publicada nadie los tiene)
-  const hayPrivados = personas.some(p => !p.evento && p.roles.some(x => ROLES[x] && !ROLES[x].publico));
   $('rBotones').classList.toggle('oculto', !conRoles || !hayPrivados);
   if (conDias) pintaDias(d => deSel.filter(p => enVista(proximaEn(p, d === null ? null : [d]), p)).length);
   else if (conRoles) pintaRoles(k => deSel.filter(p => k === null || conRol(p, k)).length);   // (conRoles: el tipo es PEO)
   else pintaFechas(i => deSel.filter(p => enFecha(p, i)).length, !conFechas);
   pintaMapa(baseMapa, a, personas.some(p => p.pos && enArea(p, aMapa) && enRol(p, r)));   // sin las tiras: si el tipo lleva mapa
-  $('bListado').innerHTML = enListado ? '☰ list' : '<span class="iParrilla">▦</span> grid';   // lo que se ve; al pulsar, lo otro
-  $('bListado').title = enListado ? 'switch to grid' : 'switch to list';
+  $('bListado').innerHTML = enListado ? '☰ ' + tr('list') : '<span class="iParrilla">▦</span> ' + tr('grid');   // lo que se ve; al pulsar, lo otro. Con su texto (2026-11-11, el usuario: "quita list/grid deja solo el logo" y luego "vuelve a poner list/grid")
+  $('bListado').title = tr(enListado ? 'switch to grid' : 'switch to list');
   $('parrilla').classList.toggle('oculto', enListado);
   $('listado').classList.toggle('oculto', !enListado);
   window.scrollTo(0, 0);   // al cambiar el listado, arriba: a la vista su primera línea
@@ -1792,7 +1959,7 @@ function pinta(){
   const conFecha = filas.some(({p}) => p.evento);   // con fecha: su columna al principio (vacía en las filas sin fecha)
   div.classList.toggle('conFecha', conFecha);
   const vistos = new Set();
-  for (const {p, dia} of filas){
+  for (const {p, dia} of filas.slice(0, MAX_LISTADO)){
     const c = document.createElement('div');
     if (!vistos.has(p.id)) c.id = 'f' + p.id;
     vistos.add(p.id);
@@ -1813,17 +1980,30 @@ function pinta(){
         else if (trozo) span('fLetras', trozo, f).style.setProperty('--n', trozo.length);   // su ancho, por letras (CSS)
       }
     }
+    // la ciudad en 3 letras, tras la fecha y con su letra (2026-11-11, el usuario: "pon las ciudades en el listado despues de la fecha usando la lista creada
+    // por tangoinfo/ 3 letras"): CIUDADES_ABREV de paises.js; entera, en la ficha (sin title: "quita fb el title sobre las ciudaes del lsitado"). Antes, entera a la derecha
+    const ciudad = span('fFecha fCiudad', '');
+    const abrev = abrevCiudad(p);
+    if (abrev) span('fLetras', abrev, ciudad).style.setProperty('--n', abrev.length);
     const textos = document.createElement('div');
     textos.className = 'fTexto';
     c.appendChild(textos);
-    const nombre = span('fNombre', p.nombre, textos);
-    if (especial(p)) nombre.prepend(logoEspecial());
-    span('fLugar', p.ciudad || p.lugar, textos);   // solo la ciudad (la sala va en la ficha)
+    const nombre = span('fNombre', '', textos);   // el título, estrechado como la fecha: su texto en una caja (fNomCaja) que corta con … (fNomTexto)
+    if (especial(p)) nombre.append(logoEspecial());
+    span('fNomTexto', p.nombre, span('fNomCaja', '', nombre));
     const mini = cara(p);   // la miniatura al final, de la altura de la línea
     mini.classList.add('fMini');
     c.appendChild(mini);
     c.onclick = () => abreFicha(p, c);
     div.appendChild(c);
+  }
+  if (filas.length > MAX_LISTADO){   // con más, la última línea lo dice (el total, el de la barra)
+    const m = document.createElement('div');
+    m.className = 'filaMax';
+    const t = document.createElement('span');   // en inglés, en blanco y con la letra del nombre del listado (2026-11-11, el usuario: "max 100 elements en blanco", "misma fuente que el nombre del listado")
+    t.textContent = 'max ' + MAX_LISTADO + ' elements';
+    m.appendChild(t);
+    div.appendChild(m);
   }
   pintaVacio(filas.length, div, areaCuenta, r, fs, dias, conRoles);
   marcaAbierta();
@@ -2018,7 +2198,7 @@ function muestraInfo(){
   $('fCuerpo').innerHTML = '';
   const d = document.createElement('div');
   d.className = 'texto';
-  d.innerHTML = '<iframe id="kkTexto" src="atribucionkk.htm?v=public version" title="KoKoTango"></iframe>' +   // el mismo que tangoworld
+  d.innerHTML = '<iframe id="kkTexto" src="atribucionkk.htm?v=public version&letra=tg" title="KoKoTango"></iframe>' +   // el mismo que tangoworld
                 '<p class="enlaces"><a id="aTw" href="#" target="_blank" rel="noopener">⇒ go to tangoworld</a></p>';   // con la ruta de las migas
   $('fCuerpo').appendChild(d);
   $('aTw').onclick = () => { $('aTw').href = urlRuta(true); };
@@ -2140,6 +2320,10 @@ function conecta(){
   $('dCerrar').onclick = cierraFicha;
   $('bMapa').onclick = abreCierraMapa;
   $('bListado').onclick = () => { enListado = !enListado; sinEncuadre = true; pinta(); };
+  $('bIdioma').onclick = e => { e.stopPropagation(); abreIdioma($('menuIdioma').classList.contains('oculto')); };
+  document.addEventListener('click', e => { if (!e.target.closest('.selIdioma')) abreIdioma(false); });   // fuera del selector, se cierra
+  document.addEventListener('keydown', e => { if (e.key == 'Escape') abreIdioma(false); });
+  pintaIdioma();
   window.addEventListener('resize', () => { if (!enListado) columnasParrilla(); });
   document.addEventListener('keydown', e => {
     if (e.key == 'Escape') return cierraFicha();

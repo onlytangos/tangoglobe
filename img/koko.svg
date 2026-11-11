@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-  <!-- KoKo Tango: monograma KK en blanco sobre un círculo rojo, versión pública (la local usa koko-privada.svg, azul). Las KK, en texto -->
-  <circle cx="12" cy="12" r="11" fill="#c8323c"/>
-  <circle cx="12" cy="12" r="9.85" fill="none" stroke="#fff" stroke-width="1.3"/>   <!-- el anillo blanco que rodea las KK -->
+  <!-- KoKo Tango, versión pública (la local usa koko-privada.svg, azul): el monograma KK en blanco sobre un cuadrado de color, a sangre: el borde lo pone el botón, como el de los otros (2026-11-11, el
+       usuario: "cambia el logo kk hazlo cuadrado", "borde de KK como los otros bordes"; antes, un círculo con un anillo blanco) -->
+  <rect width="24" height="24" fill="#c8323c"/>
   <text x="12" y="12" dy=".36em" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif"
-        font-size="9.5" font-weight="700" fill="#fff">KK</text>   <!-- las KK, en texto (unos 8px de alto a 28px) -->
+        font-size="9.5" font-weight="700" fill="#fff">KK</text>   <!-- las KK, en texto -->
 </svg>
