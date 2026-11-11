@@ -90,7 +90,7 @@
   /* al principio de la línea de las migas, con su letra (.ruta, .85em; 2026-11-11, el usuario: "select tipo mismo tamaño de letra que las migas") y de ancho fijo,
      el del tipo más ancho ("seelctor tipo ancho fijo, ancho al texto mas ancho"; antes, un rato, el del elegido): lo mide anchoTipo con cada uno (field-sizing:
      content) y lo fija en su style */
-  #selRol { box-sizing: border-box; font-size: .85em; width: auto; field-sizing: content; }
+  #selRol { box-sizing: border-box; font-size: .85em; width: auto; field-sizing: content; padding-right: 16px; white-space: nowrap; overflow: hidden; }   /* (en una línea: con los dos blancos de las opciones, "artist couple" partía en dos) */   /* 10 px más ancho (2026-11-11, el usuario: "ancho sel tipo 10 px mas ancho"): a la derecha, antes de la flecha */
   #sugs { position: fixed; width: min(28em, 90vw); z-index: 2;
           background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,.6);
           max-height: calc(10 * 26px); overflow-y: auto; }
@@ -134,6 +134,7 @@
   .cuerpo > img, .cuerpo > .sinfoto { flex: none; align-self: flex-start; width: min(50%, var(--maxFoto)); height: auto;
                                         aspect-ratio: 1; object-fit: cover; border-radius: 6px; }   /* cuadrada: el alto, el del ancho (antes el del texto) */
   .cuerpo > img { background: var(--negro); }
+  #ficha { width: min(780px, 90vw); }   /* el popup de la ficha, un 50% más ancho (2026-11-11, el usuario: "haz el popup de la ficha un 50% mas ancho"; antes, 520 px como los demás dialog) */
   #ficha .cuerpo > img, #ficha .cuerpo > .sinfoto { width: min(50%, calc(var(--maxFoto) * 1.875)); }   /* en el popup, más grande (2026-11-11, el usuario: "popup ficha aumenta imagen en un 25%", 137,5 px; luego "aumenta 50% la imagen del popup": 206 px); como mucho, la mitad del popup */
   .texto { flex: 1; min-width: 0; }
   dialog .texto { padding-right: 28px; }
@@ -314,25 +315,28 @@
                background: var(--grisMedio); color: var(--texto); border: 1px solid var(--borde); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.6); }
   option { background: var(--grisMedio); color: var(--blanco); }
   option:checked { background: var(--amarillo); color: var(--negro); }   /* la elegida */
-  #selRol option:not(.grupo, :first-child) { padding-left: calc(8px + 2ch); }   /* los tipos, sangrados bajo su grupo; all no tiene grupo */
-  option.grupo { color: var(--blanco); font-weight: 700; }
+  optgroup { color: var(--blanco); font-weight: 700; font-style: normal; background: var(--grisMedio); }   /* events y community: en blanco, negrita y minúsculas (2026-11-11, el usuario: "pon community events en blanco negrita y minusculas", "falta negrita en los titulos de grupos del select") */
+  optgroup option { font-weight: 400; }
+  #selRol option.negrita { font-weight: 700; }
+  #selRol option.negrita:checked { font-weight: 700; }
   /* el desplegable con la paleta, también al pasar el ratón; sin base-select, el del navegador con las opciones de arriba */
   @supports (appearance: base-select) {
     select, ::picker(select) { appearance: base-select; }
     select { display: flex; align-items: center; }
     select::picker-icon { color: var(--blanco); }
     ::picker(select) { padding: 3px 0; background: var(--grisMedio); color: var(--blanco); border: 1px solid var(--grisClaro); border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,.6); }
-    option { padding: 2px 8px; }
+    option { padding: 2px .5em; }   /* (.5em: donde el navegador pone el título del grupo) */
     option::checkmark { display: none; }
     option:not(:disabled):hover, option:not(:disabled):focus-visible { background: var(--azulClaro); color: var(--negro); outline: 0; }
     option:checked, option:checked:hover, option:checked:focus-visible { background: var(--amarillo); color: var(--negro); font-weight: 400; }
-    option.grupo { padding-top: 6px; background: none; }
+    optgroup { padding-top: 4px; }
+    optgroup option { padding-left: calc(.5em + 2ch); }   /* sus opciones, sangradas dos caracteres, como el desplegable nativo (2026-11-11, el usuario: "vuelve al optgroup, sin blancos") */
   }
   .ciudadesMapa > span { flex: 1 0 auto; box-sizing: border-box; height: var(--altoTira); display: flex; justify-content: center; gap: 8px; padding: 0 7px; cursor: pointer;
                        white-space: nowrap; align-items: center; border-radius: 4px; background: var(--tarjeta); color: var(--texto); }   /* cada uno, un botón como los meses: los de la página, todo el ancho de la línea, con el texto en el centro (2026-11-11, el usuario: "tercera linea que los botones ocupen todo el ancho"; antes, cada uno de su ancho) */
   .ciudadesMapa > span:hover { background: var(--azulClaro); color: var(--negro); }   /* el nombre bajo el ratón */
   .ciudadesMapa > span.atras:not(:hover), .ciudadesMapa > span.mas:not(:hover) { color: var(--amarillo); }   /* back y more..., en amarillo */
-  .ciudadesMapa > span.atras, .ciudadesMapa > span.mas { justify-content: center; }
+  .ciudadesMapa > span.atras, .ciudadesMapa > span.mas { justify-content: center; flex: 0 0 40px; padding: 0; }   /* siempre del mismo ancho, 40 px: lo que sobra en la línea, para los nombres (2026-11-11, el usuario: "los botones de navegacion en la tercera linea siempre del mismo ancho") */
   .ciudadesMapa > span.sel, .ciudadesMapa > span.sel:hover { background: var(--acento); color: var(--negro); }   /* la ciudad elegida, del color de los botones activos */
   .ciudadesMapa > span.cero, .ciudadesMapa > span.cero:hover { background: none; color: var(--grisClaro); cursor: default; }
   .ciudadesMapa .nom { max-width: 16em; overflow: hidden; text-overflow: ellipsis; }   /* el nombre; uno muy largo, cortado con … */
@@ -364,8 +368,11 @@
      Maps con la ciudad ("click en la imagen abrimos maps con la ciudad"). Debajo, su autor y su licencia (CC: se dicen), con su página en Commons. No encoge:
      si no cabe, el scroll es el de las tiras */
   .fotoCiudad { flex: none; margin: 0; display: flex; flex-direction: column; gap: 2px; }
-  .fotoCiudad #fcMapa { display: block; border-radius: 6px; }
-  .fotoCiudad img { display: block; width: 100%; aspect-ratio: 2 / 1; object-fit: cover; border-radius: 6px; background: var(--tarjeta); filter: grayscale(1); }   /* en blanco y negro (2026-11-11, el usuario: "aplica un css filtro y presentalas en blanco y negro") */   /* 2:1: el centro del banner de Wikivoyage (7:1; 2026-11-11, el usuario: "usa 1"; antes, 4:3) */
+  .fotoCiudad #fcMapa { display: block; position: relative; border-radius: 6px; }
+  .fotoCiudad img, .fotoCiudad canvas { display: block; width: 100%; aspect-ratio: 2 / 1; object-fit: cover; border-radius: 6px; background: var(--tarjeta); }   /* como una acuarela (2026-11-11, el usuario: "usa css filter para poner la foto como una acuarela"; luego "eso es desenfocada pero no acuarela", "es bastante pobre"): la pinta acuarela() en el canvas #fcLienzo; mientras, o si no se puede, la foto tal cual */   /* 2:1: el centro del banner de Wikivoyage (7:1; 2026-11-11, el usuario: "usa 1"; antes, 4:3) */
+  .fotoCiudad img { filter: sepia(1); }   /* en sepia mientras se pinta la acuarela, o si no se puede (2026-11-11, el usuario: "tarda un poco en cargarla, pon en css sepia la foto hasta que carga el canvas") */
+  .fotoCiudad canvas { position: absolute; inset: 0; height: 100%; opacity: 0; transition: opacity 3s ease; }   /* 3 s (2026-11-11, el usuario: "pon 3s en la transicion"; antes, .9 s) */   /* encima de la foto: aparece fundiéndose sobre su misma foto; al cambiar de ciudad, la de antes se quita sin fundido (pintaFotoCiudad) (2026-11-11, el usuario: "haz una transicion de una foto a otra") */
+  .fotoCiudad canvas.pintada { opacity: 1; }
   .fotoCiudad #fcMapa:hover { outline: 2px solid var(--azulClaro); }   /* el enlace, al pasar el ratón: con el azul de los demás */
   .fotoCiudad figcaption { font-size: .7em; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .fotoCiudad #fcPie { color: var(--suave); text-decoration: none; border-radius: 3px; }
@@ -383,11 +390,17 @@
      igual"; antes, con los márgenes de cada línea: 8 px bajo el título, 4 sobre el panel) */
   .detalle .texto > *, #ficha .texto > * { margin: 0; line-height: 22px; }
   .detalle .texto p.enlaces, #ficha .texto p.enlaces { margin-top: 0; row-gap: 0; }
-  #dCerrar, #fCerrar, #aCerrar { position: absolute; top: 6px; right: 8px; box-sizing: border-box; width: 26px; height: 26px; padding: 0; border: 2px solid currentColor; border-radius: 50%;
+  #dCerrar, #fCerrar, #aCerrar, #vCerrar { position: absolute; top: 6px; right: 8px; box-sizing: border-box; width: 26px; height: 26px; padding: 0; border: 2px solid currentColor; border-radius: 50%;
              display: flex; align-items: center; justify-content: center; background: none; color: var(--acento); cursor: pointer; }   /* en amarillo, como los demás logos (2026-11-11, el usuario: "logo cerrar es amarillo"; antes, blanco) */
-  #dCerrar svg, #fCerrar svg, #aCerrar svg { display: block; width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }   /* la X dibujada: la × de la letra se descentraba según la fuente */
-  #fCerrar, #aCerrar { top: 8px; }   /* el del popup, a la misma distancia arriba y a la derecha */
-  #dCerrar:hover, #fCerrar:hover, #aCerrar:hover { border-radius: 4px; background: var(--azulClaro); border-color: var(--azulClaro); color: var(--negro); }   /* bajo el ratón, de círculo a cuadrado y azul claro con la X negra, como los demás (2026-11-11, el usuario: "over de cerrar tb azul") */
+  #dCerrar svg, #fCerrar svg, #aCerrar svg, #vCerrar svg { display: block; width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }   /* la X dibujada: la × de la letra se descentraba según la fuente */
+  #fCerrar, #aCerrar, #vCerrar { top: 8px; }
+  /* el vídeo de YouTube, en un popup (2026-11-11, el usuario: "podemos reproducir YT en un popup en vez de abrir nueva pestaña?"): 16:9, del ancho de la
+     ventana como mucho, encima de la ficha; abajo, el enlace para verlo en YouTube (si no deja insertarlo: abierto como file://, sin referer) */
+  #video { width: min(960px, 92vw); padding: 36px 12px 10px; box-sizing: border-box; }
+  #video iframe { display: block; width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: 4px; background: var(--negro); }
+  #video #vEnYt { display: inline-block; margin-top: 6px; font-size: .8em; color: var(--suave); }
+  #video #vEnYt:hover { color: var(--azulClaro); }   /* el del popup, a la misma distancia arriba y a la derecha */
+  #dCerrar:hover, #fCerrar:hover, #aCerrar:hover, #vCerrar:hover { border-radius: 4px; background: var(--azulClaro); border-color: var(--azulClaro); color: var(--negro); }   /* bajo el ratón, de círculo a cuadrado y azul claro con la X negra, como los demás (2026-11-11, el usuario: "over de cerrar tb azul") */
   /* la primera línea de la ficha: el nombre, su tipo y el logo de copiar el enlace, seguidos en la misma línea, el logo a un blanco del tipo; si no caben,
      saltan a la siguiente (2026-11-10, el usuario: "debe salir en la mismalinea : nombre+tipo+copy", "sino cabe salta", "copy ... separado 1 blanco,
      despues del tipo de evento"). La última palabra del nombre, el tipo y el logo no se separan (.finTitulo): el logo nunca queda solo en una línea */
@@ -511,7 +524,7 @@
        el mapa pasa a ocupar todo el ancho el padding para el mapa debe mantenerse"; antes, 4 px arriba y 16 a los lados) */
     .panel { height: auto; overflow: visible; flex-flow: row wrap; align-items: center; gap: 4px; box-shadow: none; }
     .zonaMapa, .fechas, .fotoCiudad { flex: 0 0 100%; min-width: 0; }
-    .fotoCiudad img { aspect-ratio: auto; height: 120px; }   /* de todo el ancho: más baja */
+    .fotoCiudad img, .fotoCiudad canvas { aspect-ratio: auto; height: 120px; }   /* de todo el ancho: más baja */
     #rBotones, #bAgendas, .fechas { margin-top: 0; }
     .mapaCaja.cerrado { display: none; }   /* aquí cerrar el mapa libera sitio */
     .detalle { top: calc(var(--altoPanel, 0px) + var(--altoBarra, 0px) + 16px); }
@@ -544,7 +557,7 @@
     <div id="rBotones" class="tira oculto"></div>
     <div id="bAgendas"><button id="bAgenda">OPEN SCHEDULER BY VENUE</button><button id="bAgenda2">OPEN SCHEDULER BY TIME</button></div>
   </div>
-  <figure id="fotoCiudad" class="fotoCiudad oculto"><a id="fcMapa" target="_blank" rel="noopener"><img id="fcImg" alt=""></a><figcaption><a id="fcPie" target="_blank" rel="noopener"></a></figcaption></figure>
+<figure id="fotoCiudad" class="fotoCiudad oculto"><a id="fcMapa" target="_blank" rel="noopener"><img id="fcImg" alt=""><canvas id="fcLienzo" role="img"></canvas></a><figcaption><a id="fcPie" target="_blank" rel="noopener"></a></figcaption></figure>
  </aside>
  <main class="principal">
   <div id="detalle" class="detalle oculto"><button id="dCerrar" aria-label="close"><svg viewBox="0 0 14 14"><path d="M1.5 1.5l11 11M12.5 1.5l-11 11"/></svg></button><button id="dCopiar" aria-label="copy link"></button><div id="dCuerpo" class="cuerpo"></div><button id="dFuentes" class="oculto" aria-label="sources"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14V6M12 6c0-3 5-3.5 6 1v2M12 6c0-3-5-3.5-6 1v2"/><path d="M3.5 14h17c0 3.8-3.5 5.5-8.5 5.5S3.5 17.8 3.5 14zM8.5 22h7"/></svg></button></div>
@@ -554,6 +567,7 @@
 </div>
 <div id="tipTira" class="tipTira oculto"></div>
 <dialog id="agenda"><button id="aCerrar" aria-label="close"><svg viewBox="0 0 14 14"><path d="M1.5 1.5l11 11M12.5 1.5l-11 11"/></svg></button><div id="aCabeza"><div id="aCursor"><button id="aAtras" aria-label="previous week">‹</button><button id="aSigue" aria-label="next week">›</button></div><h2 id="aTitulo"></h2><span id="aSemana"></span></div><div id="aScroll"><table><thead><tr id="aDias"></tr></thead><tbody id="aFilas"></tbody><tfoot><tr id="aPie"></tr></tfoot></table></div></dialog>
+<dialog id="video"><button id="vCerrar" aria-label="close"><svg viewBox="0 0 14 14"><path d="M1.5 1.5l11 11M12.5 1.5l-11 11"/></svg></button><iframe id="vMarco" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin"></iframe><a id="vEnYt" target="_blank" rel="noopener">YouTube ↗</a></dialog>
 <dialog id="ficha"><button id="fCerrar" aria-label="close"><svg viewBox="0 0 14 14"><path d="M1.5 1.5l11 11M12.5 1.5l-11 11"/></svg></button><div id="fCuerpo" class="cuerpo"></div></dialog>
 
 <script>
@@ -819,21 +833,24 @@ const enRol  = (p, r) => r == TODOS ? true   // all: todo, también las listas
 function opciones(sel, valores, etiqueta, cuenta, todos = 'all'){
   const actual = sel.value || sel.dataset.inicial || TODOS;
   sel.innerHTML = '';
-  const opcion = v => {
+  const opcion = (v, dentro = sel) => {
     const o = document.createElement('option');
     o.value = v;
+    // sin blancos delante: la sangría de los de un grupo, la del navegador (2026-11-11, el usuario: "vuelve al optgroup, sin blancos"; un rato, uno o dos
+    // nbsp en el texto y, sin optgroup, opciones de título: el desplegable nativo de Brave sangra las de un optgroup a su manera y no se puede cambiar)
     o.textContent = (v == TODOS ? todos : etiqueta(v)) + (cuenta ? ' ' + cuenta(v) : '');
-    sel.appendChild(o);
+    dentro.appendChild(o);
   };
   opcion(TODOS);
   for (const v of valores){
     if (typeof v != 'object'){ opcion(v); continue; }
-    const g = document.createElement('option');   // el título del grupo: una opción que no se elige (un optgroup lo sangra el navegador)
-    g.textContent = v.grupo;
-    g.className = 'grupo';
-    g.disabled = true;
+    // el grupo: un optgroup, su título en negrita y sus opciones sangradas por el navegador (2026-11-11, el usuario: "en el select dentro de cada grupo
+    // todos tienen sangria", "falta negrita en los titulos de grupos del select"; antes, una opción más, que el desplegable nativo pintaba sin
+    // negrita y, desactivada, en gris)
+    const g = document.createElement('optgroup');
+    g.label = v.grupo;
     sel.appendChild(g);
-    v.valores.forEach(opcion);
+    v.valores.forEach(x => opcion(x, g));
   }
   sel.value = actual;
   if (sel.selectedIndex < 0) sel.value = TODOS;
@@ -858,6 +875,26 @@ let organiza = null;    // (la primera vez que se pide, ya con los datos: en la 
 const organizaDe = nombre => (organiza = organiza || organizadores()).get(nombre) || [];
 
 const esFb = u => /^https?:\/\/([a-z]+\.)?(facebook\.com|fb\.com|fb\.me)\//i.test(u);
+// el vídeo de YouTube en un popup (#video), no en otra pestaña: cualquier enlace a un vídeo (el YT de la ficha y el de la parrilla, la
+// foto que lo abre); con Ctrl, Mayúsculas o el botón central, a YouTube como antes. Al cerrar, el iframe vacío (se para)
+const idYoutube = u => (String(u).match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([\w-]{11})/) || [])[1] || '';
+function abreVideo(u){
+  const id = idYoutube(u);
+  // (abierta como file:// no hay referer y YouTube no deja insertarlo: error 153; 2026-11-11, el usuario. Entonces, en otra pestaña, como antes;
+  // en local, por http: el servidor de review, http://127.0.0.1:8770/app.tg/index.htm)
+  if (!id || location.protocol == 'file:') return window.open(u, '_blank', 'noopener');
+  $('vMarco').src = 'https://www.youtube-nocookie.com/embed/' + id + '?autoplay=1&rel=0';
+  $('vEnYt').href = 'https://www.youtube.com/watch?v=' + id;
+  $('video').showModal();
+}
+document.addEventListener('click', e => {
+  const a = e.target.closest && e.target.closest('a[href]');
+  if (!a || a.id == 'vEnYt' || e.ctrlKey || e.metaKey || e.shiftKey || e.button || !idYoutube(a.href)) return;
+  e.preventDefault();
+  e.stopPropagation();
+  abreVideo(a.href);
+}, true);
+
 function enlace(href, texto, icono){
   const a = document.createElement('a');
   a.href = href; a.textContent = texto; a.target = '_blank'; a.rel = 'noopener';
@@ -869,7 +906,7 @@ function enlace(href, texto, icono){
   return a;
 }
 
-// los logos de la ficha, siempre en este orden y solo los que tiene: local (mapa), fb, www, yt;
+// los logos de la ficha, siempre en este orden y solo los que tiene: fb, www, yt y local (mapa);
 // la imagen de la ficha abre la url del primero
 function logosFicha(d, img, {mapa = '', fb = '', www = [], video = '', fotoMapa = true, conAgendas = false, textoFb = 'facebook'}){   // fotoMapa: la imagen abre el mapa; textoFb: el texto del enlace de Facebook
   // el texto del enlace de una web: www (2026-11-10, el usuario: "para todas las fichas, cambia los textos de los url de www por www"; antes, su dominio); una foto: img.
@@ -879,7 +916,7 @@ function logosFicha(d, img, {mapa = '', fb = '', www = [], video = '', fotoMapa 
         aFb = fb ? [enlace(fb, textoFb, 'img/perfil.svg')] : [],
         aWww = www.filter(u => conAgendas || !esAgendaWeb(u)).map(web),   // no la agenda de donde salen los datos (aux.js), salvo en links: es la página fuente
         aVideo = video ? [enlace(video, 'YT', 'img/yt.svg')] : [];   // YT (2026-11-11, el usuario: "cambia video por YT")
-  const logos = [...aMapa, ...aFb, ...aVideo, ...aWww];   // el mapa y luego FB, YT, WWW (2026-11-08, el usuario)
+  const logos = [...aFb, ...aWww, ...aVideo, ...aMapa];   // FB, WWW, YT y MAP (2026-11-11, el usuario: "el orden para presentar los iconos en la ficha es FB,WWW,YT,MAP"; antes, el mapa y luego FB, YT, WWW)
   if (logos.length){
     const par = document.createElement('p');
     par.className = 'enlaces';
@@ -890,7 +927,7 @@ function logosFicha(d, img, {mapa = '', fb = '', www = [], video = '', fotoMapa 
     img.classList.add('conEnlace');
     const otro = [...aFb, ...aWww, ...aVideo][0];   // la foto abre lo de antes: el mapa (fotoMapa) o su Facebook, su web o el vídeo, por este orden
     const abre = (mapa && (fotoMapa || !otro) ? aMapa[0] : otro).href;
-    img.onclick = () => window.open(abre, '_blank', 'noopener');
+    img.onclick = () => idYoutube(abre) ? abreVideo(abre) : window.open(abre, '_blank', 'noopener');
   }
 }
 
@@ -911,15 +948,16 @@ function logoEspecial(){
   i.alt = 'special milonga';
   return i;
 }
-function iconoFila(p){   // un solo icono: su Facebook (urlfb) si lo tiene; si no, su web
+function iconoFila(p){   // un solo icono: su Facebook (urlfb) si lo tiene; si no, su web; en una pareja, si no, su vídeo (YT, en el popup; 2026-11-11, el usuario: "para parejas podemos tener su fb,www,yt si existe alguno en ese orden pon uno al inicio de la linea")
   const s = document.createElement('span');
   s.className = 'fIconos';
   const notas = (p.notas || []).join(' ').match(/https?:\/\/[^\s,]+/g) || [];
   const fb = p.fb && esFb(p.fb) ? p.fb : '';
   const web = fb ? '' : [p.fb, ...(p.www || []), ...notas].find(u => u && esEnlace(u) && !esFb(u) && !/youtu/.test(u) && (p.lista || !esAgendaWeb(u)));
-  if (fb || web){
-    const a = enlace(fb || web, '', fb ? 'img/perfil.svg' : 'img/web.svg');
-    a.setAttribute('aria-label', fb ? 'facebook' : 'web');
+  const yt = fb || web || p.tipoP != 'couple' ? '' : p.video || '';
+  if (fb || web || yt){
+    const a = enlace(fb || web || yt, '', fb ? 'img/perfil.svg' : web ? 'img/web.svg' : 'img/yt.svg');
+    a.setAttribute('aria-label', fb ? 'facebook' : web ? 'web' : 'YouTube');
     a.onclick = e => e.stopPropagation();
     s.appendChild(a);
   }
@@ -1820,7 +1858,7 @@ function eligePais(pais){
 // Solo si cambian sus textos (el idioma)
 let textosTipo = '';
 function anchoTipo(){
-  const sel = $('selRol'), opciones = [...sel.options].filter(o => !o.disabled), clave = opciones.map(o => o.textContent).join('|');
+  const sel = $('selRol'), opciones = [...sel.options].filter(o => !o.classList.contains('grupo')), clave = opciones.map(o => o.textContent).join('|');
   if (clave == textosTipo) return;
   textosTipo = clave;
   const antes = sel.value;
@@ -1839,6 +1877,108 @@ function eligeArea(area){
 }
 const areaActual = () => $('selArea').value || $('selArea').dataset.inicial || TODOS;
 const nombreArea = v => tr(v == '-' ? 'no area' : v);
+// acuarela(src, canvas, listo): pinta en el canvas la foto de la url como una acuarela y llama a listo() (2026-11-11). La lee el navegador, como un <img> (con CORS: Wikimedia y
+// Flickr lo dan; sin él, no la pinta y se queda la foto): no se baja nada. El color se corre con un ruido lento; dos Kuwahara la hacen manchas; el pigmento se acumula en
+// sus bordes, se lava desigual y granula; las luces quedan en papel; los contornos de la foto, a lápiz suave; textura de papel y borde de la hoja sin pintar
+function acuarela(src, lienzo, listo, ancho = 640, alto = 320){
+  const im = new Image();
+  im.crossOrigin = 'anonymous';
+  im.onload = () => {
+    if (lienzo.dataset.src != src) return;   // ya se pidió otra
+    const W = ancho, H = alto, N = W * H;
+    lienzo.width = W; lienzo.height = H;
+    const ctx = lienzo.getContext('2d', { willReadFrequently: true });
+    const e = Math.max(W / im.naturalWidth, H / im.naturalHeight);   // cover, centrada
+    const w = im.naturalWidth * e, h = im.naturalHeight * e;
+    ctx.drawImage(im, (W - w) / 2, (H - h) / 2, w, h);
+    let px;
+    try { px = ctx.getImageData(0, 0, W, H).data; } catch (err) { lienzo.dataset.error = 1; return; }   // sin CORS: se queda la foto tal cual
+    const R = new Float32Array(N), G = new Float32Array(N), B = new Float32Array(N);
+    for (let i = 0; i < N; i++){ R[i] = px[4*i] / 255; G[i] = px[4*i+1] / 255; B[i] = px[4*i+2] / 255; }
+
+    // ruido: value noise suave y su suma en octavas (fbm), con semilla fija
+    const hash = (x, y) => { let n = x * 374761393 + y * 668265263; n = (n ^ (n >> 13)) * 1274126177; return ((n ^ (n >> 16)) & 0xffff) / 0xffff; };
+    const vnoise = (x, y) => { const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi, u = xf*xf*(3-2*xf), v = yf*yf*(3-2*yf);
+      const a = hash(xi, yi), b = hash(xi+1, yi), c = hash(xi, yi+1), d = hash(xi+1, yi+1); return a + (b-a)*u + (c-a)*v + (a-b-c+d)*u*v; };
+    const fbm = (x, y, oct) => { let s = 0, amp = .5, f = 1; for (let o = 0; o < oct; o++){ s += amp * vnoise(x*f, y*f); f *= 2; amp /= 2; } return s / (1 - Math.pow(.5, oct)); };
+    const k = W / 640;   // las escalas, en píxeles de un lienzo de 640
+
+    // 1. el color se corre: cada píxel toma el de un punto cercano, movido por un ruido lento
+    const muestra = (A, x, y) => { x = Math.min(W-1, Math.max(0, x)); y = Math.min(H-1, Math.max(0, y)); return A[(y|0) * W + (x|0)]; };
+    const r1 = new Float32Array(N), g1 = new Float32Array(N), b1 = new Float32Array(N);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++){
+      const i = y*W + x, dx = (fbm(x/(40*k), y/(40*k), 3) - .5) * 14*k, dy = (fbm(x/(40*k)+50, y/(40*k)+50, 3) - .5) * 14*k;
+      r1[i] = muestra(R, x+dx, y+dy); g1[i] = muestra(G, x+dx, y+dy); b1[i] = muestra(B, x+dx, y+dy);
+    }
+
+    // tablas de sumas (media de un rectángulo en O(1))
+    const tabla = A => { const T = new Float64Array((W+1)*(H+1)); for (let y = 0; y < H; y++){ let s = 0; for (let x = 0; x < W; x++){ s += A[y*W+x]; T[(y+1)*(W+1)+x+1] = T[y*(W+1)+x+1] + s; } } return T; };
+    const caja = (T, x0, y0, x1, y1) => { x0 = Math.max(0, x0); y0 = Math.max(0, y0); x1 = Math.min(W-1, x1); y1 = Math.min(H-1, y1);
+      return (T[(y1+1)*(W+1)+x1+1] - T[y0*(W+1)+x1+1] - T[(y1+1)*(W+1)+x0] + T[y0*(W+1)+x0]) / ((x1-x0+1)*(y1-y0+1)); };
+
+    // 2. manchas de pintura: Kuwahara (de los cuatro cuadrados, el color medio del más uniforme)
+    const kuwahara = (r0, g0, b0, rad) => {
+      const L = new Float32Array(N), L2 = new Float32Array(N);
+      for (let i = 0; i < N; i++){ L[i] = .3*r0[i] + .59*g0[i] + .11*b0[i]; L2[i] = L[i]*L[i]; }
+      const TR = tabla(r0), TG = tabla(g0), TB = tabla(b0), TL = tabla(L), TL2 = tabla(L2);
+      const ro = new Float32Array(N), go = new Float32Array(N), bo = new Float32Array(N);
+      const cuad = [[-rad,-rad,0,0],[0,-rad,rad,0],[-rad,0,0,rad],[0,0,rad,rad]];
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++){
+        let mejor = 1e9, q = null;
+        for (const c of cuad){ const m = caja(TL, x+c[0], y+c[1], x+c[2], y+c[3]), v = caja(TL2, x+c[0], y+c[1], x+c[2], y+c[3]) - m*m; if (v < mejor){ mejor = v; q = c; } }
+        const i = y*W + x;
+        ro[i] = caja(TR, x+q[0], y+q[1], x+q[2], y+q[3]); go[i] = caja(TG, x+q[0], y+q[1], x+q[2], y+q[3]); bo[i] = caja(TB, x+q[0], y+q[1], x+q[2], y+q[3]);
+      }
+      return [ro, go, bo];
+    };
+    let [r2, g2, b2] = kuwahara(r1, g1, b1, Math.round(5*k));
+    [r2, g2, b2] = kuwahara(r2, g2, b2, Math.round(3*k));
+
+    // 3. bordes húmedos: el pigmento se acumula en el borde de cada mancha (la mancha menos su media alrededor)
+    const TR = tabla(r2), TG = tabla(g2), TB = tabla(b2), rb = Math.round(4*k);
+    // 4. el lápiz: los contornos de la foto original (Sobel de la luminosidad)
+    const Lo = new Float32Array(N); for (let i = 0; i < N; i++) Lo[i] = .3*R[i] + .59*G[i] + .11*B[i];
+    const out = ctx.createImageData(W, H), o = out.data;
+    const papel = [.97, .955, .925];
+    const sm = (a, b, t) => { t = Math.min(1, Math.max(0, (t-a)/(b-a))); return t*t*(3-2*t); };
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++){
+      const i = y*W + x;
+      let c = [r2[i], g2[i], b2[i]];
+      const m = [caja(TR, x-rb, y-rb, x+rb, y+rb), caja(TG, x-rb, y-rb, x+rb, y+rb), caja(TB, x-rb, y-rb, x+rb, y+rb)];
+      const lc = .3*c[0] + .59*c[1] + .11*c[2], lm = .3*m[0] + .59*m[1] + .11*m[2];
+      const borde = Math.max(0, lm - lc);   // el lado oscuro de cada borde, más oscuro
+      // densidad del pigmento (0, papel; 1, color pleno), lavada y desigual
+      const nubes = fbm(x/(90*k)+7, y/(90*k)+3, 4), grano = fbm(x/(2.2*k), y/(2.2*k), 2);
+      let lum = Math.max(lc, .001);
+      let dens = .28 + (1 - lum) * .7;
+      dens *= .65 + .7 * nubes;                      // zonas más y menos cargadas
+      dens *= .8 + .4 * grano;                       // granulado del pigmento
+      dens += borde * 2.2;                           // borde húmedo
+      dens *= 1 - sm(.8, .95, lum);                  // las luces, papel en blanco
+      dens = Math.min(1, Math.max(0, dens));
+      // el color de la mancha, más vivo; sobre el papel, por capas (multiplica)
+      const sat = 1.6; c = c.map(v => Math.min(1, Math.max(0, lc + (v - lc) * sat)));
+      let rgb = [0, 1, 2].map(j => papel[j] * (1 - dens + dens * c[j] * .92));
+      // lápiz, muy suave
+      if (x > 0 && y > 0 && x < W-1 && y < H-1){
+        const p = (dx, dy) => Lo[(y+dy)*W + x+dx];
+        const gx = p(1,-1) + 2*p(1,0) + p(1,1) - p(-1,-1) - 2*p(-1,0) - p(-1,1), gy = p(-1,1) + 2*p(0,1) + p(1,1) - p(-1,-1) - 2*p(0,-1) - p(1,-1);
+        const lap = sm(.25, .9, Math.hypot(gx, gy)) * .35 * (.6 + .8 * fbm(x/(6*k)+20, y/(6*k), 2));
+        rgb = rgb.map(v => v * (1 - lap));
+      }
+      // textura del papel y borde irregular de la hoja, sin pintar
+      const tex = .96 + .04 * fbm(x/(1.3*k)+90, y/(1.3*k)+90, 2);
+      const dist = Math.min(x, y, W-1-x, H-1-y) / (W * .5);
+      const hoja = sm(.015, .06, dist + (fbm(x/(25*k)+40, y/(25*k)+40, 3) - .5) * .06);
+      for (let j = 0; j < 3; j++){ const v = (papel[j] + (rgb[j] - papel[j]) * hoja) * tex; o[4*i+j] = Math.round(Math.min(1, Math.max(0, v)) * 255); }
+      o[4*i+3] = 255;
+    }
+    ctx.putImageData(out, 0, 0);
+    listo();
+  };
+  lienzo.dataset.src = src;
+  im.src = src;
+}
 // la foto de la ciudad elegida (o la del lugar elegido): CIUDADES_FOTO de paises.js, [url, autor, licencia, su página en Commons]; sin ciudad o sin foto, oculta.
 // Al pulsarla, Google Maps con la ciudad
 function pintaFotoCiudad(){
@@ -1848,8 +1988,16 @@ function pintaFotoCiudad(){
   $('fotoCiudad').classList.toggle('oculto', !f);
   if (!f) return;
   const [pais, ciudad] = c.split('|');
-  if ($('fcImg').getAttribute('src') != f[0]) $('fcImg').src = f[0];
-  $('fcImg').alt = ciudad;
+  if ($('fcImg').getAttribute('src') != f[0]){
+    const lz = $('fcLienzo'), im = $('fcImg');   // la acuarela de antes, fuera sin fundido; la foto nueva en sepia, cuando esté: la acuarela se funde siempre sobre su misma foto
+    lz.style.transition = 'none'; lz.classList.remove('pintada'); lz.offsetWidth; lz.style.transition = '';   // (2026-11-11, el usuario: "la misma foto para el sepia que para en canvas")
+    im.style.visibility = 'hidden'; im.onload = im.onerror = () => { im.style.visibility = ''; };
+    im.src = f[0];
+    const r = $('fcImg').getBoundingClientRect(), dpr = window.devicePixelRatio || 1;   // el canvas, con la proporción con que se ve la foto (en pantalla estrecha no es 2:1)
+    const an = r.width ? Math.min(900, Math.max(320, Math.round(r.width * dpr))) : 640, al = r.width && r.height ? Math.round(an * r.height / r.width) : an / 2;
+    acuarela(f[0], $('fcLienzo'), () => $('fcLienzo').classList.add('pintada'), an, al);
+  }
+  $('fcImg').alt = ciudad; $('fcLienzo').setAttribute('aria-label', ciudad);
   $('fcMapa').href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(ciudad + ', ' + pais);
   $('fcMapa').setAttribute('aria-label', ciudad + ': map');
   $('fcPie').textContent = '© ' + [f[1], f[2]].filter(Boolean).join(' · ');
@@ -1963,12 +2111,15 @@ function rutaListado(a, r, fs, dias, conRoles, n){   // la de la cabecera, tras 
   const d = $('ruta');
   d.replaceChildren();
   const sep = () => { const s = document.createElement('span'); s.className = 'sep'; s.textContent = ' › '; return s; };   // en su span: se centra como los tramos (CSS)
+  // lo elegido (el último lugar: World, el área, el país o la ciudad) no se pulsa, ya está elegido, aunque detrás vayan la fecha, los días o los roles (2026-11-11,
+  // el usuario: "en las migas si has seleccionado algo ya no es clicable en las miga, porque ya esta seleccionado"; antes, solo el último tramo sin clic)
+  const elegido = partes.findLastIndex(([, accion]) => accion);
   partes.forEach(([texto, accion], i) => {
     if (i) d.append(sep());
     const s = document.createElement('span');
     s.className = 'tramo';
     s.textContent = texto;
-    if (accion && i < partes.length - 1){   // el último tramo es donde ya estamos
+    if (accion && i < elegido){
       s.classList.add('paso');
       s.onclick = () => { if (accion() !== false) pinta(); };
     }
@@ -2126,6 +2277,10 @@ function pinta(){
   opciones($('selRol'), [{grupo: tr('community'), valores: porTexto([PEO, ...TIPOS_P])},
                          {grupo: tr('events'), valores: porTexto([LIS, ACA, FES, SEM, MIL, PRA])}],
            v => tr(nombreTipo(v)), null, tr('all'));   // sin contador: el número va al final de la ruta. El orden, el del inglés
+  // dentro de cada grupo, todos sangrados con dos blancos no separables (el desplegable nativo no hace caso del padding; 2026-11-11, el usuario:
+  // "identa dos blancos en select de tipo", "en el select dentro de cada grupo todos tienen sangria"); all no tiene grupo. Academy y group, además,
+  // en negrita, también elegidas ("academy y group van en negrita en el select")
+  for (const v of [ACA, 'group']) $('selRol').querySelector(`option[value="${v}"]`)?.classList.add('negrita');
   anchoTipo();
   estadoPintado = filas.length ? estado() : null;   // con los selectores ya como se ven
   $('fechas').classList.remove('oculto');
@@ -2183,6 +2338,10 @@ function pinta(){
     span('fNomTexto', p.nombre, span('fNomCaja', '', nombre));
     const mini = cara(p);   // la miniatura al final, de la altura de la línea
     mini.classList.add('fMini');
+    if (mini.classList.contains('logo')){   // el logo, con su proporción (de 1:1 a 16:9): sin el blanco a sus lados (2026-11-11, el usuario: "en el listado reduce el espacio a los lados del logo")
+      const ajusta = () => { if (mini.naturalWidth && mini.naturalHeight) mini.style.aspectRatio = Math.min(16 / 9, Math.max(1, mini.naturalWidth / mini.naturalHeight)); };
+      if (mini.complete) ajusta(); else mini.addEventListener('load', ajusta, { once: true });
+    }
     c.appendChild(mini);
     c.onclick = () => abreFicha(p, c);
     div.appendChild(c);
@@ -2522,6 +2681,9 @@ function conecta(){
     if (f && e.source == f.contentWindow && e.data.kkAlto > 0) f.style.height = e.data.kkAlto + 'px';
   });
   $('fCerrar').onclick = () => $('ficha').close();
+  $('vCerrar').onclick = () => $('video').close();
+  $('video').addEventListener('close', () => { $('vMarco').src = 'about:blank'; });   // (se para)
+  $('video').addEventListener('click', e => { if (e.target == $('video')) $('video').close(); });   // fuera del vídeo (el fondo), se cierra
   const abreAgenda = porHoras => { horasAgenda = porHoras; semanaAgenda = 0; pintaAgenda(); $('agenda').showModal(); };
   $('bAgenda').onclick = () => abreAgenda(false);
   $('bAgenda2').onclick = () => abreAgenda(true);
