@@ -133,7 +133,7 @@
   .cuerpo > img, .cuerpo > .sinfoto { flex: none; align-self: flex-start; width: min(50%, var(--maxFoto)); height: auto;
                                         aspect-ratio: 1; object-fit: cover; border-radius: 6px; }   /* cuadrada: el alto, el del ancho (antes el del texto) */
   .cuerpo > img { background: var(--negro); }
-  #ficha .cuerpo > img, #ficha .cuerpo > .sinfoto { width: min(50%, calc(var(--maxFoto) * 1.25)); }   /* en el popup, un 25 % más grande (2026-11-11, el usuario: "popup ficha aumenta imagen en un 25%"): 137,5 px */
+  #ficha .cuerpo > img, #ficha .cuerpo > .sinfoto { width: min(50%, calc(var(--maxFoto) * 1.875)); }   /* en el popup, más grande (2026-11-11, el usuario: "popup ficha aumenta imagen en un 25%", 137,5 px; luego "aumenta 50% la imagen del popup": 206 px); como mucho, la mitad del popup */
   .texto { flex: 1; min-width: 0; }
   dialog .texto { padding-right: 28px; }
   dialog .texto p.enlaces { margin-top: 0; }   /* el popup de KK: sin líneas en blanco */
@@ -142,13 +142,6 @@
   .cuerpo p { margin: 0; font-size: .9em; overflow-wrap: anywhere; }   /* líneas de texto seguidas; los enlaces, aparte (p.enlaces) */
   .cuerpo p.enlaces + p.organiza, .cuerpo p.panelInfo + p.organiza { margin-top: 6px; }   /* los eventos que organiza: tras su lugar y sus enlaces, uno por línea */
   .cuerpo p.organiza .icono { vertical-align: -3px; margin-left: 2px; }   /* sus logos, tras su nombre */
-  /* abre el panel de rol, notas y contacto, a 4 px del texto (la línea separa 14; el usuario). Un triángulo relleno amarillo, del tamaño de la flecha ▼ del selector de
-     tipo y de los de back y more, que gira al abrirse; al pasar el ratón, como los demás: fondo azul claro y negro (2026-11-11, el usuario: "el triangulo de la ficha
-     como los demas tb el over"; antes, las letras ▸ y ▾ en blanco, 3 px más grandes y 1 px más arriba) */
-  .cuerpo .triangulo { position: relative; top: -1px; margin-right: -10px; border: 0; background: none; padding: 0; color: var(--acento); line-height: 1; cursor: pointer; border-radius: 3px; }
-  .cuerpo .triangulo svg { display: inline-block; vertical-align: middle; width: 11px; height: 11px; transition: transform .15s; }
-  .cuerpo .triangulo[aria-expanded="true"] svg { transform: rotate(90deg); }
-  .cuerpo .triangulo:hover { background: var(--azulClaro); color: var(--negro); box-shadow: 0 0 0 2px var(--azulClaro); }
   .cuerpo .panelInfo { margin-top: 4px; }   /* el de las personas, un párrafo; el de los eventos, sus líneas (venue, org) */
 
   .listado { display: flex; flex-direction: column; gap: 8px; box-sizing: border-box; font-size: 18px; }   /* 2px más que el body (16px); fechas, ciudades y salas, en proporción (.85em) */
@@ -176,7 +169,6 @@
   .tira button.cero, .tira button.cero:hover { background: none; color: var(--grisClaro); cursor: default; }   /* a cero: sin clic (el contador, en el hover) */
 
   .listado.filas { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; gap: 0; border-top: 1px solid var(--borde); }
-  .listado.filas.conFecha { grid-template-columns: auto auto auto minmax(0, 1fr) auto; }   /* icono, fecha, ciudad (3 letras), título y foto */
   .listado .fila { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; column-gap: 16px; align-items: center;
                    padding: 5.5px 10px; border-bottom: 1px solid var(--borde); border-left: 2px solid transparent; cursor: pointer; }   /* 2026-10-26: un 10% más baja (antes 7px) */
   .listado .fila:hover { background: var(--grisOscuro); }
@@ -228,7 +220,7 @@
      misma línea base, el número (más grande) quedaba alto */
   #total { display: flex; align-items: center; gap: .5em; height: 100%; }
   #total .tTipo { color: var(--blanco); }   /* lo que cuenta, también en blanco (2026-11-11, el usuario: "caja result todo en blanco"; antes, gris) */
-  #total > * { line-height: 1; position: relative; top: 1px; }   /* medido: sin bajarlos, 2 px altos con Courier; Inconsolata centra sus mayúsculas 0,04 em más abajo: 1 px */
+  #total > * { line-height: 1; }   /* con Courier, bajados 2 px a mano; con Inconsolata, sus cifras ya caen en el centro (medido: con 1 px, 1,5 px bajas a 125 %; 2026-11-11, el usuario: "el contador no esta centrado verticalmente") */
   .rutaDer { position: absolute; top: 0; right: 8px; height: 100%; display: flex; align-items: center; }   /* el de copiar */
   #bListado, #bIdioma, #bMapa, #bAgendas button { height: var(--altoTira); padding: 0 8px; box-sizing: border-box; text-align: center; }
   /* list / grid y, tras él, el idioma: cuadrados, del alto de la barra, solo con su icono (☰ o ▦) o la bandera (2026-11-11, el usuario: "crea un boton cuadrado
@@ -265,7 +257,7 @@
   .fila .fNomTexto { display: block; width: calc(100% / var(--estrecha)); transform: scaleX(var(--estrecha)); transform-origin: left center; }
   /* la fecha, 2 px más grande y más estrecha (2026-11-10, el usuario: "sube 2px la fuente de la fecha y hazla mas estrecha"): no hay un Courier estrecho en todos
      los dispositivos, así que cada trozo de letras o números (.fLetras) se pinta al 75 % de su ancho (--estrecha) en una caja de ese ancho: --n letras de 1ch */
-  .fila .fFecha { font-size: calc(.85em + 6px); line-height: 1; --estrecha: 1; font-stretch: var(--anchoEstrecho); }   /* (el interlineado: la fila, del mismo alto que antes); 4 px más (2026-11-11, el usuario: "aumentala y mas blanca", "fecha 2px mas grande") */
+  .fila .fFecha { font-size: calc(.85em + 4px); line-height: 1; --estrecha: 1; font-stretch: var(--anchoEstrecho); }   /* MMM.DD.CCC, 2 px menos que el nombre (2026-11-11, el usuario: "reduce 2px MM.DD.CCC") */   /* (el interlineado: la fila, del mismo alto que antes); 4 px más (2026-11-11, el usuario: "aumentala y mas blanca", "fecha 2px mas grande") */
   /* la fecha y la ciudad, con la letra del nombre: Courier, estrechada al 75 % y en blanco (2026-11-11, el usuario: "las fechas parecen otro tipo ?", "usa la misma
      fuente y estilo para todas"; antes, en gris, y el punto y el guion con la letra del sistema); sin negrita: el nombre, sí (es el título) */
   .fila .fFecha { color: var(--blanco); }
@@ -370,8 +362,10 @@
              box-shadow: 0 -16px 0 var(--fondo), 0 16px 0 var(--fondo); }
   .detalle.larga { position: relative; top: auto; }   /* sin scroll propio: la que no cabe en la ventana no se queda fija, se lee bajando la página */
   .detalle .texto { margin-right: 30px; }
-  .detalle .texto > * { margin: 0; line-height: 22px; }   /* título, fecha, org, enlaces...: todas las líneas con el mismo interlineado */
-  .detalle .texto p.enlaces { margin-top: 0; row-gap: 0; }
+  /* título, fecha, org, enlaces...: todas las líneas con el mismo interlineado; también en el popup (2026-11-11, el usuario: "en el popup el interlineado no es
+     igual"; antes, con los márgenes de cada línea: 8 px bajo el título, 4 sobre el panel) */
+  .detalle .texto > *, #ficha .texto > * { margin: 0; line-height: 22px; }
+  .detalle .texto p.enlaces, #ficha .texto p.enlaces { margin-top: 0; row-gap: 0; }
   #dCerrar, #fCerrar, #aCerrar { position: absolute; top: 6px; right: 8px; box-sizing: border-box; width: 26px; height: 26px; padding: 0; border: 2px solid currentColor; border-radius: 50%;
              display: flex; align-items: center; justify-content: center; background: none; color: var(--acento); cursor: pointer; }   /* en amarillo, como los demás logos (2026-11-11, el usuario: "logo cerrar es amarillo"; antes, blanco) */
   #dCerrar svg, #fCerrar svg, #aCerrar svg { display: block; width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }   /* la X dibujada: la × de la letra se descentraba según la fuente */
@@ -467,7 +461,8 @@
      (2026-11-10, el usuario: "la fecha puede hacerse q ocupe menos ancho ?") */
   @media (min-width: 721px) and (max-width: 920px) {
     .listado .fila { column-gap: 8px; padding-left: 6px; padding-right: 6px; }
-    .fila .fFecha, .fila .fNombre, .listado .filaMax { font-size: calc(.7em + 6px); }   /* 4 px más, como la ancha (2026-11-11, el usuario); el título, como la fecha */
+    .fila .fNombre, .listado .filaMax { font-size: calc(.7em + 6px); }
+    .fila .fFecha { font-size: calc(.7em + 4px); }   /* MMM.DD.CCC, 2 px menos que el nombre, como en la ancha */   /* 4 px más, como la ancha (2026-11-11, el usuario); el título, como la fecha */
     .detalle h2, .detalle.filas h2, #ficha h2 { font-size: calc(.7em + 6px); }   /* el de la ficha, como el del listado */
     .fila .fTexto { gap: 10px; }
   }
@@ -911,6 +906,7 @@ function proximaEn(p, dias){   // próxima fecha (desde hoy) de la milonga p en 
 }
 const horaDe = p => (leeReg(p.fechaOrig) || {hora: ''}).hora.slice(0, 4) || '9999';
 function dos(n){ return String(n).padStart(2, '0'); }   // el día con dos cifras (05): las fechas del listado, alineadas
+const mesDia = d => MESES[d.getMonth()] + '.' + dos(d.getDate());   // NOV.12: la fecha del listado (MMM.DD.CCC)
 function textoDia(d){   // THU.OCT.29; hoy, TODAY.THU (mañana, con su fecha)
   const hoy = new Date();
   hoy.setHours(0, 0, 0, 0);
@@ -1037,17 +1033,10 @@ function titulo(d, p){
 
 // el triángulo que abre y cierra un panel de la ficha, al principio de una línea (la de su lugar o, sin ella, la de su nombre); el panel, cerrado al pintar
 // (2026-11-08, el usuario; el de las personas: rol, notas y contacto; el de los eventos: venue y org)
-function trianguloPanel(panel, linea){
+// el panel de rol, notas y contacto (en los eventos, venue y org): oculto en la ficha del listado, abierto en el popup (fichaEncima; se abre con la foto). Sin
+// triángulo (2026-11-11, el usuario: "quita el triangulo de la ficha"; antes, un triángulo al final de su línea lo abría y cerraba)
+function panelOculto(panel){
   panel.classList.add('panelInfo', 'oculto');
-  const t = document.createElement('button');
-  t.type = 'button'; t.className = 'triangulo'; t.setAttribute('aria-label', 'info'); t.setAttribute('aria-expanded', 'false');
-  t.innerHTML = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M1 0l10 6-10 6z" fill="currentColor"/></svg>';   // ▶; abierto, girado a ▼ (CSS)
-  t.onclick = ev => {
-    ev.stopPropagation();
-    const abierto = !panel.classList.toggle('oculto');
-    t.setAttribute('aria-expanded', String(abierto));
-  };
-  linea.prepend(t);
 }
 
 function rellenaEvento(c, p){
@@ -1057,9 +1046,8 @@ function rellenaEvento(c, p){
   d.className = 'texto';
   c.appendChild(d);
   titulo(d, p);
-  const lineaLugar = d.lastElementChild.tagName == 'P' ? d.lastElementChild : null;   // la de su lugar, si titulo la pone (tras el h2 del nombre)
-  // venue y org, en un panel que abre y cierra el triángulo de la línea de su ciudad, tras ella y antes de los enlaces; cerrado al pintar, como el de las personas
-  // (2026-11-10, el usuario: "events oculta con triangulo despues de ciudad y antes lo los links")
+  // venue y org, en un panel tras la línea de su ciudad y antes de los enlaces (2026-11-10, el usuario: "events oculta con triangulo despues de ciudad y antes lo
+  // los links"): oculto en la ficha del listado y abierto en el popup (panelOculto)
   const panel = document.createElement('div');
   const fb = p.fb && esFb(p.fb) ? p.fb : '';
   const enlaces = () => logosFicha(d, img, {mapa: p.mapa, fb, www: [...(p.fb && !fb ? [p.fb] : []), ...p.www.filter(u => u != p.fb)], video: p.video, fotoMapa: regular(p.roles[0]), textoFb: 'FB'});   // el mapa, el primero de los enlaces; Facebook, FB (2026-11-10, el usuario: "en las fichas de events usar FB en vez de facebook")
@@ -1079,7 +1067,7 @@ function rellenaEvento(c, p){
     panel.appendChild(par);
   }
   if (panel.childNodes.length){
-    trianguloPanel(panel, lineaLugar || d.lastElementChild);
+    panelOculto(panel);
     d.appendChild(panel);
   }
   enlaces();   // los enlaces, al final de la ficha: título y tipo, lugar, venue, org y estos; sin la fecha (2026-11-08, el usuario: "no necesitamos la fecha en el detalle del evento") (2026-11-10, el usuario: "para events los enlaces al final de la ficha"; antes, delante de org)
@@ -1130,7 +1118,7 @@ function rellenaPersona(c, p){
   if (textos.length) linea('prv', textos.join(', '));
   if (par.childNodes.length){
     // rol, notas y contacto, en un panel que abre y cierra el triángulo al principio de la línea de su lugar (o de su nombre); cerrado al pintar (2026-11-08, el usuario)
-    trianguloPanel(par, lineaLugar || d.lastElementChild);     // (al principio de la línea de su lugar; sin ella, de su nombre: el usuario)
+    panelOculto(par);
     d.appendChild(par);
   }
   const fb = p.fb && esFb(p.fb) ? p.fb : '';
@@ -1189,7 +1177,7 @@ function abreFicha(p, fila){   // fila: la pulsada (una milonga puede salir en v
   // la foto abre la ficha en el popup, con la información desplegada (2026-11-11, el usuario: "click en la imagen de la ficha popup de la ficha con la informacion
   // expandida"; antes, el mapa o su enlace, que es lo que sigue haciendo la foto del popup)
   const foto = $('dCuerpo').querySelector(':scope > img, :scope > .sinfoto');
-  if (foto){ foto.classList.add('conEnlace'); foto.onclick = () => fichaExpandida(p); }
+  if (foto){ foto.classList.add('conEnlace'); foto.onclick = () => fichaEncima(p); }
   pintaCopiar(p);
   pintaFuentes(p);
   iluminaFicha(p);
@@ -2110,18 +2098,16 @@ function pinta(){
       return s;
     };
     c.appendChild(iconoFila(p));   // el logo siempre al inicio de la línea; luego la fecha y el nombre
-    if (conFecha){   // la fecha: las letras y los números, estrechados (.fLetras); el punto y el guion, en media letra (.fSigno)
-      const f = span('fFecha', '');
-      for (const trozo of (p.evento ? (dia ? textoDia(dia) : fechaListado(p)) : '').split(/([.-])/)){
-        if (trozo == '.' || trozo == '-') span('fSigno', trozo, f);
-        else if (trozo) span('fLetras', trozo, f).style.setProperty('--n', trozo.length);   // su ancho, por letras (CSS)
-      }
+    // la fecha y la ciudad, un solo texto: MMM.DD.CCC, el mes, el día y la ciudad en 3 letras (2026-11-11, el usuario: "listado MMM.DD.CCC"; antes, en dos columnas,
+    // la fecha con su día de la semana, THU.NOV.12 o TODAY.WED, y la ciudad). La ciudad, de CIUDADES_ABREV de paises.js ("pon las ciudades en el listado despues
+    // de la fecha usando la lista creada por tangoinfo/ 3 letras"); entera, en la ficha. Sin fecha (las personas), solo la ciudad. Las letras y los números,
+    // estrechados (.fLetras); el punto y el guion, en media letra (.fSigno)
+    const f = span('fFecha', '');
+    const fecha = p.evento ? (dia ? mesDia(dia) : fechaListado(p)) : '';
+    for (const trozo of [fecha, abrevCiudad(p)].filter(Boolean).join('.').split(/([.-])/)){
+      if (trozo == '.' || trozo == '-') span('fSigno', trozo, f);
+      else if (trozo) span('fLetras', trozo, f).style.setProperty('--n', trozo.length);   // su ancho, por letras (CSS)
     }
-    // la ciudad en 3 letras, tras la fecha y con su letra (2026-11-11, el usuario: "pon las ciudades en el listado despues de la fecha usando la lista creada
-    // por tangoinfo/ 3 letras"): CIUDADES_ABREV de paises.js; entera, en la ficha (sin title: "quita fb el title sobre las ciudaes del lsitado"). Antes, entera a la derecha
-    const ciudad = span('fFecha fCiudad', '');
-    const abrev = abrevCiudad(p);
-    if (abrev) span('fLetras', abrev, ciudad).style.setProperty('--n', abrev.length);
     const textos = document.createElement('div');
     textos.className = 'fTexto';
     c.appendChild(textos);
@@ -2351,13 +2337,22 @@ function saleEl(p, d){   // la milonga p se hace el día d (a medianoche); las d
   const e = leeEvt(p.fechaOrig);
   return e ? !!e.ini && e.ini <= d && d <= e.fin : saleReg(p.fechaOrig, d);
 }
-function fichaExpandida(p){   // la ficha de p en el popup, con el panel de rol, notas y contacto abierto (sus triángulos, pulsados)
-  fichaEncima(p);
-  $('fCuerpo').querySelectorAll('.triangulo[aria-expanded="false"]').forEach(t => t.click());
-}
-function fichaEncima(p){   // la ficha de p, sobre la tabla: al cerrarla se sigue en la misma semana
-  $('fCuerpo').innerHTML = '';
-  rellena($('fCuerpo'), p);
+// la ficha de p en el popup (sobre la tabla de OPEN SCHEDULER: al cerrarla se sigue en la misma semana; o desde la foto de la ficha del listado). Toda la
+// información a la vista: sus paneles (rol, notas y contacto; venue y org) abiertos, y tras la ciudad la fecha, MMM.DD-DD, sin el año
+// (2026-11-11, el usuario: "en el popup de la ficha, no necesitamos el triangulo, a la linea de la ciudad coma y la fecha mmm.dd-dd")
+function fichaEncima(p){
+  const c = $('fCuerpo');
+  c.innerHTML = '';
+  rellena(c, p);
+  c.querySelectorAll('.panelInfo.oculto').forEach(x => x.classList.remove('oculto'));
+  const fecha = p.evento ? String(p.fecha || '').replace(/^\d{4}\./, '') : '';   // 2026.NOV.21-23 -> NOV.21-23; una regular, su próxima fecha
+  const h = c.querySelector('.texto > h2');
+  if (fecha && h){
+    let linea = h.nextElementSibling;
+    if (!linea || linea.tagName != 'P' || linea.classList.contains('panelInfo')){ linea = document.createElement('p'); linea.className = 'enlaces'; h.after(linea); }
+    else linea.append(', ');
+    linea.append(fecha);
+  }
   $('ficha').showModal();
 }
 function botonLocal(f){   // su enlace (el de la línea venue de la ficha) o, sin él, su mapa; sin ninguno, la ficha de su primera milonga
