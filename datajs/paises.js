@@ -777,3 +777,8 @@ var CIUDADES_ABREV = {
 "Vietnam|Hội An": "HIA",
 "Vietnam|Quang Nam": "QNM"
 };
+// CIUDADES_FOTO : la foto de cada "País|Ciudad" de los datos, para el panel de app.tg/index.htm: [url de su miniatura en Wikimedia Commons, autor,
+// licencia, su página en Commons]; la imagen (P18) de su ficha de Wikidata. Se enlaza, no se baja. La caché, import/ciudadfoto.json (ciudadfoto.py).
+var CIUDADES_FOTO = {
+
+};
