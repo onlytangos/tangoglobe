@@ -25,7 +25,7 @@
   :root { --letra: "Inconsolata", "Courier New", Courier, monospace; --anchoEstrecho: 80%;   /* el listado y los títulos, estrechados: 0,4 em por letra (antes, Courier al 75 %: 0,45) */
           --maxFoto: 110px;   /* tamaño máximo de las fotos (= ANCHO_CARA) */ --altoTira: 27px; --altoFila: 31px;   /* la fila de los selectores y las de la barra: así las migas quedan a la altura del mapa */ color-scheme: dark;
           /* la paleta: solo estos colores (en el script, con paleta()) */
-          --azulOscuro: #2f5a8f; --azulClaro: #8ab4f8; --amarillo: #ffd500; --grisClaro: #999; --grisMedio: #444; --grisOscuro: #222; --negro: #000; --blanco: #fff;
+          --azulOscuro: #2f5a8f; --azulClaro: #8ab4f8; --amarillo: #ffd500; --grisClaro: #999; --grisNota: #666; --grisMedio: #444; --grisOscuro: #222; --negro: #000; --blanco: #fff; --rojo: #e53935; --verde: #43a047;
           /* y los del mapa */
           --mapaMar: #0d1b2a; --mapaPais: #22406a; --mapaBorde: #888; --mapaMarca: #ffd8b0; --mapaAro: #e6d37e; --mapaLugar: #e53935; --mapaPaisSel: #f5c211;
           /* sus usos */
@@ -72,8 +72,8 @@
      migas, tras el tipo ("tipo en la linea 2 luego las migas"); en la tercera, los botones de áreas, países o ciudades. Debajo, dos columnas: a la izquierda el panel (el mapa y las tiras), a la derecha
      el listado. Antes, el panel vertical desde arriba, con el buscador y los selectores, y sobre el listado la barra del total y las migas */
   .app { display: grid; grid-template-columns: 260px minmax(0, 1fr); align-items: start; }   /* el panel, 260 px (2026-11-11, el usuario: "reduce el panel de izquierda 20px", antes 320; luego "en el panel lateral reduce en 20px el ancho", antes 300; y "reduce alto ancho del mapa en 20px": el mapa es del ancho del panel, antes 280) */
-  .cabecera { grid-column: 1 / -1; --altoTira: var(--altoFila); position: sticky; top: 0; z-index: 4; display: grid; grid-template-columns: 236px minmax(0, 1fr);
-              align-items: center; gap: 4px; padding: 8px 16px 8px 12px; background: var(--barra); box-shadow: 0 1px 6px rgba(0,0,0,.6); }   /* el buscador, del ancho de lo de dentro del panel (260 - 2 × 12, el del mapa), y el total a 4 px, como el tipo y las migas (2026-11-11, el usuario: "ajusta margin search y contador"; antes, a 28 px: donde empieza el listado) */
+  .cabecera { grid-column: 1 / -1; --altoTira: var(--altoFila); position: sticky; top: 0; z-index: 4; display: grid; grid-template-columns: var(--anchoTipo, 236px) minmax(0, 1fr);
+              align-items: center; gap: 4px; padding: 8px 16px 8px 12px; background: var(--barra); box-shadow: 0 1px 6px rgba(0,0,0,.6); }   /* el buscador, del ancho del selector de tipo (--anchoTipo, lo pone anchoTipo; 2026-11-12, el usuario: "search mismo ancho que select tipo"): el total, a 4 px, encima de las migas. Antes, el buscador, del ancho de lo de dentro del panel (260 - 2 × 12, el del mapa), y el total a 4 px, como el tipo y las migas (2026-11-11, el usuario: "ajusta margin search y contador"; antes, a 28 px: donde empieza el listado) */
   .cabecera > .lineaMigas, .cabecera > .linea3 { grid-column: 1 / -1; }
   .cabecera > .linea3:has(.ciudadesMapa:empty) { display: none; }   /* sin botones, sin su línea */
   .lineaMigas label { flex: none; display: flex; }   /* el tipo; tras él, las migas, lo que quede */
@@ -144,6 +144,15 @@
   .cuerpo p { margin: 0; font-size: .9em; overflow-wrap: anywhere; }   /* líneas de texto seguidas; los enlaces, aparte (p.enlaces) */
   .cuerpo p.enlaces + p.organiza, .cuerpo p.panelInfo + p.organiza { margin-top: 6px; }   /* los eventos que organiza: tras su lugar y sus enlaces, uno por línea */
   .cuerpo p.organiza .icono { vertical-align: -3px; margin-left: 2px; }   /* sus logos, tras su nombre */
+  .cuerpo p.organiza { padding-left: 3.5em; text-indent: -3.5em; }   /* un nombre largo sigue bajo el nombre, no bajo su ● ni su mes (● APR y sus espacios: 3,5 letras) */
+  .cuerpo p.organiza .estado { display: inline-block; width: 1em; text-align: center; text-indent: 0; }   /* ● ○ -: del mismo ancho, los nombres alineados */
+  .cuerpo p.organiza .mes { display: inline-block; width: 1.5em; text-indent: 0; color: var(--suave); }   /* su mes, APR (letra de ancho fijo: 3 x .5em); sin fecha, el hueco */
+  /* en la ficha del listado (el detalle), en gris oscuro (--grisNota), y al final de su línea, seguido, el logo de las fuentes (2026-11-13, el usuario: "si existe la
+     linea note en detalle poner en gris oscuro; poner el logo fuente en la misma linea al final consecutivo"); sin línea note, el logo sigue abajo a la derecha */
+  #dCuerpo p.leyendaOrganiza { color: var(--grisNota); }
+  #dFuentes.enNota { position: static; display: inline-block; width: 12px; height: 12px; margin-left: 8px; vertical-align: -2px; }
+  .cuerpo p.leyendaOrganiza { margin-top: 2px; font-size: .75em; color: var(--suave); white-space: pre-wrap; }   /* lo que dice cada uno, bajo la lista (no en title: el móvil no lo enseña) */
+  .cuerpo p.leyendaOrganiza .item { white-space: nowrap; }   /* "○ not verified", sin partir */
   .cuerpo .panelInfo { margin-top: 4px; }   /* el de las personas, un párrafo; el de los eventos, sus líneas (venue, org) */
 
   .listado { display: flex; flex-direction: column; gap: 8px; box-sizing: border-box; font-size: 18px; }   /* 2px más que el body (16px); fechas, ciudades y salas, en proporción (.85em) */
@@ -178,7 +187,7 @@
   .listado .fila.abierta .fFecha { color: var(--negro); }   /* la fecha y la ciudad (.fCiudad también es .fFecha), como el nombre: en negro sobre el amarillo */
   .listado .fila.encontrado { outline: 0; border-left-color: var(--enlace); }
   .listado .filaMax { grid-column: 1 / -1; padding: 10px; text-align: center; color: var(--blanco); border-bottom: 1px solid var(--borde);
-                      font-size: calc(.85em + 6px); line-height: 1; }   /* la letra del nombre: Courier (la del body), su tamaño (sin negrita: no es un título) */
+                      font-size: 1.18em; line-height: 1; }   /* la letra del nombre, su tamaño (sin negrita: no es un título); en em, como él (2026-11-12, el usuario: "nombre tambien solo em"); antes, .85em + 6px */
   .listado .filaMax span { display: inline-block; font-stretch: var(--anchoEstrecho); }   /* y estrechada como él (centrada: su caja no cambia) */   /* la de "max 100 elements" (no es una .fila: los cursores no la eligen) */
   .ruta { height: var(--altoTira); box-sizing: border-box; padding: 0 10px; line-height: calc(var(--altoTira) - 2px); font-size: .85em;   /* la de los botones de meses y días */ background: var(--grisMedio); color: var(--texto);   /* en blanco (2026-11-11, el usuario: "para migas, list tb"; antes, gris) */ border: 1px solid var(--borde); border-radius: 4px;
                    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -190,7 +199,7 @@
   #ruta > .sep { white-space: pre; }   /* con sus blancos */
   #ruta > .tramo { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   #ruta > .cuenta { margin-left: .3em; }
-  .ruta .paso { color: var(--enlace); cursor: pointer; }
+  .ruta .paso { color: var(--acento); cursor: pointer; }   /* lo que se puede pulsar, en amarillo, el de los botones activos (2026-11-12, el usuario: "en las migas cuando es clikable en amarillo"; antes, el azul de los enlaces) */
   /* lo que se puede pulsar: recuadro amarillo al pasar el ratón (2026-11-11, el usuario: "over sobre las migas, recuadro amarillo, si son clikables"; antes,
      subrayado). El tramo ocupaba todo el alto de la caja y el borde salía cortado ("sale cortado arriga y abajo el borde"): su línea, más baja, y el recuadro
      por dentro (box-shadow inset), con 4 px a cada lado que no mueven el texto (margen negativo) */
@@ -228,7 +237,7 @@
   /* list / grid y, tras él, el idioma: cuadrados, del alto de la barra, solo con su icono (☰ o ▦) o la bandera (2026-11-11, el usuario: "crea un boton cuadrado
      para list, crea otro boton despues tb cuadrado con un selector para idioma solo con la bandera: ingles, coreano, chino, japones") */
   #bIdioma { width: var(--altoTira); padding: 0; display: flex; align-items: center; justify-content: center; }
-  #bListado { width: auto; padding: 0 8px; white-space: nowrap; }   /* con su texto: lo que mida */
+  #bListado { width: var(--altoTira); padding: 0; }   /* cuadrado, solo con el icono, como el del idioma (2026-11-12, el usuario: "quitar texto list/grid"; antes, con su texto: lo que midiera) */
   /* el idioma: un botón como el de list, con la bandera; al desplegar, un solo recuadro gris de su mismo ancho con las cuatro (2026-11-11, el usuario: "quita
      el recuadro gris detras de la bandera ... de forma que al desplegar sea del mismo ancho", "el tamaño de antes, un solo recuadro gris para todo el
      deplegable, el control como estaba igual que el boton lsit") */
@@ -250,21 +259,22 @@
   .fila span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25; }   /* todas con el mismo alto: centradas igual */
   .fila .fFecha { color: var(--suave); font-size: .85em; font-variant-numeric: tabular-nums; }   /* la fecha y la ciudad en 3 letras (fCiudad): la misma letra */
   .fila .fFecha, #aDias small { font-family: var(--letra); }   /* las fechas, con todas las letras del mismo ancho: alineadas (2026-11-08, el usuario) */
-  /* el título, con la letra de la fecha: Courier, el mismo tamaño, en negrita y estrechado al 75 % (2026-11-11, el usuario: "usa la misma fuente que para fecha
-     en tiulo y ciudad", "la fuente del nombre parece otra ?"). Estrechar con scaleX no cambia su caja: el texto (fNomTexto) mide lo que cabe / .75 y se pinta
-     al 75 %; así el … de lo que no cabe sale en su sitio */
-  .fila .fNombre { font-family: var(--letra); font-size: calc(.85em + 6px); line-height: 1; font-weight: bold; --estrecha: 1; font-stretch: var(--anchoEstrecho);   /* (--estrecha 1: sin scaleX, lo estrecha la letra) */
+  /* el título, con la letra de la fecha, en negrita y estrechado con la letra (font-stretch) (2026-11-11, el usuario: "usa la misma fuente que para fecha
+     en tiulo y ciudad", "la fuente del nombre parece otra ?"). Sin scaleX (2026-11-12, el usuario: "no uses scale, usa solo em"); antes, con Courier, se pintaba al 75 % con scaleX */
+  /* su tamaño, solo en em (2026-11-12, el usuario: "nombre tambien solo em"): 1.18em, los 21,3 px de antes (.85em + 6px, con el listado a 18 px) */
+  .fila .fNombre { font-family: var(--letra); font-size: 1.18em; line-height: 1; font-weight: bold; font-stretch: var(--anchoEstrecho);
                    display: flex; align-items: center; flex: 1 1 auto; }
   .fila .fNomCaja { flex: 1 1 0; min-width: 0; overflow: hidden; }
-  .fila .fNomTexto { display: block; width: calc(100% / var(--estrecha)); transform: scaleX(var(--estrecha)); transform-origin: left center; }
-  /* la fecha, 2 px más grande y más estrecha (2026-11-10, el usuario: "sube 2px la fuente de la fecha y hazla mas estrecha"): no hay un Courier estrecho en todos
-     los dispositivos, así que cada trozo de letras o números (.fLetras) se pinta al 75 % de su ancho (--estrecha) en una caja de ese ancho: --n letras de 1ch */
-  .fila .fFecha { font-size: calc(.85em + 4px); line-height: 1; --estrecha: 1; font-stretch: var(--anchoEstrecho); }   /* MMM.DD.CCC, 2 px menos que el nombre (2026-11-11, el usuario: "reduce 2px MM.DD.CCC") */   /* (el interlineado: la fila, del mismo alto que antes); 4 px más (2026-11-11, el usuario: "aumentala y mas blanca", "fecha 2px mas grande") */
+  .fila .fNomTexto { display: block; }
+  /* la fecha, estrechada con la letra (font-stretch: Inconsolata al 80 %, 0,42 em por letra; de ancho fijo: en columna) y medida solo en em, sin scaleX
+     (2026-11-12, el usuario: "no uses scale, usa solo em"). 1.07em: los 19,3 px de antes (.85em + 4px, con el listado a 18 px). Antes, con Courier, cada trozo
+     (.fLetras) se pintaba al 75 % con scaleX en una caja de --n letras de 1ch */
+  .fila .fFecha { font-size: .97em; line-height: 1; font-stretch: var(--anchoEstrecho); }   /* .1em menos (2026-11-12, el usuario: "reduce fecha 0.1em y el logo 0.2 em"); antes, 1.07em */   /* MMM.DD.CCC, 2 px menos que el nombre (2026-11-11, el usuario: "reduce 2px MM.DD.CCC") */   /* (el interlineado: la fila, del mismo alto que antes); 4 px más (2026-11-11, el usuario: "aumentala y mas blanca", "fecha 2px mas grande") */
   /* la fecha y la ciudad, con la letra del nombre: Courier, estrechada al 75 % y en blanco (2026-11-11, el usuario: "las fechas parecen otro tipo ?", "usa la misma
      fuente y estilo para todas"; antes, en gris, y el punto y el guion con la letra del sistema); sin negrita: el nombre, sí (es el título) */
   .fila .fFecha { color: var(--blanco); }
-  .fila .fFecha .fLetras { display: inline-block; overflow: visible; width: calc(var(--n) * 1ch * var(--estrecha)); transform: scaleX(var(--estrecha)); transform-origin: left center; }
-  .fila .fFecha .fSigno { display: inline-flex; justify-content: center; width: .5ch; transform: scaleX(var(--estrecha)); }   /* el punto y el guion, en Courier y estrechados como las letras, en media letra: centrados (lo que sobra, a los dos lados); en una entera ocupaban mucho (2026-11-10, el usuario: "el . y - ocupan mucho espacio") */
+  .fila .fFecha .fLetras { display: inline-block; overflow: visible; }   /* de su ancho: la letra es de ancho fijo */
+  .fila .fFecha .fSigno { display: inline-flex; justify-content: center; width: .21em; }   /* el punto y el guion, en media letra (.21em): centrados (lo que sobra, a los dos lados); en una entera ocupaban mucho (2026-11-10, el usuario: "el . y - ocupan mucho espacio") */
   /* cada texto, centrado en vertical en su fila (2026-11-11, el usuario: "centra el contenido de cada linea del listado", "centrado verticalmente"): el centro
      de sus mayúsculas, en el centro de la fila, como el icono y la foto; sin bajarlos quedaban 2 px altos (la caja de la línea guarda sitio a los rabos: g, p) */
   .fila .fNombre { position: relative; top: 0; }   /* (con Courier, 2 px; con Inconsolata, medido: centradas sin bajarlas) */   /* con la letra de la fecha, lo mismo que ella */
@@ -272,9 +282,27 @@
   .fila .fTexto { display: flex; align-items: center; gap: 16px; min-width: 0; }   /* el título y su ciudad, en la misma celda: el título llega hasta su ciudad */
   .fila .fNombre { color: var(--blanco); }   /* en blanco (2026-11-11, el usuario: "baja el nivel de blanco del nombre"; luego, con la letra de la fecha, "nombre en blanco") */
   .listado .fila.abierta .fNombre { color: var(--negro); }   /* abierta, en negro sobre el amarillo, como antes */
-  .logoEspecial { height: 1em; width: 1em; margin-right: 6px; vertical-align: -.12em; }
-  .cara figcaption img.logoEspecial { display: inline; width: 1em; height: 1em; aspect-ratio: auto; background: none; }   /* no es una foto de la cara */
-  .listado .fila.abierta .logoEspecial { filter: brightness(0); }   /* la estrella, sobre el amarillo */
+  /* la estrella de las milongas especiales (las no regulares): el carácter ★, el primero del nombre, en amarillo (2026-11-13, el usuario: "eliminar la estrella del
+     nombre de las milongas; usar la estrella para las milonga especiales no regulares, como primer caracter del nombre"; antes, el logo img/especial.svg) */
+  .estrella { color: var(--amarillo); margin-right: 4px; }
+  /* el logo de cada tipo: su letra en un círculo, del color del texto (2026-11-11, el usuario: "logos para cada artefacto del select de tipo, solo una letra rodeada
+     de un circulo AGT y AFMPSR"): en el desplegable del tipo, delante de su texto, y en el listado, delante del nombre */
+  .logoTipo { display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; flex: none; width: 1.4em; height: 1.4em; margin-right: 6px;
+              border: 1.5px solid currentColor; border-radius: 50%; font-size: .7em; font-weight: 700; font-style: normal; line-height: 1; vertical-align: .08em; }
+  .fila .fNombre .logoTipo { font-stretch: normal; width: 1.2em; height: 1.2em; }   /* en el listado, el círculo .2em más pequeño (2026-11-12, el usuario: "reduce fecha 0.1em y el logo 0.2 em"); en el desplegable del tipo, 1.4em */
+  #selRol .logoTipo { font-size: .97em; width: 1.2em; height: 1.2em; }   /* en el desplegable del tipo y en el selector, del tamaño del listado: letra 14,9 px y círculo 17,8 px (.97 × .85 × 18; 2026-11-12, el usuario: "el tamaño de los logos en select igual que en listado"); antes, .7em y 1.4em: 10,7 y 15 px */
+  .fila .logoTipo { color: var(--grisClaro); }   /* en el listado, en gris claro (2026-11-11, el usuario: "baja el logo a gris claro"); abierta, sobre el amarillo, del color del texto */
+  .listado .fila.abierta .logoTipo { color: inherit; }   /* en el selector y sus opciones, del color del texto: en blanco ("el logo en los opt del select en blanco") */
+  /* milonga, rellena de amarillo, y festival, de rojo (2026-11-11, el usuario: "logo de milongas relleno en amarillo y festivales relleno en rojo"); en la línea abierta,
+     sobre el amarillo, con su borde negro */
+  .logoTipo.lM, .fila .logoTipo.lM { background: var(--amarillo); border-color: var(--amarillo); color: var(--negro); }
+  .logoTipo.lF, .fila .logoTipo.lF { background: var(--rojo); border-color: var(--rojo); color: var(--blanco); }
+  .logoTipo.lS, .fila .logoTipo.lS { background: var(--verde); border-color: var(--verde); color: var(--blanco); }   /* seminar, relleno de verde ("seminar logo verde solido") */
+  .logoTipo.lP, .fila .logoTipo.lP { color: var(--amarillo); }   /* práctica: letra y círculo en amarillo, sin relleno ("logo practica en amarillo solo texto no solido") */
+  .listado .fila.abierta .logoTipo.lM, .listado .fila.abierta .logoTipo.lF { border-color: var(--negro); }
+  .listado .fila.abierta .logoTipo.lP, option:checked .logoTipo.lP { color: inherit; }   /* (sobre el amarillo, del color del texto) */
+  .logoTipo > span { text-box: trim-both cap alphabetic; }   /* la letra, centrada: su caja, de la altura de la mayúscula (sin el hueco de arriba y abajo de la letra; 2026-11-11, el usuario: "centra la letra de los logos") */
+  .listado .fila.abierta .estrella { color: inherit; }   /* la estrella, sobre el amarillo */
   .fila .fIconos { display: flex; align-self: center; min-width: 16px; }
   .fila .fIconos img { height: 16px; width: 16px; display: block; }
   /* el logo de la fila con su propio hover (como en el detalle): sobre él se resalta el logo, no la fila */
@@ -306,17 +334,16 @@
   .ciudadesMapa { flex: 1 1 auto; min-width: 0; display: flex; gap: 1px; overflow: hidden; font-size: .85em; }   /* entre ellos, 1 px (2026-11-11, el usuario: "areas/pais/ciudades margin 1px") */
   .ciudadesMapa:empty { display: none; }
   .ciudadesMapa > * { transition: opacity .2s; }
-  /* mientras el mapa vuela a su encuadre (ocultaTira): sin sus botones, la tira en gris, una barra del color de los botones en su sitio (2026-11-11, el usuario:
-     "deja la tira gris mientras esta vacia") */
-  .ciudadesMapa.enVuelo { background: var(--tarjeta); border-radius: 4px; pointer-events: none; }
-  .ciudadesMapa.enVuelo > * { opacity: 0; }
+  /* tras pulsar en ella un área, un país o una ciudad, mientras el mapa vuela a su encuadre: la línea, vacía y en su sitio; se rellena al acabar de moverse el mapa
+     (tiraVacia, tiraLlena; 2026-11-13, el usuario: "al cambiar de pais o ciudad haciendo click en la tercera linea, dejar vacia la linea y recargarla cuando
+     termina el evento de mover el mapa") */
+  .ciudadesMapa.enVuelo { pointer-events: none; }
+  .ciudadesMapa.enVuelo > * { visibility: hidden; }
   .tipTira.circulo { box-sizing: border-box; min-width: 24px; height: 24px; padding: 0 5px;
                font-size: 13px; line-height: 22px; text-align: center; white-space: nowrap;   /* el contador, en un círculo (también el de meses y días) */
                background: var(--grisMedio); color: var(--texto); border: 1px solid var(--borde); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.6); }
   option { background: var(--grisMedio); color: var(--blanco); }
   option:checked { background: var(--amarillo); color: var(--negro); }   /* la elegida */
-  optgroup { color: var(--blanco); font-weight: 700; font-style: normal; background: var(--grisMedio); }   /* events y community: en blanco, negrita y minúsculas (2026-11-11, el usuario: "pon community events en blanco negrita y minusculas", "falta negrita en los titulos de grupos del select") */
-  optgroup option { font-weight: 400; }
   #selRol option.negrita { font-weight: 700; }
   #selRol option.negrita:checked { font-weight: 700; }
   /* el desplegable con la paleta, también al pasar el ratón; sin base-select, el del navegador con las opciones de arriba */
@@ -326,21 +353,23 @@
     select::picker-icon { color: var(--blanco); }
     ::picker(select) { padding: 3px 0; background: var(--grisMedio); color: var(--blanco); border: 1px solid var(--grisClaro); border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,.6); }
     option { padding: 2px .5em; }   /* (.5em: donde el navegador pone el título del grupo) */
+    #selRol option.dentro { padding-left: calc(.5em + 1ch); }   /* los tipos de community y de events, sangrados un carácter (2026-11-11, el usuario: "identa 1 caracter"; antes, dos y luego ninguno) */
     option::checkmark { display: none; }
     option:not(:disabled):hover, option:not(:disabled):focus-visible { background: var(--azulClaro); color: var(--negro); outline: 0; }
     option:checked, option:checked:hover, option:checked:focus-visible { background: var(--amarillo); color: var(--negro); font-weight: 400; }
-    optgroup { padding-top: 4px; }
-    optgroup option { padding-left: calc(.5em + 2ch); }   /* sus opciones, sangradas dos caracteres, como el desplegable nativo (2026-11-11, el usuario: "vuelve al optgroup, sin blancos") */
   }
   .ciudadesMapa > span { flex: 1 0 auto; box-sizing: border-box; height: var(--altoTira); display: flex; justify-content: center; gap: 8px; padding: 0 7px; cursor: pointer;
                        white-space: nowrap; align-items: center; border-radius: 4px; background: var(--tarjeta); color: var(--texto); }   /* cada uno, un botón como los meses: los de la página, todo el ancho de la línea, con el texto en el centro (2026-11-11, el usuario: "tercera linea que los botones ocupen todo el ancho"; antes, cada uno de su ancho) */
   .ciudadesMapa > span:hover { background: var(--azulClaro); color: var(--negro); }   /* el nombre bajo el ratón */
   .ciudadesMapa > span.atras:not(:hover), .ciudadesMapa > span.mas:not(:hover) { color: var(--amarillo); }   /* back y more..., en amarillo */
   .ciudadesMapa > span.atras, .ciudadesMapa > span.mas { justify-content: center; flex: 0 0 40px; padding: 0; }   /* siempre del mismo ancho, 40 px: lo que sobra en la línea, para los nombres (2026-11-11, el usuario: "los botones de navegacion en la tercera linea siempre del mismo ancho") */
+  .ciudadesMapa > span.vacio, .ciudadesMapa > span.vacio:hover { background: var(--tarjeta); cursor: default; }   /* back o more... sin nada que hacer: la casilla, vacía y en su sitio (2026-11-12, el usuario: "linea 3 mantenemos fijos los controles, sino tienen accion presentar vacios") */
   .ciudadesMapa > span.sel, .ciudadesMapa > span.sel:hover { background: var(--acento); color: var(--negro); }   /* la ciudad elegida, del color de los botones activos */
   .ciudadesMapa > span.cero, .ciudadesMapa > span.cero:hover { background: none; color: var(--grisClaro); cursor: default; }
   .ciudadesMapa .nom { max-width: 16em; overflow: hidden; text-overflow: ellipsis; }   /* el nombre; uno muy largo, cortado con … */
-  .ciudadesMapa .num { flex: none; }   /* a su derecha, el contador */
+  .ciudadesMapa > span:not(.sel):not(.cero):not(:hover) .nom { color: var(--acento); }   /* el nombre, en amarillo, como lo que se pulsa en las migas (2026-11-12, el usuario: "tercera linea nombres en amarillo"); el número, en blanco. Al pasar el ratón y la elegida, en negro; a cero, en gris */
+  .ciudadesMapa .num { flex: none; min-width: 3ch; text-align: right; font-variant-numeric: tabular-nums; }   /* a su derecha, el contador: de ancho fijo, tres cifras (2026-11-11, el usuario, al
+     elegir un mes: "hay un ligero desplazamiento": el número cambia y, con él, el ancho de cada botón y el sitio de los nombres) */
   .ciudadesMapa span.atras svg, .ciudadesMapa span.mas svg { flex: none; width: .6em; height: .71em; display: block; }   /* del tamaño de la flecha ▼ del selector de tipo, girada (medida: 0,71 em de lado y 0,6 de fondo, con la misma letra; 2026-11-11, el usuario: "mismo tamaño") */   /* back (volver al nivel de arriba o a la página anterior) y more... (la siguiente): solo su logo, centrado */
   .mapa { flex: 1; min-width: 0; height: var(--altoMapa); max-height: 24.5vh; border-radius: 6px; }
   #bMapa:disabled { opacity: .45; cursor: default; }
@@ -349,7 +378,7 @@
      tamaño y a otra altura (aquí el ☰ quedaba 2,5 px alto). El de grid, más grande */
   #bListado { display: inline-flex; align-items: center; justify-content: center; gap: .45em; }
   #bListado .iBoton { display: block; flex: none; width: 13px; height: 13px; color: var(--acento); }   /* en amarillo (2026-11-11, el usuario: "el logo de list y grid amarillo"), como los de back, more... y copiar */
-  #bListado .iParrilla { width: 16px; height: 16px; }
+  #bListado .iParrilla, #bListado .iLista { width: 16px; height: 16px; }   /* (la lista, también: con 13 px las viñetas no se ven) */
   #bListado:hover { background: var(--azulClaro); color: var(--negro); }   /* al pasar el ratón, como las migas y los botones de áreas, países y ciudades (2026-11-11, el usuario: "list/grid el mismo over") */
   #bListado:hover .iBoton { color: inherit; }   /* el icono, también en negro (como back y more...) */
   /* el triángulo del botón map, como los demás: relleno, amarillo y del tamaño de la flecha ▼ del selector de tipo (el botón, con la misma letra: .85em), hacia
@@ -416,12 +445,10 @@
   .detalle.filas h2 { font-weight: bold; font-size: 1.05em; }
   .detalle.filas p { color: var(--suave); }
   .detalle.filas h2 .hTipo, #ficha h2 .hTipo { color: var(--suave); font-size: .8em; margin-left: 10px; }
-  /* el título de la ficha, con la letra del nombre del listado: Courier en negrita, su tamaño y estrechado al 75 % (2026-11-11, el usuario: "titulo de la ficha ,
-     misma fuentes que nombre del listado"). Todo el título (con su tipo) mide lo que cabe / .75 y se pinta al 75 %: sus líneas cortan donde deben; el botón
-     de copiar, a su ancho (sin estrechar) */
-  .detalle h2, .detalle.filas h2, #ficha h2 { font-size: calc(.85em + 6px); font-weight: bold; --estrecha: 1; font-stretch: var(--anchoEstrecho);
-                                             width: calc(100% / var(--estrecha)); transform: scaleX(var(--estrecha)); transform-origin: left top; }
-  .detalle h2 #dCopiar { transform: scaleX(calc(1 / var(--estrecha))); margin: 0 3px 0 calc(.3em + 3px); }   /* ensanchado, 3 px más a cada lado */
+  /* el título de la ficha, con la letra del nombre del listado: en negrita, su tamaño y estrechado con la letra (font-stretch) (2026-11-11, el usuario: "titulo de
+     la ficha , misma fuentes que nombre del listado"). Sin scaleX (2026-11-12, el usuario: "no uses scale, usa solo em"); antes, con Courier, se pintaba al 75 % y el botón de copiar se ensanchaba */
+  .detalle h2, .detalle.filas h2, #ficha h2 { font-size: calc(.85em + 6px); font-weight: bold; font-stretch: var(--anchoEstrecho); }
+  .detalle h2 #dCopiar { margin: 0 3px 0 calc(.3em + 3px); }   /* 3 px más a cada lado */
   .detalle.filas .cuerpo > img { border-radius: 3px; }
 
   /* pantalla ancha: el panel vertical. Bajo los selectores, el mapa; debajo los países o ciudades en 2 columnas, del alto de
@@ -480,7 +507,7 @@
     #aScroll { padding: 0 4px 4px; }
     .sesion { padding: 2px 0; }
     .sesion .hora, .sesion .nom { font-size: min(12px, 3.3vw); }
-    .sesion .logoEspecial { margin-right: 0; }
+    .sesion .estrella { margin-right: 0; }
     #aTitulo { font-size: 1.2em; }
   }
   @media (max-width: 600px) {
@@ -510,8 +537,8 @@
      (2026-11-10, el usuario: "la fecha puede hacerse q ocupe menos ancho ?") */
   @media (min-width: 721px) and (max-width: 920px) {
     .listado .fila { column-gap: 8px; padding-left: 6px; padding-right: 6px; }
-    .fila .fNombre, .listado .filaMax { font-size: calc(.7em + 6px); }
-    .fila .fFecha { font-size: calc(.7em + 4px); }   /* MMM.DD.CCC, 2 px menos que el nombre, como en la ancha */   /* 4 px más, como la ancha (2026-11-11, el usuario); el título, como la fecha */
+    .fila .fNombre, .listado .filaMax { font-size: 1.03em; }   /* (los 18,6 px de antes, .7em + 6px) */
+    .fila .fFecha { font-size: .82em; }   /* .1em menos, como en la ancha; antes, .92em (los 16,6 px de .7em + 4px) */   /* MMM.DD.CCC, 2 px menos que el nombre, como en la ancha */   /* 4 px más, como la ancha (2026-11-11, el usuario); el título, como la fecha */
     .detalle h2, .detalle.filas h2, #ficha h2 { font-size: calc(.7em + 6px); }   /* el de la ficha, como el del listado */
     .fila .fTexto { gap: 10px; }
   }
@@ -538,7 +565,7 @@
     <span class="busca"><input id="buscar" type="search" placeholder="search tango…" autocomplete="off"><div id="sugs" class="oculto"></div></span>
   </div>
   <div class="lineaRuta"><div class="ruta cajaTotal"><span id="total"></span></div><button id="bListado">list</button><span class="selIdioma"><button id="bIdioma" type="button" aria-label="language" aria-haspopup="true" aria-expanded="false"></button><div id="menuIdioma" class="menuIdioma oculto" role="menu"></div></span><a id="info" href="#"><img src="img/koko.svg" alt="KoKo Tango"><span class="kkOver" aria-hidden="true">KK</span></a></div>
-  <div class="lineaRuta lineaMigas"><label><select id="selRol" data-inicial="fes"></select></label><div class="ruta"><span id="ruta"></span><span id="rutaDer" class="rutaDer"></span></div></div>
+  <div class="lineaRuta lineaMigas"><label><select id="selRol" data-inicial="fes"><button><selectedcontent></selectedcontent></button></select></label><div class="ruta"><span id="ruta"></span><span id="rutaDer" class="rutaDer"></span></div></div>
   <div class="linea3"><div id="ciudadesMapa" class="ciudadesMapa"></div></div>
   <!-- el área elegida: sin selector a la vista (2026-11-11, el usuario: "eliminamos el selector de area"); se elige con sus botones (pintaCiudades) y aquí se
        guarda, con sus opciones (pinta) y su ?a= (deUrl, buscaRuta) -->
@@ -594,6 +621,8 @@ const rolEvento = t => String(t).indexOf('seminar') != -1 ? SEM : String(t).inde
 const PEO = 'peo';
 const TIPOS_P = Object.keys(TIPOS_PERSONA).filter(t => t != 'person');   // group, couple: en el selector, sin tiras
 const LIS = 'lis';
+const COM = 'com';   // en el selector, community: todas las personas (2026-11-11, el usuario: "community=all people")
+const EVS = 'evs';   // events: todos los eventos ("events=all events")
 const MUNDIAL = 'World';
 const $ = id => document.getElementById(id);
 // la única pregunta al navegador por el móvil: pantalla estrecha (sin panel vertical; el mismo límite que los @media de 720 px del CSS, donde no caben variables)
@@ -825,32 +854,38 @@ const enArea = (p, a) => a == TODOS || p.area == a || p.area == MUNDIAL;
 const enRol  = (p, r) => r == TODOS ? true   // all: todo, también las listas
                        : r == LIS ? !!p.lista
                        : p.lista ? false
+                       // academy, en community: las academias y los grupos (2026-11-11, el usuario: "vamos a poner todos los group como academy, las academy las
+                       // pasamos a community"); events, sin ellas
+                       : r == ACA ? (p.evento ? p.roles.includes(ACA) : p.tipoP == 'group')
+                       : r == EVS ? !!p.evento && p.roles[0] != ACA
+                       : r == COM ? !p.evento || p.roles[0] == ACA
                        : r == PEO ? !p.evento && p.tipoP == 'person'
                        : TIPOS_P.includes(r) ? !p.evento && p.tipoP == r
                        : deEventos(r) ? !!p.evento && p.roles.includes(r)
                        : !p.evento && p.roles.includes(r);
 
-function opciones(sel, valores, etiqueta, cuenta, todos = 'all'){
+function opciones(sel, valores, etiqueta, cuenta, todos = 'all', logo = null){
   const actual = sel.value || sel.dataset.inicial || TODOS;
-  sel.innerHTML = '';
+  sel.querySelectorAll('option').forEach(o => o.remove());   // (solo las opciones: el botón con selectedcontent, el de selRol, se queda)
   const opcion = (v, dentro = sel) => {
     const o = document.createElement('option');
     o.value = v;
-    // sin blancos delante: la sangría de los de un grupo, la del navegador (2026-11-11, el usuario: "vuelve al optgroup, sin blancos"; un rato, uno o dos
-    // nbsp en el texto y, sin optgroup, opciones de título: el desplegable nativo de Brave sangra las de un optgroup a su manera y no se puede cambiar)
+    // sin blancos delante: la sangría, por CSS (.dentro)
     o.textContent = (v == TODOS ? todos : etiqueta(v)) + (cuenta ? ' ' + cuenta(v) : '');
+    // su logo, delante del texto: en el desplegable y, copiado por selectedcontent, en el selector. Sin label: con él, la opción pinta ese texto y no su contenido
+    // (2026-11-11: el logo no salía en el desplegable, "pon los logos en los opt del desplegable del select")
+    const letra = logo && logo(v);
+    if (letra) o.prepend(logoTipo(letra));
     dentro.appendChild(o);
+    return o;
   };
   opcion(TODOS);
   for (const v of valores){
     if (typeof v != 'object'){ opcion(v); continue; }
-    // el grupo: un optgroup, su título en negrita y sus opciones sangradas por el navegador (2026-11-11, el usuario: "en el select dentro de cada grupo
-    // todos tienen sangria", "falta negrita en los titulos de grupos del select"; antes, una opción más, que el desplegable nativo pintaba sin
-    // negrita y, desactivada, en gris)
-    const g = document.createElement('optgroup');
-    g.label = v.grupo;
-    sel.appendChild(g);
-    v.valores.forEach(x => opcion(x, g));
+    // el grupo: una opción más, que se elige (todos sus tipos), en negrita, y sus tipos debajo (2026-11-11, el usuario: "quita optgrp del select, pon todo opt
+    // para hacer clikable events y comunity, events=all events, community=all people"; antes, un optgroup, que no se puede elegir)
+    opcion(v.valor).classList.add('negrita');
+    v.valores.forEach(x => opcion(x).classList.add('dentro'));
   }
   sel.value = actual;
   if (sel.selectedIndex < 0) sel.value = TODOS;
@@ -864,14 +899,33 @@ function organizadores(){
     const u = /^https?:\/\//.test(e[CAMPO.urlfb] || '') ? e[CAMPO.urlfb] : '';
     const webs = [...(u && !esFb(u) ? [u] : []), ...(leeVarios(e).www || []).filter(w => /^https?:\/\//.test(w))];
     const fb = esFb(u) ? u : '', www = webs.find(w => !esAgendaWeb(w)) || webs[0] || '';
+    // su estado (ESTADO_ORGANIZA): la fecha llevada desde el año anterior (ext: no verificada), con fecha o sin ella (2026-11-12, el usuario)
+    const estado = leeVarios(e).ext ? 'ext' : fechaDe(e) ? 'fecha' : 'sin';
+    // su próxima fecha, para ordenarlos y su mes (2026-11-12, el usuario: "en orden de fecha primero la mas proxima", "tres letras con el mes"): la de
+    // su edición (EVT) o la siguiente de una regular (REG, proximaReg); sin fecha, null
+    const f = fechaDe(e).split('.');
+    const cuando = f[0] == 'EVT' ? new Date(parseInt(f[4]), parseInt(f[1]), parseInt(f[3]) || 1) : f[0] == 'REG' ? proximaReg(fechaDe(e)) : null;
+    const ev = {nombre: e[CAMPO.name], fb, www, estado, cuando: cuando && !isNaN(cuando) ? cuando : null};
     for (const o of orgsDe(e)){
       if (!organiza.has(o)) organiza.set(o, []);
-      if (!organiza.get(o).some(x => x.nombre == e[CAMPO.name])) organiza.get(o).push({nombre: e[CAMPO.name], fb, www});
+      const suyos = organiza.get(o), i = suyos.findIndex(x => x.nombre == e[CAMPO.name]);
+      if (i < 0) suyos.push(ev);
+      else if (ordenOrganiza(ev, suyos[i]) < 0) suyos[i] = ev;     // (dos ediciones con el mismo nombre: la más próxima)
     }
   }
+  for (const suyos of organiza.values()) suyos.sort(ordenOrganiza);
   return organiza;
 }
+// el orden de la lista de un organizador: los que vienen, el más próximo primero; luego los ya pasados, el más reciente primero; al final, los sin fecha
+function ordenOrganiza(a, b){
+  const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+  const grupo = x => !x.cuando ? 2 : x.cuando >= hoy ? 0 : 1;
+  return grupo(a) - grupo(b) || (grupo(a) == 0 ? a.cuando - b.cuando : grupo(a) == 1 ? b.cuando - a.cuando : 0);
+}
 let organiza = null;    // (la primera vez que se pide, ya con los datos: en la publicada están cifrados al cargar la página)
+// el estado de cada evento en la lista de un organizador: su símbolo y lo que dice en la leyenda de bajo la lista (en inglés, como la ficha: solo los
+// controles se traducen). not verified: la fecha del año anterior llevada a este (ext)
+const ESTADO_ORGANIZA = {fecha: ['●', 'date confirmed'], ext: ['○', 'not verified'], sin: ['-', 'no date']};
 const organizaDe = nombre => (organiza = organiza || organizadores()).get(nombre) || [];
 
 const esFb = u => /^https?:\/\/([a-z]+\.)?(facebook\.com|fb\.com|fb\.me)\//i.test(u);
@@ -941,12 +995,24 @@ function cara(p){
   return img;
 }
 
-function logoEspecial(){
-  const i = document.createElement('img');
-  i.src = 'img/especial.svg';
-  i.className = 'logoEspecial';
-  i.alt = 'special milonga';
-  return i;
+// la letra de cada tipo del selector (2026-11-11, el usuario: "AGT y AFMPSR": artist couple, group, tanguer@; academy, festival -con los demás eventos-,
+// milonga, practica, seminar y sources, R)
+const LETRA_TIPO = {couple: 'C', group: 'A',   // artist couple, C (2026-11-12, el usuario: "cambia a C para artist couple"; antes, A como academy)
+                    [PEO]: 'T', [ACA]: 'A', [FES]: 'F', [MIL]: 'M', [PRA]: 'P', [SEM]: 'S', [LIS]: 'R'};
+const letraTipo = p => p.geo ? '' : LETRA_TIPO[p.lista ? LIS : p.evento ? p.roles[0] : p.tipoP == 'person' || !p.tipoP ? PEO : p.tipoP] || '';
+function logoTipo(letra){
+  const s = document.createElement('span');
+  s.className = 'logoTipo l' + letra;
+  s.appendChild(document.createElement('span')).textContent = letra;
+  s.setAttribute('aria-hidden', 'true');
+  return s;
+}
+function estrella(){   // la de las milongas especiales: ★, el primer carácter de su nombre
+  const s = document.createElement('span');
+  s.className = 'estrella';
+  s.textContent = '★';
+  s.setAttribute('aria-label', 'special milonga');
+  return s;
 }
 function iconoFila(p){   // un solo icono: su Facebook (urlfb) si lo tiene; si no, su web; en una pareja, si no, su vídeo (YT, en el popup; 2026-11-11, el usuario: "para parejas podemos tener su fb,www,yt si existe alguno en ese orden pon uno al inicio de la linea")
   const s = document.createElement('span');
@@ -971,6 +1037,7 @@ const fechaListado = p => (p.fecha || '').replace(/^\d{4}\./, '').replace(/-\d+$
 const DIAS_SEM = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 let diasSel = new Set();
 let deTira = false;   // pinta() desde un botón de las tiras: a cero, el listado vacío (no se vuelve a lo de antes)
+let deTipo = false;   // pinta() desde el selector de tipo: a cero, el listado vacío con "No <tipos> here" (2026-11-11, el usuario: "si selecciono una opcion y el listado es cero, mostrar el listado con el texto 'no XXXX here'")
 function proximaEn(p, dias){   // próxima fecha (desde hoy) de la milonga p en alguno de esos días (todos si no se dan); null si no hay
   const f = String(p.fechaOrig || '').split('.');
   if (f[0] != 'EVT') return proximaReg(p.fechaOrig, dias);
@@ -983,13 +1050,6 @@ function proximaEn(p, dias){   // próxima fecha (desde hoy) de la milonga p en 
 const horaDe = p => (leeReg(p.fechaOrig) || {hora: ''}).hora.slice(0, 4) || '9999';
 function dos(n){ return String(n).padStart(2, '0'); }   // el día con dos cifras (05): las fechas del listado, alineadas
 const mesDia = d => MESES[d.getMonth()] + '.' + dos(d.getDate());   // NOV.12: la fecha del listado (MMM.DD.CCC)
-function textoDia(d){   // THU.OCT.29; hoy, TODAY.THU (mañana, con su fecha)
-  const hoy = new Date();
-  hoy.setHours(0, 0, 0, 0);
-  const n = Math.round((new Date(d).setHours(0, 0, 0, 0) - hoy) / 864e5);
-  return n == 0 ? 'TODAY.' + DIAS_SEM[d.getDay()] : fechaDia(d);
-}
-const fechaDia = d => DIAS_SEM[d.getDay()] + '.' + MESES[d.getMonth()] + '.' + dos(d.getDate());   // THU.OCT.29
 // milongas y prácticas: solo las de los próximos 7 días (hoy y los 6 siguientes); las mensuales, la semana que les toca.
 // las milongas especiales (las no regulares, de fecha EVT), desde ya hasta su fecha, con su logo (2026-11-04, el usuario)
 const DIAS_VISTA = 7;
@@ -1211,18 +1271,43 @@ function rellenaPersona(c, p){
     if (lineaLugar) lineaLugar.append(...logos.firstElementChild.childNodes);
     else d.insertBefore(logos.firstElementChild, par.parentNode == d ? par : null);
   }
-  // los eventos que organiza (de los eventos: su org), tras la línea de su Facebook y su YouTube: uno por línea, con un punto, su nombre y
-  // luego los logos de su Facebook y su web, si los tiene (2026-11-08, el usuario)
+  // los eventos que organiza (de los eventos: su org), tras la línea de su Facebook y su YouTube: uno por línea, con su estado, su nombre y
+  // luego los logos de su Facebook y su web, si los tiene (2026-11-08, el usuario). El estado, en vez del punto de antes (2026-11-12, el usuario):
+  // ● fecha confirmada, ○ la del año anterior llevada a este (no verificada), - sin fecha (antes ·; 2026-11-12, el usuario: "no date por -"); su significado, en una leyenda bajo la lista con los que
+  // salen (no en title: en el móvil no se ve; 2026-11-12, el usuario: "no uses title no se ven en el movil")
+  const estados = new Set();
   for (const ev of eventos){
     const e = document.createElement('p');
     e.className = 'organiza';
-    e.append('• ' + ev.nombre);
+    const estado = ESTADO_ORGANIZA[ev.estado] ? ev.estado : 'sin';
+    estados.add(estado);
+    const s = document.createElement('span');
+    s.className = 'estado';
+    s.textContent = ESTADO_ORGANIZA[estado][0];
+    s.setAttribute('aria-label', ESTADO_ORGANIZA[estado][1]);
+    const m = document.createElement('span');      // su mes en tres letras (MESES, como el listado); sin fecha, el hueco: los nombres alineados
+    m.className = 'mes';
+    m.textContent = ev.cuando ? MESES[ev.cuando.getMonth()] : '';
+    e.append(s, ' ', m, ' ' + ev.nombre);
     for (const [u, icono] of [[ev.fb, 'img/perfil.svg'], [ev.www, 'img/web.svg']]) if (u){
       const a = enlace(u, '', icono);
       a.setAttribute('aria-label', u);
       e.append(' ', a);
     }
     d.appendChild(e);
+  }
+  // la leyenda: solo los estados que salen, en el orden de ESTADO_ORGANIZA, tras "note:" ("note: ● date confirmed   ○ not verified"; 2026-11-12, el usuario)
+  if (estados.size){
+    const l = document.createElement('p');
+    l.className = 'leyendaOrganiza';
+    l.append('note: ');
+    Object.keys(ESTADO_ORGANIZA).filter(k => estados.has(k)).forEach((k, i) => {   // (cada uno, entero: en el móvil, el ○ se quedaba sin su texto)
+      const x = document.createElement('span');
+      x.className = 'item';
+      x.textContent = ESTADO_ORGANIZA[k].join(' ');
+      l.append(i ? '   ' : '', x);
+    });
+    d.appendChild(l);
   }
 }
 
@@ -1247,7 +1332,7 @@ function abreFicha(p, fila){   // fila: la pulsada (una milonga puede salir en v
   fichaAbierta = p;
   filaAbierta = fila || document.getElementById('f' + p.id);
   marcaAbierta();
-  $('detalle').appendChild($('dCopiar'));   // fuera de la ficha que se borra (va al final de su primera línea: pintaCopiar)
+  $('detalle').append($('dCopiar'), $('dFuentes'));   // fuera de la ficha que se borra (van al final de su primera línea y de su línea note: pintaCopiar, pintaFuentes)
   $('dCuerpo').innerHTML = '';
   rellena($('dCuerpo'), p);
   // la foto abre la ficha en el popup, con la información desplegada (2026-11-11, el usuario: "click en la imagen de la ficha popup de la ficha con la informacion
@@ -1286,8 +1371,10 @@ function mueveFila(n){
 // el enlace a la ficha: esta página con ?id=<id> (abreId), y el #k= de la clave si lo hay; publicada, el
 // Worker /w?id=<id> (push.sh escribe URL_FICHA), que lleva a tangoglobe/?id=<id>#k=<clave>
 const URL_FICHA = 'https://tangoinfo-eventos.55tgb.workers.dev/w';
-// los iconos del botón list / grid: tres rayas (☰) y un cuadrado partido en 3 × 3 (▦)
-const ICONO_LISTA = '<svg class="iBoton" viewBox="0 0 16 16" aria-hidden="true"><path d="M1 3h14M1 8h14M1 13h14" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
+// los iconos del botón list / grid: una lista con viñetas (tres cuadraditos y, a su lado, tres rayas) y un cuadrado partido en 3 × 3 (▦). La lista, con
+// viñetas para que no parezca un menú (2026-11-12, el usuario: "usar otro logo para list que no se confunda con un menu"; antes, tres rayas, ☰)
+const ICONO_LISTA = '<svg class="iBoton iLista" viewBox="0 0 16 16" aria-hidden="true"><path d="M1 2h3v3H1zM1 6.5h3v3H1zM1 11h3v3H1z" fill="currentColor"/>' +
+                    '<path d="M6 3.5h9M6 8h9M6 12.5h9" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
 const ICONO_PARRILLA = '<svg class="iBoton iParrilla" viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 1.5h13v13h-13zM5.83 1.5v13M10.17 1.5v13M1.5 5.83h13M1.5 10.17h13" ' +
                        'fill="none" stroke="currentColor" stroke-width="1.5"/></svg>';
 const ICONO_ENLACE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
@@ -1300,6 +1387,9 @@ function pintaFuentes(p){
   const b = $('dFuentes');
   const urls = typeof LISTAFUENTES == 'undefined' ? [] : [...new Set((p.ids || []).flatMap(i => LISTAFUENTES[i] || []))];
   b.classList.toggle('oculto', !urls.length);
+  const nota = $('dCuerpo').querySelector('.leyendaOrganiza');   // con línea note, el logo al final de ella, seguido; sin ella, abajo a la derecha
+  b.classList.toggle('enNota', !!nota);
+  if (nota) nota.append(b);
   b.onclick = () => {
     $('fCuerpo').innerHTML = '';
     const d = document.createElement('div');
@@ -1381,7 +1471,8 @@ function pintaFechas(cuenta, oculto){
     tipTira(b, cuantos, true);
     b.classList.toggle('activo', i == fechaSel);
     b.classList.toggle('cero', !cuantos && i != fechaSel);   // a cero, sin clic
-    if (!b.classList.contains('cero')) b.onclick = () => { fechaSel = i; lugarSel = ciudadSel = null; soloBuscado = false; deTira = true; pinta(); };
+    // la ciudad (o el lugar) elegida se queda, como con los días (2026-11-11, el usuario: "clikar en los meses no quita la seleccion de ciudad")
+    if (!b.classList.contains('cero')) b.onclick = () => { fechaSel = i; soloBuscado = false; deTira = true; pinta(); };
     div.appendChild(b);
   });
   if (!oculto) div.children[fechaSel].scrollIntoView({block: 'nearest', inline: 'nearest'});
@@ -1439,7 +1530,7 @@ const TEXTOS = {
        'SUN': '일', 'MON': '월', 'TUE': '화', 'WED': '수', 'THU': '목', 'FRI': '금', 'SAT': '토',
        'OPEN SCHEDULER BY VENUE': '장소별 일정 보기', 'OPEN SCHEDULER BY TIME': '시간별 일정 보기',
        'switch to grid': '격자로 보기', 'switch to list': '목록으로 보기', 'show / hide the map': '지도 보이기 / 숨기기', 'map: not applicable here': '여기서는 지도 없음',
-       'map: not available': '지도를 쓸 수 없음', 'copy link': '링크 복사', 'language': '언어', 'items': '항목', 'showing {n}': '{n}개 표시', 'list': '목록', 'grid': '격자'},
+       'map: not available': '지도를 쓸 수 없음', 'copy link': '링크 복사', 'language': '언어', 'items': '항목', 'showing {n}': '{n}개 표시', 'max {n} elements': '최대 {n}개', 'list': '목록', 'grid': '격자'},
   zh: {'search tango…': '搜索探戈…', 'all': '全部', 'ALL': '全部', 'community': '社群', 'events': '活动',
        'sources': '信息源', 'festival': '探戈节', 'seminar': '研讨会', 'academy': '学院', 'milonga': '米隆加', 'practica': '练习会',
        'tanguer@': '探戈舞者', 'artist couple': '艺术家舞伴', 'group': '团体', 'organizer': '主办方', 'artist': '艺术家',
@@ -1450,7 +1541,7 @@ const TEXTOS = {
        'SUN': '周日', 'MON': '周一', 'TUE': '周二', 'WED': '周三', 'THU': '周四', 'FRI': '周五', 'SAT': '周六',
        'OPEN SCHEDULER BY VENUE': '按场地查看日程', 'OPEN SCHEDULER BY TIME': '按时间查看日程',
        'switch to grid': '网格视图', 'switch to list': '列表视图', 'show / hide the map': '显示 / 隐藏地图', 'map: not applicable here': '此处无地图',
-       'map: not available': '地图不可用', 'copy link': '复制链接', 'language': '语言', 'items': '项', 'showing {n}': '显示 {n}', 'list': '列表', 'grid': '网格'},
+       'map: not available': '地图不可用', 'copy link': '复制链接', 'language': '语言', 'items': '项', 'showing {n}': '显示 {n}', 'max {n} elements': '最多 {n} 项', 'list': '列表', 'grid': '网格'},
   ja: {'search tango…': 'タンゴを検索…', 'all': 'すべて', 'ALL': 'すべて', 'community': 'コミュニティ', 'events': 'イベント',
        'sources': '情報源', 'festival': 'フェスティバル', 'seminar': 'セミナー', 'academy': 'アカデミー', 'milonga': 'ミロンガ', 'practica': 'プラクティカ',
        'tanguer@': 'タンゲーロ', 'artist couple': 'アーティストカップル', 'group': 'グループ', 'organizer': '主催者', 'artist': 'アーティスト',
@@ -1461,7 +1552,7 @@ const TEXTOS = {
        'SUN': '日', 'MON': '月', 'TUE': '火', 'WED': '水', 'THU': '木', 'FRI': '金', 'SAT': '土',
        'OPEN SCHEDULER BY VENUE': '会場別スケジュール', 'OPEN SCHEDULER BY TIME': '時間別スケジュール',
        'switch to grid': 'グリッド表示', 'switch to list': 'リスト表示', 'show / hide the map': '地図の表示 / 非表示', 'map: not applicable here': 'ここでは地図なし',
-       'map: not available': '地図は使えません', 'copy link': 'リンクをコピー', 'language': '言語', 'items': '件', 'showing {n}': '{n}件を表示', 'list': 'リスト', 'grid': 'グリッド'}
+       'map: not available': '地図は使えません', 'copy link': 'リンクをコピー', 'language': '言語', 'items': '件', 'showing {n}': '{n}件を表示', 'max {n} elements': '最大 {n}件', 'list': 'リスト', 'grid': 'グリッド'}
 };
 const tr = t => (TEXTOS[idioma] || {})[t] || t;
 // el nombre de un país en el idioma elegido: su código ISO (paises.js) y el del navegador (Intl.DisplayNames); los que no tienen código propio, aquí
@@ -1519,9 +1610,10 @@ const ciudadDe = p => p.pais + '|' + (p.ciudad || '');
 // max 100 elementos"). La parrilla, entera
 const MAX_LISTADO = 100;
 // lo que cuenta el total: el tipo en plural (en inglés; academy, academies; all, items) o, en otro idioma, su nombre en él
-const PLURAL = {academy: 'academies', all: 'items', sources: 'sources', 'tanguer@': 'tanguer@s'};
+const PLURAL = {academy: 'academies', all: 'items', sources: 'sources', 'tanguer@': 'tanguer@s', events: 'events', community: 'community'};
+const SINGULAR = {all: 'item', events: 'event'};
 const textoCuenta = (tipo, n) => idioma != 'en' ? tr(tipo == 'all' ? 'items' : tipo)
-                                 : n == 1 ? (tipo == 'all' ? 'item' : tipo) : PLURAL[tipo] || tipo + 's';
+                                 : n == 1 ? SINGULAR[tipo] || tipo : PLURAL[tipo] || tipo + 's';
 // la ciudad en 3 letras (CIUDADES_ABREV, de paises.js: la genera import/paisesgeo.py); sin ella en la tabla, las 3 primeras letras de su nombre (o de su lugar)
 const abrevCiudad = p => p.ciudad && typeof CIUDADES_ABREV != 'undefined' && CIUDADES_ABREV[ciudadDe(p)]
                          || (p.ciudad || p.lugar || '').normalize('NFD').replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase();
@@ -1697,25 +1789,30 @@ function vuela(b, tope, mas = 0, puntos = b){   // puntos: los de los marcadores
   }
   const centro = mapa.unproject(c, zoom);
   vistaMapa = [centro, zoom];
-  if (mapa._loaded && !sinVuelo){ ocultaTira(); mapa.flyTo(centro, zoom, {duration: .8}); }
+  // la tira de áreas, países y ciudades cambia al acabar el vuelo (moveend); si el vuelo viene de un clic en ella, mientras tanto se queda vacía (tiraVacia;
+  // 2026-11-13, el usuario). En los demás vuelos no se vacía (2026-11-11, el usuario: "no quitar contenido de la linea 3")
+  if (mapa._loaded && !sinVuelo){ if (clicEnTira) tiraVacia(); mapa.flyTo(centro, zoom, {duration: .8}); }
   else mapa.setView(centro, zoom);
-}
-// la tira de áreas, países y ciudades (la de las marcas que se ven en el mapa), oculta mientras el mapa vuela a su encuadre: cambiaba en el vuelo (2026-11-11,
-// el usuario: "oculta la tira de ciudades hasta que el mapa termine la transicion"). Vuelve al acabar (moveend), y si no llega, a los 2 s
-let relojTira = null;
-function ocultaTira(){
-  $('ciudadesMapa').classList.add('enVuelo');
-  clearTimeout(relojTira);
-  relojTira = setTimeout(muestraTira, 2000);
-}
-function muestraTira(){
-  clearTimeout(relojTira);
-  $('ciudadesMapa').classList.remove('enVuelo');
 }
 // otro tamaño del mapa (el zoom del navegador, la ventana, el paso a pantalla estrecha): Leaflet lo sabe (invalidateSize) y, si no se ha movido a mano, se
 // encuadra otra vez, sin vuelo: los marcadores, con su margen (PAD) (2026-11-11, el usuario: "cuidado con el resize del zoom, debemos actualizar el mapa para
 // mantener el padding"). Antes, Leaflet solo seguía la ventana y con el encuadre de otro tamaño
 let sinVuelo = false, tamMapa = '';
+// la tercera línea, vacía mientras el mapa vuela tras un clic en ella (clicEnTira: solo durante ese clic), y llena otra vez al acabar de moverse (moveend); si
+// el mapa no avisara, a los 2 s
+let clicEnTira = false, tiraEnVuelo = false, relojTira = 0;
+function tiraVacia(){
+  tiraEnVuelo = true;
+  $('ciudadesMapa').classList.add('enVuelo');
+  clearTimeout(relojTira);
+  relojTira = setTimeout(tiraLlena, 2000);
+}
+function tiraLlena(){
+  clearTimeout(relojTira);
+  tiraEnVuelo = false;
+  $('ciudadesMapa').classList.remove('enVuelo');
+  pintaCiudades();
+}
 new ResizeObserver(() => {
   const div = $('mapa'), t = div.clientWidth + 'x' + div.clientHeight;
   if (t == tamMapa) return;
@@ -1782,7 +1879,7 @@ function pintaMapa0(lista, area, conMapa){
     L.tileLayer(ESRI + 'World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {maxZoom: 16, className: 'teselaNombres', pane: 'nombres'}).addTo(mapa);
     if (creaPaises()) capaPaises.addTo(mapa);
     capaMapa = L.layerGroup().addTo(mapa);
-    mapa.on('moveend', () => { pintaCiudades(); muestraTira(); });
+    mapa.on('moveend', tiraLlena);   // la tercera línea, con lo que se ve en el mapa ya encuadrado
   }
   mapa.invalidateSize();
   capaMapa.clearLayers();
@@ -1831,6 +1928,7 @@ function pintaMapa0(lista, area, conMapa){
 // países de las marcas que se ven en el mapa (de baseLugares: todo el listado sin el país); con un país, una ciudad o un lugar elegidos, sus ciudades.
 // Primero los de más líneas en el listado (lineasArea, lineasPais y lineasCiudad, de pinta). Al lado de cada nombre, ese número; al pulsarlo, se elige
 let lineasCiudad = () => 0, lineasPais = () => 0, lineasArea = () => 0, baseLugares = [], areasLista = [];
+let ordenCiudad = () => 0, ordenPais = () => 0, ordenArea = () => 0;   // las líneas de los doce meses: el orden de la tercera línea (pinta)
 // al pulsar una ciudad de la lista (con líneas en el listado) o elegirla en el buscador (CIT): como su marca,
 // la ciudad c (pais|ciudad) elegida en el listado y en el mapa, con su país
 function eligeCiudad(c, nombre){
@@ -1858,7 +1956,7 @@ function eligePais(pais){
 // Solo si cambian sus textos (el idioma)
 let textosTipo = '';
 function anchoTipo(){
-  const sel = $('selRol'), opciones = [...sel.options].filter(o => !o.classList.contains('grupo')), clave = opciones.map(o => o.textContent).join('|');
+  const sel = $('selRol'), opciones = [...sel.options], clave = opciones.map(o => o.textContent).join('|');
   if (clave == textosTipo) return;
   textosTipo = clave;
   const antes = sel.value;
@@ -1866,7 +1964,9 @@ function anchoTipo(){
   let ancho = 0;
   for (const o of opciones){ sel.value = o.value; ancho = Math.max(ancho, sel.getBoundingClientRect().width); }
   sel.value = antes;
-  sel.style.width = Math.ceil(ancho) - 10 + 'px';   // 10 px menos (2026-11-11, el usuario: "20px menos para el selector tipo" y luego "select de tipo 10px mas ancho"): sobraba parte del relleno de la flecha
+  sel.style.width = Math.ceil(ancho) - 10 + 'px';
+  $('cabecera').style.setProperty('--anchoTipo', sel.style.width);   // el buscador, del mismo ancho (2026-11-12, el usuario: "search mismo ancho que select tipo")
+  // (10 px menos (2026-11-11, el usuario: "20px menos para el selector tipo" y luego "select de tipo 10px mas ancho"): sobraba parte del relleno de la flecha
 }
 // al pulsar un área (en World): como elegirla en el selector de antes
 function eligeArea(area){
@@ -2004,6 +2104,7 @@ function pintaFotoCiudad(){
   $('fcPie').href = f[3] || f[0];
 }
 function pintaCiudades(){
+  if (tiraEnVuelo) return;   // vacía hasta que el mapa acabe de moverse (tiraLlena)
   const div = $('ciudadesMapa'), dePais = !!(ciudadSel || lugarSel || paisSel), deMundo = !dePais && areaActual() == TODOS;   // con país, ciudad o lugar elegidos: sus ciudades; en World, las áreas; si no, los países del área
   const vista = mapa && mapaAbierto && !$('mapaCaja').classList.contains('oculto') ? mapa.getBounds() : null, nombres = new Map();
   if (deMundo) for (const x of areasLista) nombres.set(x, nombreArea(x));   // las áreas, todas las que tienen líneas (sin mirar el mapa)
@@ -2013,9 +2114,10 @@ function pintaCiudades(){
     else if (!dePais && p.pais && p.pais != '-') nombres.set(p.pais, nombrePais(p.pais));
   }
   const lineas = deMundo ? lineasArea : dePais ? lineasCiudad : lineasPais, elige = deMundo ? eligeArea : dePais ? eligeCiudad : eligePais;
+  const orden = deMundo ? ordenArea : dePais ? ordenCiudad : ordenPais;
   const n = new Map([...nombres.keys()].map(c => [c, lineas(c)]));
   const ciudades = [...nombres].filter(([c]) => !deMundo || n.get(c))   // las áreas, solo las que tienen líneas
-                               .sort((x, y) => n.get(y[0]) - n.get(x[0]) || x[1].localeCompare(y[1]));   // primero las de más líneas
+                               .sort((x, y) => orden(y[0]) - orden(x[0]) || x[1].localeCompare(y[1]));   // primero las de más líneas en los doce meses
   div.scrollLeft = 0;
   // back y more..., solo con su logo (2026-11-11, el usuario: "cambia back y more por logos"; antes, el logo y el texto): triángulos llenos como la flecha ▼ del
   // selector de tipo, en amarillo ("vamos a usar triangulos como el del select de tipo, tb en amarillo"): back ◀ (al nivel de arriba o a la página anterior),
@@ -2055,32 +2157,39 @@ function pintaCiudades(){
     s.classList.toggle('cero', !n.get(c));   // con el listado a cero, sin clic
     s.onclick = () => {   // con el listado a cero, nada; si no, sale la etiqueta blanca del mapa
       if (!n.get(c)) return;
-      elige(c, nombre);
+      clicEnTira = true;   // si el mapa vuela, la línea se queda vacía hasta que acabe (vuela, tiraVacia)
+      try { elige(c, nombre); } finally { clicEnTira = false; }
     };
     return s;
   });
-  // por páginas, las que quepan en la línea: en el primer botón back y, si no caben todas, en el último more... (en pantalla estrecha, todas, con scroll)
+  // por páginas, las que quepan en la línea: en el primer botón back y en el último more... (en pantalla estrecha, todas, con scroll y sin more...).
+  // Los dos, siempre en su sitio: sin nada que hacer (back en World, more... si caben todas), la casilla vacía (2026-11-12, el usuario: "linea 3 mantenemos
+  // fijos los controles, sino tienen accion presentar vacios"); antes no salían y los nombres se movían
+  const vacio = clase => { const s = document.createElement('span'); s.className = clase + ' vacio'; s.setAttribute('aria-hidden', 'true'); return s; };
   const porPaginas = !isMovil();
   const vistas = [];   // dónde empezaba cada página anterior
   const pagina = desde => {
-    const vuelve = vistas.length ? navega('atras', BACK, () => pagina(vistas.pop()), tr('back')) : atras;
+    const vuelve = vistas.length ? navega('atras', BACK, () => pagina(vistas.pop()), tr('back')) : atras || vacio('atras');
     const resto = celdas.slice(desde);
-    div.replaceChildren(...[vuelve, ...resto].filter(Boolean));
-    if (!porPaginas || div.scrollWidth <= div.clientWidth) return;
+    div.replaceChildren(vuelve, ...resto);
+    if (!porPaginas) return;
+    const hueco = vacio('mas');
+    div.append(hueco);   // del ancho de more...: si caben todas con él, se queda vacío
+    if (div.scrollWidth <= div.clientWidth) return;
     let cuantas = resto.length;
-    div.append(navega('mas', MAS, () => { vistas.push(desde); pagina(desde + cuantas); }, tr('more ...')));
+    hueco.replaceWith(navega('mas', MAS, () => { vistas.push(desde); pagina(desde + cuantas); }, tr('more ...')));
     while (cuantas > 1 && div.scrollWidth > div.clientWidth) resto[--cuantas].remove();   // las que no caben, fuera (al menos una por página)
   };
   pagina(0);
   const sel = celdas.find(s => s.classList.contains('sel'));
-  while (sel && !sel.isConnected && div.querySelector('.mas')) div.querySelector('.mas').click();   // la elegida, a la vista
+  while (sel && !sel.isConnected && div.querySelector('.mas:not(.vacio)')) div.querySelector('.mas:not(.vacio)').click();   // la elegida, a la vista
   anchoBotones = div.clientWidth;
 }
 // otro ancho de la línea (la ventana): otra vez las páginas
 let anchoBotones = 0;
 new ResizeObserver(() => { if ($('ciudadesMapa').clientWidth != anchoBotones && personas.length) pintaCiudades(); }).observe($('ciudadesMapa'));
 
-const PRIMEROS = {[LIS]: 'sources',   /* (2026-11-10, el usuario: "cambia sources por link en el selector de tipo"; antes, links) */ [FES]: 'festival', [SEM]: 'seminar', [ACA]: 'academy', [MIL]: 'milonga', [PRA]: 'practica', [PEO]: 'tanguer@', couple: 'artist couple',   /* (2026-11-10, el usuario: "usa artis couple en vez de couple") */ org: 'organizer', art: 'artist'};
+const PRIMEROS = {group: 'academy',   /* (un grupo es una academia: en su ficha, type academy) */ [COM]: 'community', [EVS]: 'events', [LIS]: 'sources',   /* (2026-11-10, el usuario: "cambia sources por link en el selector de tipo"; antes, links) */ [FES]: 'festival', [SEM]: 'seminar', [ACA]: 'academy', [MIL]: 'milonga', [PRA]: 'practica', [PEO]: 'tanguer@', couple: 'artist couple',   /* (2026-11-10, el usuario: "usa artis couple en vez de couple") */ org: 'organizer', art: 'artist'};
 function rutaListado(a, r, fs, dias, conRoles, n){   // la de la cabecera, tras el selector del tipo: World > área > país > ciudad > resto de selecciones (n líneas)
   const lugar = lugarSel && ((porLugarMapa.get(lugarSel) || [])[0] || personas.find(p => p.pos && claveMarca(p) == lugarSel));   // con el mapa cerrado, porLugarMapa puede no tenerlo
   const [paisC, ciudadC] = (ciudadSel || '').split('|');
@@ -2219,7 +2328,9 @@ function pinta(){
   else if (areaPrevia !== null){ if (!sa.value) sa.value = areaPrevia; areaPrevia = null; }
   const a = paisSel ? TODOS : val(sa), r = val($('selRol'));
   const areaCuenta = paisSel ? (areaPrevia || TODOS) : a;
-  const conFechas = deEventos(r) && !sinFecha(r), conDias = regular(r), conRoles = r == PEO;
+  // events (todos los eventos), con la tira de meses, como festival y seminar; la de días, solo las milongas y las prácticas (2026-11-11, el usuario: "para event
+  // mostrar el filtro de meses, solo para milongas mostrar el de dias")
+  const conFechas = deEventos(r) && !sinFecha(r) || r == EVS, conDias = regular(r), conRoles = r == PEO;
   const fs = conFechas && !soloBuscado ? fechaSel : null;
   const dias = conDias && diasSel.size && !soloBuscado ? [...diasSel] : null;
   const enDias = p => !conDias || soloBuscado || enVista(proximaEn(p, dias), p);   // con la búsqueda, aunque sea más adelante
@@ -2235,11 +2346,11 @@ function pinta(){
   const dh = new Map(), desde = p => { let v = dh.get(p); if (v === undefined) dh.set(p, v = desdeHoy(p)); return v; };   // desdeHoy de cada uno, una vez (no en cada comparación)
   const lista = (soloBuscado && buscado ? base.filter(p => p === buscado)
                                         : base.filter(enSel))
-                        .sort((x, y) => !deEventos(r) ? porNombre(x.nombre, y.nombre)
+                        .sort((x, y) => !deEventos(r) && r != EVS || r == ACA ? porNombre(x.nombre, y.nombre)   // (events, por fecha, como los de su tira de meses)
                                       : desde(x) - desde(y) || porNombre(x.nombre, y.nombre));
   const filas = conDias && !soloBuscado ? filasMilongas(lista) : lista.map(p => ({p, dia: conDias ? proximaEn(p) : null}));
-  const aCero = deTira;
-  deTira = false;
+  const aCero = deTira, porTipo = deTipo;
+  deTira = deTipo = false;
   if (!filas.length && estadoPintado && !aCero){   // a cero: todo como estaba, sin repintar (el mapa sin moverse, la ficha abierta); desde las tiras, el listado vacío
     vuelveA(estadoPintado);
     if (mapa && tipMapa) mapa.closeTooltip(tipMapa);
@@ -2260,6 +2371,18 @@ function pinta(){
   lineasCiudad = c => nCiudad.get(c) || 0;
   lineasPais = c => nPais.get(c) || 0;
   lineasArea = x => (nArea.get(x) || 0) + (nArea.get(MUNDIAL) || 0);   // las de World salen en todas (enArea)
+  // su orden en la tercera línea: por sus líneas de los doce meses, aunque haya un mes elegido (el número del botón sí es el del mes): elegir un mes no las
+  // cambia de sitio (2026-11-11, el usuario: "si, ordena por las lineas de todo el año")
+  const oCiudad = new Map(), oPais = new Map(), oArea = new Map();
+  for (const p of fs === null || fs === F_DOCE ? base : personas.filter(p => enArea(p, a) && enRol(p, r) && enFecha(p, F_DOCE) && enTiras(p))){
+    const n = nLineas(p), c = ciudadDe(p);
+    oCiudad.set(c, (oCiudad.get(c) || 0) + n);
+    oPais.set(p.pais, (oPais.get(p.pais) || 0) + n);
+    oArea.set(p.area, (oArea.get(p.area) || 0) + n);
+  }
+  ordenCiudad = c => oCiudad.get(c) || 0;
+  ordenPais = c => oPais.get(c) || 0;
+  ordenArea = x => (oArea.get(x) || 0) + (oArea.get(MUNDIAL) || 0);
   const deSel = personas.filter(p => enArea(p, a) && enRol(p, r) && enSel(p));   // lo del área, el tipo y el lugar elegidos: para los contadores de las tiras y la agenda (una pasada, no una por botón)
   agendaDe = () => deSel;
   baseLugares = base.filter(p => p.pos);
@@ -2274,13 +2397,12 @@ function pinta(){
   // all, community y events, y dentro de cada grupo por orden alfabético de lo que se lee (2026-11-10, el usuario: "orden alfabetico para select de tipos:
   // all+community+events y dentro de cada uno tb orden alfabetico")
   const nombreTipo = v => PRIMEROS[v] || textoRol(v), porTexto = vs => vs.sort((x, y) => nombreTipo(x).localeCompare(nombreTipo(y)));
-  opciones($('selRol'), [{grupo: tr('community'), valores: porTexto([PEO, ...TIPOS_P])},
-                         {grupo: tr('events'), valores: porTexto([LIS, ACA, FES, SEM, MIL, PRA])}],
-           v => tr(nombreTipo(v)), null, tr('all'));   // sin contador: el número va al final de la ruta. El orden, el del inglés
-  // dentro de cada grupo, todos sangrados con dos blancos no separables (el desplegable nativo no hace caso del padding; 2026-11-11, el usuario:
-  // "identa dos blancos en select de tipo", "en el select dentro de cada grupo todos tienen sangria"); all no tiene grupo. Academy y group, además,
-  // en negrita, también elegidas ("academy y group van en negrita en el select")
-  for (const v of [ACA, 'group']) $('selRol').querySelector(`option[value="${v}"]`)?.classList.add('negrita');
+  opciones($('selRol'), [{valor: COM, valores: porTexto([PEO, ACA, ...TIPOS_P.filter(t => t != 'group')])},   // (group, dentro de academy)
+                         {valor: EVS, valores: porTexto([LIS, FES, SEM, MIL, PRA])}],
+           v => tr(nombreTipo(v)), null, tr('all'),   // sin contador: el número va al final de la ruta. El orden, el del inglés
+           CSS.supports('appearance', 'base-select') ? v => LETRA_TIPO[v] : null);   // (el logo, solo con base-select: el desplegable nativo solo pinta texto; 2026-11-11, el usuario: "add el logo en el select")
+  // solo community y events en negrita; los demás, sin negrita y sangrados un carácter (2026-11-11, el usuario: "manten la negrita de events y comunity, los
+  // otros sin negrita", "identa 1 caracter"; antes, academy y group también en negrita)
   anchoTipo();
   estadoPintado = filas.length ? estado() : null;   // con los selectores ya como se ven
   $('fechas').classList.remove('oculto');
@@ -2293,13 +2415,14 @@ function pinta(){
   else pintaFechas(i => deSel.filter(p => enFecha(p, i)).length, !conFechas);
   pintaMapa(baseMapa, a, personas.some(p => p.pos && enArea(p, aMapa) && enRol(p, r)));   // sin las tiras: si el tipo lleva mapa
   pintaFotoCiudad();
-  $('bListado').innerHTML = enListado ? ICONO_LISTA + tr('list') : ICONO_PARRILLA + tr('grid');   // lo que se ve; al pulsar, lo otro. Con su texto (2026-11-11, el usuario: "quita list/grid deja solo el logo" y luego "vuelve a poner list/grid")
+  $('bListado').innerHTML = enListado ? ICONO_LISTA : ICONO_PARRILLA;   // lo que se ve; al pulsar, lo otro. Solo el icono (2026-11-12, el usuario: "quitar texto list/grid"; antes, el 2026-11-11, "quita list/grid deja solo el logo" y luego "vuelve a poner list/grid")
+  $('bListado').setAttribute('aria-label', tr(enListado ? 'list' : 'grid'));   // el nombre, para el lector de pantalla (sin title)
   $('parrilla').classList.toggle('oculto', enListado);
   $('listado').classList.toggle('oculto', !enListado);
   window.scrollTo(0, 0);   // al cambiar el listado, arriba: a la vista su primera línea
   historia();
   rutaListado(areaCuenta, r, fs, dias, conRoles, enListado ? filas.length : lista.length);   // la ruta, también con la parrilla: en ella el botón list / grid
-  if (!enListado){ pintaParrilla(lista); return pintaVacio(filas.length, $('parrilla'), areaCuenta, r, fs, dias, conRoles); }
+  if (!enListado){ pintaParrilla(lista); return pintaVacio(filas.length, $('parrilla'), areaCuenta, r, fs, dias, conRoles, porTipo); }
   const div = $('listado');
   div.innerHTML = '';
   div.classList.add('filas');
@@ -2326,16 +2449,22 @@ function pinta(){
     // estrechados (.fLetras); el punto y el guion, en media letra (.fSigno)
     const f = span('fFecha', '');
     const fecha = p.evento ? (dia ? mesDia(dia) : fechaListado(p)) : '';
-    for (const trozo of [fecha, abrevCiudad(p)].filter(Boolean).join('.').split(/([.-])/)){
+    // con una ciudad elegida (o su marca del mapa), sin la ciudad: todas son de ella (2026-11-11, el usuario: "si tengo una ciudad seleccionada puedo quitar .CCC del listado")
+    for (const trozo of [fecha, ciudadSel || lugarSel ? '' : abrevCiudad(p)].filter(Boolean).join('.').split(/([.-])/)){
       if (trozo == '.' || trozo == '-') span('fSigno', trozo, f);
-      else if (trozo) span('fLetras', trozo, f).style.setProperty('--n', trozo.length);   // su ancho, por letras (CSS)
+      else if (trozo) span('fLetras', trozo, f);
     }
     const textos = document.createElement('div');
     textos.className = 'fTexto';
     c.appendChild(textos);
     const nombre = span('fNombre', '', textos);   // el título, estrechado como la fecha: su texto en una caja (fNomCaja) que corta con … (fNomTexto)
-    if (especial(p)) nombre.append(logoEspecial());
-    span('fNomTexto', p.nombre, span('fNomCaja', '', nombre));
+    // el logo de su tipo, delante (2026-11-11, el usuario: "poner el logo en el listado delante del nombre"); solo si el tipo elegido junta varios (all, community,
+    // events): con uno solo, todos llevarían el mismo ("si tengo solo una opcion del select puedo quitar los logos del listado")
+    if (letraTipo(p) && [TODOS, COM, EVS].includes($('selRol').value || $('selRol').dataset.inicial || TODOS)) nombre.append(logoTipo(letraTipo(p)));
+    // una source, sin el último trozo de su dominio: hongkongtango.com -> hongkongtango, agendadeltango.com Madrid -> agendadeltango Madrid (2026-11-11, el usuario:
+    // "para mostar las sources en el listado quita el ultimo subdominio (ej .com)")
+    const nomTexto = span('fNomTexto', p.lista ? p.nombre.replace(/\.[a-z]{2,6}(?=\s|$)/gi, '') : p.nombre, span('fNomCaja', '', nombre));
+    if (especial(p)) nomTexto.prepend(estrella());   // la estrella, el primer carácter del nombre
     const mini = cara(p);   // la miniatura al final, de la altura de la línea
     mini.classList.add('fMini');
     if (mini.classList.contains('logo')){   // el logo, con su proporción (de 1:1 a 16:9): sin el blanco a sus lados (2026-11-11, el usuario: "en el listado reduce el espacio a los lados del logo")
@@ -2349,12 +2478,12 @@ function pinta(){
   if (filas.length > MAX_LISTADO){   // con más, la última línea lo dice (el total, el de la barra)
     const m = document.createElement('div');
     m.className = 'filaMax';
-    const t = document.createElement('span');   // en inglés, en blanco y con la letra del nombre del listado (2026-11-11, el usuario: "max 100 elements en blanco", "misma fuente que el nombre del listado")
-    t.textContent = 'max ' + MAX_LISTADO + ' elements';
+    const t = document.createElement('span');   // en blanco y con la letra del nombre del listado (2026-11-11, el usuario: "max 100 elements en blanco", "misma fuente que el nombre del listado")
+    t.textContent = tr('max {n} elements').replace('{n}', MAX_LISTADO);   // en el idioma elegido (2026-11-13, el usuario: "max 100 elements en idiomas")
     m.appendChild(t);
     div.appendChild(m);
   }
-  pintaVacio(filas.length, div, areaCuenta, r, fs, dias, conRoles);
+  pintaVacio(filas.length, div, areaCuenta, r, fs, dias, conRoles, porTipo);
   marcaAbierta();
 }
 // el listado a cero (desde las tiras): 'No events in <lugar> in <mes> on <días>', y un botón que quita fechas, días y roles
@@ -2363,7 +2492,7 @@ function textoDonde(a){   // lo elegido, en palabras: el lugar, la ciudad, el pa
   return ciudadSel ? ciudadSel.split('|')[1] || ciudadSel.split('|')[0] : lugar ? lugar.ciudad || lugar.lugar
        : paisSel ? paisSel.feature.properties.nombres[0] : a == TODOS ? 'the world' : a == '-' ? 'no area' : a;
 }
-function pintaVacio(n, div, a, r, fs, dias, conRoles){
+function pintaVacio(n, div, a, r, fs, dias, conRoles, porTipo = false){
   if (n) return;
   const donde = textoDonde(a);
   const f = fs !== null ? FECHAS[fs] : null;
@@ -2371,7 +2500,9 @@ function pintaVacio(n, div, a, r, fs, dias, conRoles){
   const roles = conRoles && rolesSel.size ? ' (' + [...rolesSel].map(k => k == PTC ? 'PTC' : textoRol(k).toUpperCase()).join(', ') + ')' : '';
   const v = document.createElement('div');
   v.className = 'vacio';
-  v.textContent = 'No ' + (deEventos(r) ? 'events' : 'results') + ' in ' + donde + cuando
+  // desde el selector de tipo, "No seminars here"; desde las tiras, "No events in <lugar>"
+  v.textContent = (porTipo ? 'No ' + textoCuenta(r == TODOS ? 'all' : PRIMEROS[r] || textoRol(r), 0) + ' here'
+                           : 'No ' + (deEventos(r) || r == EVS ? 'events' : 'results') + ' in ' + donde) + cuando
                 + (dias ? ' on ' + dias.map(d => DIAS_SEM[d]).join(', ') : '') + roles;
   if (cuando || dias || roles){
     const b = document.createElement('button');
@@ -2403,7 +2534,7 @@ function pintaParrilla(lista){
     const pie = document.createElement('figcaption');
     const nom = document.createElement('span');
     nom.textContent = p.nombre;
-    if (especial(p)) nom.prepend(logoEspecial());
+    if (especial(p)) nom.prepend(estrella());
     pie.appendChild(nom);
     pie.onclick = () => abreFicha(p);
     fig.appendChild(pie);
@@ -2517,7 +2648,7 @@ function ir(p){
   buscado = p;
   soloBuscado = true;
   enListado = true;
-  $('selRol').value = p.evento || p.lista ? p.roles[0] : TIPOS_P.includes(p.tipoP) ? p.tipoP : PEO;   // (group, couple: no están en people, enRol)
+  $('selRol').value = p.evento || p.lista ? p.roles[0] : p.tipoP == 'group' ? ACA : TIPOS_P.includes(p.tipoP) ? p.tipoP : PEO;   // (couple: no está en people, enRol; group, en academy)
   $('selArea').value = p.area == MUNDIAL ? TODOS : p.area;
   fechaSel = F_DOCE;
   lugarSel = ciudadSel = paisSel = null;
@@ -2547,7 +2678,7 @@ function muestraInfo(){
   const d = document.createElement('div');
   d.className = 'texto';
   d.innerHTML = '<iframe id="kkTexto" src="atribucionkk.htm?v=public version&letra=tg" aria-label="KoKoTango"></iframe>' +   // el mismo que tangoworld
-                '<p class="enlaces"><a id="aTw" href="#" target="_blank" rel="noopener">⇒ go to tangoworld</a></p>';   // con la ruta de las migas
+                '<p class="enlaces"><a id="aTw" href="#" target="_blank" rel="noopener">⇒ goto tangoworld</a></p>';   // con la ruta de las migas
   $('fCuerpo').appendChild(d);
   $('aTw').onclick = () => { $('aTw').href = urlRuta(true); };
   $('ficha').showModal();
@@ -2600,7 +2731,7 @@ function botonSesion(p){   // dos líneas: el nombre (en azul, con la estrella d
   const linea = clase => { const s = document.createElement('span'); s.className = clase; b.appendChild(s); return s; };
   b.className = 'sesion';
   const nom = linea('nom');
-  if (especial(p)) nom.appendChild(logoEspecial());
+  if (especial(p)) nom.appendChild(estrella());
   nom.append([p.nombre, semanasMes(p)].filter(Boolean).join(' '));
   const debajo = horasAgenda ? localDe(p) : horario(p);
   if (debajo) linea('hora').textContent = debajo;
@@ -2715,6 +2846,7 @@ function conecta(){
     if (p) ciudadSel = ciudadDe(p);
     lugarSel = null;
     soloBuscado = false;
+    deTira = deTipo = true;   // (a cero, el listado vacío, no lo de antes)
     pinta();
   };
 }
