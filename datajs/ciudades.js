@@ -790,6 +790,7 @@ var CIUDADES_COORD = {
 "Spain|Madrid": [40.4167, -3.7033],
 "Spain|Malaga": [36.7178, -4.4357],
 "Spain|Mallorca": [39.6017, 2.6553],
+"Spain|Manzanares el Real": [40.7268, -3.8649],
 "Spain|Marbella": [36.5103, -5.0081],
 "Spain|Matadepera": [41.6012, 2.0275],
 "Spain|Maó": [39.8843, 4.2649],
