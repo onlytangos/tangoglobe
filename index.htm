@@ -71,7 +71,8 @@
      debajo de migas en una tercera linea"): en la primera línea, el buscador (sobre el panel) y el total con sus botones (sobre el listado); en la segunda, las
      migas, tras el tipo ("tipo en la linea 2 luego las migas"); en la tercera, los botones de áreas, países o ciudades. Debajo, dos columnas: a la izquierda el panel (el mapa y las tiras), a la derecha
      el listado. Antes, el panel vertical desde arriba, con el buscador y los selectores, y sobre el listado la barra del total y las migas */
-  .app { display: grid; grid-template-columns: 260px minmax(0, 1fr); align-items: start; }   /* el panel, 260 px (2026-11-11, el usuario: "reduce el panel de izquierda 20px", antes 320; luego "en el panel lateral reduce en 20px el ancho", antes 300; y "reduce alto ancho del mapa en 20px": el mapa es del ancho del panel, antes 280) */
+  .app { display: grid; grid-template-columns: 260px minmax(0, 1fr); align-items: start; }
+  .app.panelMitad { grid-template-columns: 130px minmax(0, 1fr); }   /* con el mapa y el calendario cerrados, el panel a la mitad (2026-11-16, el usuario: "los dos cerrados panel izq se reduce 50%"; ajustaPanel) */   /* el panel, 260 px (2026-11-11, el usuario: "reduce el panel de izquierda 20px", antes 320; luego "en el panel lateral reduce en 20px el ancho", antes 300; y "reduce alto ancho del mapa en 20px": el mapa es del ancho del panel, antes 280) */
   .cabecera { grid-column: 1 / -1; --altoTira: var(--altoFila); position: sticky; top: 0; z-index: 4; display: grid; grid-template-columns: var(--anchoTipo, 236px) minmax(0, 1fr);
               align-items: center; gap: 4px; padding: 8px 16px 8px 12px; background: var(--barra); box-shadow: 0 1px 6px rgba(0,0,0,.6); }   /* el buscador, del ancho del selector de tipo (--anchoTipo, lo pone anchoTipo; 2026-11-12, el usuario: "search mismo ancho que select tipo"): el total, a 4 px, encima de las migas. Antes, el buscador, del ancho de lo de dentro del panel (260 - 2 × 12, el del mapa), y el total a 4 px, como el tipo y las migas (2026-11-11, el usuario: "ajusta margin search y contador"; antes, a 28 px: donde empieza el listado) */
   .cabecera > .lineaMigas, .cabecera > .linea3, .cabecera > .fechas { grid-column: 1 / -1; }   /* (.fechas: los filtros, cuarta línea) */
@@ -216,12 +217,13 @@
   .calendario { position: relative; }
   .calendario canvas.puntosCal { position: absolute; left: 0; top: 0; transform-origin: 0 0; pointer-events: none; }   /* los puntos, dibujados a píxel de pantalla (dibujaPuntos) */
   .calendario.conLienzo .cal i:not(.tramo) { visibility: hidden; }
-  .calBarra { flex: none; display: flex; align-items: center; gap: 4px; min-width: 0; height: 12px; }   /* encima del calendario: el selector y los open */
+  .calBarra { flex: none; display: flex; align-items: center; gap: 4px; min-width: 0; min-height: 12px; }   /* encima del calendario: el ocultador (24 px), el selector y los open */
   .calBarra:not(:has(> :not(.oculto))) { display: none; }
   .calModos { display: flex; align-items: center; gap: 2px; height: 12px; }
-  .calBarra #bCal { flex: none; display: inline-flex; align-items: center; gap: .4em; height: 12px; padding: 0 4px; border: 0; border-radius: 2px; font-size: 8px; line-height: 12px; background: var(--tarjeta); color: var(--texto); cursor: pointer; }   /* el ocultador del calendario: ▲ o ▼ calendar */
+  .calBarra #bCal { flex: none; display: inline-flex; align-items: center; justify-content: flex-start; gap: .4em; height: 20px; padding: 0 6px; border: 0; border-radius: 4px; font-size: .85em; line-height: 20px; background: var(--tarjeta); color: var(--texto); cursor: pointer; }   /* el ocultador del calendario: ▲ o ▼ calendar, como el del mapa ("mismas fuestes y triangiulos que los demas") */
+  .calBarra #bCal.cerrado { flex: 1 1 auto; }   /* cerrado, de todo el ancho ("ocupar el ancho del panel cuando estan cerrados") */
   .calBarra #bCal:hover { background: var(--azulClaro); color: var(--negro); }
-  .iCal { display: block; width: 7px; height: 6px; color: var(--acento); }   /* su triángulo, en amarillo, como el del mapa */
+  .iCal { display: block; flex: none; width: .71em; height: .6em; color: var(--acento); }   /* su triángulo, como el del mapa y la flecha ▼ del selector */
   .calBarra #bCal:hover .iCal { color: inherit; }   /* el conmutador año / mes / semana: show annual month week */
   .calModos > span { font-size: 8px; line-height: 12px; color: var(--grisNota); margin-right: 3px; }
   .calModos button { border: 0; border-radius: 2px; padding: 0 4px; font-size: 8px; line-height: 12px; height: 12px; background: var(--tarjeta); color: var(--grisClaro); cursor: pointer; }
@@ -259,7 +261,7 @@
   /* entre los controles, 4 px: los de las líneas de la cabecera y los botones de las tiras (2026-11-11, el usuario: "mismo margin entre controles"; antes, 2 px
      en las tiras). Los de la tercera línea (áreas, países, ciudades), 1 px (.ciudadesMapa) */
   .tira { display: flex; gap: 4px; min-width: 0; overflow-x: auto; scrollbar-width: thin; }
-  .fechas button, #bMapa, #bListado, #bIdioma { flex: none; font-size: .85em; padding: 2px 6px; white-space: nowrap; cursor: pointer;
+  .fechas button, #bListado, #bIdioma { flex: none; font-size: .85em; padding: 2px 6px; white-space: nowrap; cursor: pointer;
                    background: var(--tarjeta); color: var(--texto); border: 1px solid var(--borde); border-radius: 4px; }
   .tira button { border: 0; border-radius: 4px; background: var(--tarjeta); color: var(--texto); }
   .tira button { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.25; padding: 0 6px;
@@ -327,7 +329,7 @@
   #total .tTipo { color: var(--blanco); }   /* lo que cuenta, también en blanco (2026-11-11, el usuario: "caja result todo en blanco"; antes, gris) */
   #total > * { line-height: 1; }   /* con Courier, bajados 2 px a mano; con Inconsolata, sus cifras ya caen en el centro (medido: con 1 px, 1,5 px bajas a 125 %; 2026-11-11, el usuario: "el contador no esta centrado verticalmente") */
   .rutaDer { position: absolute; top: 0; right: 8px; height: 100%; display: flex; align-items: center; }   /* el de copiar */
-  #bListado, #bIdioma, #bMapa, #bAgendas button { height: var(--altoTira); padding: 0 7px; box-sizing: border-box; text-align: center; }
+  #bListado, #bIdioma, #bAgendas button { height: var(--altoTira); padding: 0 7px; box-sizing: border-box; text-align: center; }
   /* list / grid y, tras él, el idioma: cuadrados, del alto de la barra, solo con su icono (☰ o ▦) o la bandera (2026-11-11, el usuario: "crea un boton cuadrado
      para list, crea otro boton despues tb cuadrado con un selector para idioma solo con la bandera: ingles, coreano, chino, japones") */
   #bIdioma { width: var(--altoTira); padding: 0; display: flex; align-items: center; justify-content: center; }
@@ -342,7 +344,8 @@
   #bIdioma img, .menuIdioma img { width: 20px; height: 14px; object-fit: cover; display: block; border-radius: 2px; }
   .menuIdioma button:hover img { outline: 2px solid var(--acento); }   /* al pasar el ratón, borde amarillo (2026-11-11, el usuario: "borde amarillo para el over sobre las banderas") */
   .menuIdioma button.activo img { outline: 2px solid var(--acento); }   /* el elegido */
-  #bMapa { width: 100%; border: 0; }   /* sin mapa, en su fila; con mapa, dentro de él (.zonaMapa) */
+  #bMapa { width: auto; align-self: flex-start; border: 0; cursor: pointer; white-space: nowrap; box-sizing: border-box; height: 20px; padding: 0 6px; font-size: .85em; line-height: 20px; border-radius: 4px; background: var(--tarjeta); color: var(--texto); }   /* como el ocultador del calendario, con la letra de los demás botones, .85em (2026-11-16, el usuario: "boton abrir mapa y calendar iguales, pequeños", "botones la mitad , ocupar el ancho del panel cuando estan cerrados", "mismas fuestes y triangiulos que los demas"; un rato, 8 px y 12 de alto; y 16 y 24): abierto, dentro del mapa (.zonaMapa); cerrado, en su fila, de todo el ancho */
+  .zonaMapa:has(.mapaCaja.cerrado) #bMapa, .zonaMapa:has(.mapaCaja.oculto) #bMapa { width: 100%; align-self: stretch; }
   .ruta .copiaRuta { height: 100%; border: 0; background: none; color: var(--acento); padding: 0; cursor: pointer;
                      display: flex; align-items: center; }
   /* al pasar el ratón, como los demás: fondo azul claro y el logo en negro, en una caja de la altura de los tramos de las migas (2026-11-11, el usuario: "copy link
@@ -426,7 +429,7 @@
   .marcaLista > div { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 8px; line-height: 1; }
   .mapaCaja { position: relative; z-index: 0; display: flex; }
   .zonaMapa { --altoMapa: 135px; position: relative; min-width: 0; }   /* la mitad y + 25 % (2026-11-15, el usuario: "tg/ reduce la altura del mapa 50%", "alto mapa + 25%"; antes, 172 px) */   /* + 25 % (2026-11-15, "aumenta el mapa en alto un 25%"; antes 108) */
-  .zonaMapa:has(.mapaCaja:not(.cerrado, .oculto)) #bMapa { position: absolute; z-index: 1; top: 5px; left: 5px; width: auto; }   /* dentro del mapa, a 5 px de arriba y de la izquierda (2026-11-15, el usuario: "pon boton map arriba izq"; antes, a la derecha: 2026-11-11, "boton map a 5px", "boton map arriba derecha") */
+  .zonaMapa:has(.mapaCaja:not(.cerrado, .oculto)) #bMapa { position: absolute; z-index: 1; top: 0; left: 0; width: auto; }   /* abierto, dentro del mapa, en su esquina de arriba a la izquierda: el triángulo, en el mismo sitio que cerrado (2026-11-16, el usuario: "triangulo igual cuando esta abierto"; antes, a 5 px; y antes, arriba a la derecha) */
   /* la tercera línea de la cabecera: los botones del nivel de abajo, primero los de más líneas en el listado: en World las áreas, en un área sus
      países, en un país sus ciudades (de las marcas que se ven en el mapa) (2026-11-11, el usuario: "eliminamos el selector de area, y ponemos las areas como
      botones siguiendo la misma regla que para paises/ciudades"). En la primera celda back y, si no caben, en la última more... (pintaCiudades). Antes, en
@@ -484,8 +487,8 @@
   /* el triángulo del botón map, como los demás: relleno, amarillo y del tamaño de la flecha ▼ del selector de tipo (el botón, con la misma letra: .85em), hacia
      arriba con el mapa abierto y hacia abajo cerrado; al pasar el ratón, el botón en azul claro y negro (2026-11-11, el usuario: "triangulo del boton map como los
      demas"; antes, las letras ▴ y ▾, subidas 2 px) */
-  #bMapa { display: inline-flex; align-items: center; justify-content: center; gap: .45em; }
-  .iMapa { display: block; flex: none; width: .71em; height: .6em; color: var(--acento); }
+  #bMapa { display: inline-flex; align-items: center; justify-content: flex-start; gap: .4em; }   /* el triángulo y el texto, a la izquierda (2026-11-16, el usuario: "alinear texto izq") */
+  .iMapa { display: block; flex: none; width: .71em; height: .6em; color: var(--acento); }   /* como la flecha ▼ del selector de tipo y los triángulos de back y more (.71 × .6 em); el del calendario, igual (.iCal) */
   #bMapa:not(:disabled):hover { background: var(--azulClaro); color: var(--negro); }
   #bMapa:hover .iMapa { color: inherit; }
   .vacio { padding: 24px 12px; text-align: center; color: var(--suave); }   /* el listado a cero */
@@ -501,7 +504,9 @@
   .fotoCiudad img, .fotoCiudad canvas { display: block; width: 100%; aspect-ratio: 2 / 1; object-fit: cover; border-radius: 6px; background: var(--tarjeta); }   /* como una acuarela (2026-11-11, el usuario: "usa css filter para poner la foto como una acuarela"; luego "eso es desenfocada pero no acuarela", "es bastante pobre"): la pinta acuarela() en el canvas #fcLienzo; mientras, o si no se puede, la foto tal cual */   /* 2:1: el centro del banner de Wikivoyage (7:1; 2026-11-11, el usuario: "usa 1"; antes, 4:3) */
   .fotoCiudad img { filter: sepia(1); }   /* en sepia mientras se pinta la acuarela, o si no se puede (2026-11-11, el usuario: "tarda un poco en cargarla, pon en css sepia la foto hasta que carga el canvas") */
   .fotoCiudad canvas { position: absolute; inset: 0; height: 100%; opacity: 0; transition: opacity 3s ease; }   /* 3 s (2026-11-11, el usuario: "pon 3s en la transicion"; antes, .9 s) */   /* encima de la foto: aparece fundiéndose sobre su misma foto; al cambiar de ciudad, la de antes se quita sin fundido (pintaFotoCiudad) (2026-11-11, el usuario: "haz una transicion de una foto a otra") */
-  .fotoCiudad canvas.pintada { opacity: 1; }
+  .fotoCiudad canvas.pintada { opacity: .5; }   /* la acuarela, al 50 % sobre la foto (2026-11-16, el usuario: "img ciudad, dejar el css al 50% opacidad sobre la foto"; antes, opaca) */
+  .fotoCiudad img { transition: filter 3s ease; }
+  .fotoCiudad:has(canvas.pintada) img { filter: none; }   /* pintada la acuarela, la foto debajo con sus colores (el sepia, solo mientras se pinta) */
   .fotoCiudad #fcMapa:hover { outline: 2px solid var(--azulClaro); }   /* el enlace, al pasar el ratón: con el azul de los demás */
   .fotoCiudad figcaption { font-size: .7em; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .fotoCiudad #fcPie { color: var(--suave); text-decoration: none; border-radius: 3px; }
@@ -1676,6 +1681,7 @@ function diasLinea(p, dia){   // los días de una línea del listado: el suyo (m
 function pintaCalendario(lineas, visible, soloDias, anyo, semana){   // semana: con la tira de días (WEEK y los días), solo los días de la vista
   const div = $('calendario');
   calUltimo = [lineas, visible, soloDias, anyo, semana];
+  ajustaPanel();
   // el ocultador, al principio de la línea de encima (bCal); oculto el calendario, también su selector y los open
   $('bCal').classList.toggle('oculto', !visible);
   pintaBotonCal();
@@ -1964,6 +1970,7 @@ function pintaBotonCal(){
   const b = $('bCal');
   b.innerHTML = '<svg class="iCal" viewBox="0 0 12 10" aria-hidden="true"><path d="' + (calOculto ? 'M0 0h12L6 10z' : 'M0 10L6 0l6 10z') + '" fill="currentColor"/></svg>' + (calOculto ? tr('calendar') : '');
   b.setAttribute('aria-label', calOculto ? 'show calendar' : 'hide calendar');
+  b.classList.toggle('cerrado', calOculto);   // (cerrado, de todo el ancho)
 }
 $('bCal').addEventListener('click', () => {
   calOculto = !calOculto;
@@ -2139,11 +2146,17 @@ let mapaAbierto = true;
 let mapaPendiente = null;
 // el triángulo del botón map: hacia arriba con el mapa abierto (al pulsarlo, se cierra), hacia abajo cerrado
 const iconoMapa = () => '<svg class="iMapa" viewBox="0 0 12 10" aria-hidden="true"><path d="' + (mapaAbierto ? 'M0 10L6 0l6 10z' : 'M0 0h12L6 10z') + '" fill="currentColor"/></svg>';
+// el botón, como el ocultador del calendario (2026-11-16, el usuario: "boton abrir mapa y calendar iguales, pequeños"): abierto, solo el triángulo (▲); cerrado,
+// el triángulo y map (▼ map); sin mapa, • map
+const textoBotonMapa = hay => { const b = $('bMapa'); b.innerHTML = !hay ? '• ' + tr('map') : iconoMapa() + (mapaAbierto ? '' : tr('map')); b.setAttribute('aria-label', !hay ? 'map' : mapaAbierto ? 'hide map' : 'show map'); };
+// el panel de la izquierda, a la mitad con el mapa y el calendario cerrados ("los dos cerrados panel izq se reduce 50%")
+const ajustaPanel = () => document.querySelector('.app').classList.toggle('panelMitad', !mapaAbierto && calOculto);
 function abreCierraMapa(){   // abrir o cerrar el mapa no toca lo elegido: la ruta (las migas) sigue igual
   mapaAbierto = !mapaAbierto;
+  ajustaPanel();
   $('mapaCaja').classList.toggle('cerrado', !mapaAbierto);
   $('mapa').classList.toggle('oculto', !mapaAbierto);
-  $('bMapa').innerHTML = iconoMapa() + tr('map');
+  textoBotonMapa(true);
   if (!mapaAbierto) return;
   if (!mapa || mapaPendiente){
     const [lista, area, conMapa] = mapaPendiente || [posMapa, areaMapa || TODOS, true];
@@ -2379,7 +2392,7 @@ function creaPaises(){
 function pintaMapa0(lista, area, conMapa){
   const div = $('mapa'), caja = $('mapaCaja'), conPos = posMapa = lista.filter(p => p.pos), hay = conPos.length || conMapa;
   $('bMapa').disabled = !hay;
-  $('bMapa').innerHTML = (!hay ? '• ' : iconoMapa()) + tr('map');
+  textoBotonMapa(hay);
   caja.classList.toggle('cerrado', !mapaAbierto);
   div.classList.toggle('oculto', !mapaAbierto);
   if (!mapaAbierto){ caja.classList.toggle('oculto', !hay); mapaPendiente = [lista, area, conMapa]; return pintaCiudades(); }
