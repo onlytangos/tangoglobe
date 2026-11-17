@@ -23,7 +23,7 @@
   @font-face { font-family: "Inconsolata"; font-style: normal; font-display: swap; font-weight: 200 900; font-stretch: 50% 200%;
                src: url(img/inconsolata/inconsolata-latin-wdth-normal.woff2) format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
   :root { --letra: "Inconsolata", "Courier New", Courier, monospace; --anchoEstrecho: 80%;   /* el listado y los títulos, estrechados: 0,4 em por letra (antes, Courier al 75 %: 0,45) */
-          --maxFoto: 110px;   /* tamaño máximo de las fotos (= ANCHO_CARA) */ --altoTira: 25px; --altoFila: 27px;   /* (2 px menos: 2026-11-16, el usuario: "tg/ reducir 2px altura botones"; antes 27 y 29; y el 15, "bajar 2px altura botones 1-4 filas": 29, antes 31) */   /* la fila de los selectores y las de la barra: así las migas quedan a la altura del mapa */ color-scheme: dark;
+          --maxFoto: 110px;   /* tamaño máximo de las fotos (= ANCHO_CARA) */ --altoTira: 25px; --altoFila: 27px; --altoEstado: 36px;   /* (2 px menos: 2026-11-16, el usuario: "tg/ reducir 2px altura botones"; antes 27 y 29; y el 15, "bajar 2px altura botones 1-4 filas": 29, antes 31) */   /* la fila de los selectores y las de la barra: así las migas quedan a la altura del mapa */ color-scheme: dark;
           /* la paleta: solo estos colores (en el script, con paleta()) */
           --azulOscuro: #2f5a8f; --azulClaro: #8ab4f8; --amarillo: #ffd500; --grisClaro: #999; --grisNota: #666; --grisMedio: #444; --grisOscuro: #222; --negro: #000; --blanco: #fff; --rojo: #e53935; --verde: #43a047; --practica: #00fffe;
           /* y los del mapa */
@@ -67,6 +67,7 @@
   .cuerpo p.enlaces { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 10px; }
   .cuerpo p.enlaces a { display: inline-flex; align-items: center; gap: 5px; }
   .cuerpo .icono { height: 16px; width: auto; }
+  .cuerpo .icono[src$="yt.svg"] { height: 14px; }   /* el de YT, 2 px menos (2026-11-17, el usuario: "tg/ logo YT -2px"): 14 px de alto (19,6 de ancho; antes 16 x 22,4); centrado igual (inline-flex) */
   /* arriba, la cabecera, fija y de lado a lado (2026-11-11, el usuario: "extendemos la linea de miga a toda la pantalla", "movemos los botones de paises/ciudades
      debajo de migas en una tercera linea"): en la primera línea, el buscador (sobre el panel) y el total con sus botones (sobre el listado); en la segunda, las
      migas, tras el tipo ("tipo en la linea 2 luego las migas"); en la tercera, los botones de áreas, países o ciudades. Debajo, dos columnas: a la izquierda el panel (el mapa y las tiras), a la derecha
@@ -77,9 +78,12 @@
               align-items: center; gap: 4px; padding: 8px 2px; background: var(--barra); box-shadow: 0 1px 6px rgba(0,0,0,.6); }   /* el buscador, del ancho del selector de tipo (--anchoTipo, lo pone anchoTipo; 2026-11-12, el usuario: "search mismo ancho que select tipo"): el total, a 4 px, encima de las migas. Antes, el buscador, del ancho de lo de dentro del panel (260 - 2 × 12, el del mapa), y el total a 4 px, como el tipo y las migas (2026-11-11, el usuario: "ajusta margin search y contador"; antes, a 28 px: donde empieza el listado) */
   /* el conjunto de las filas 1-4, a 2 px de los lados (2026-11-16, el usuario: "quitar los margin laterales de los botones", "dejar en 2px el margin lateral filas 1-4",
      "2px se refiere al conjunto de los botones filas 1-4"; antes, 12 px a la izquierda y 16 a la derecha: alineada con el panel) */
-  .cabecera > .lineaMigas, .cabecera > .linea3, .cabecera > .fechas { grid-column: 1 / -1; }   /* (.fechas: los filtros, cuarta línea) */
+  .cabecera > .linea1, .cabecera > .lineaMigas, .cabecera > .linea3, .cabecera > .fechas { grid-column: 1 / -1; }   /* (.fechas: los filtros, cuarta línea) */
   .cabecera > .linea3:has(.ciudadesMapa:empty) { display: none; }   /* sin botones, sin su línea */
-  .lineaMigas label { flex: none; display: flex; }   /* el tipo; tras él, las migas, lo que quede */
+  .lineaRuta label { flex: none; display: flex; margin-right: auto; }   /* el tipo, en la línea 1 tras el buscador; los botones (R, list, idioma, KK), a la derecha (2026-11-17, el usuario: "linea 1 : search + file type"; antes, en la línea 2, delante de las migas) */
+  /* el buscador, en la misma línea, con todo el sitio que queda (2026-11-17, el usuario: "wider search all space in line couped"; antes, en su columna, del ancho
+     del tipo: --anchoTipo). En pantalla estrecha, solo en su línea y el tipo y los botones debajo, como antes */
+  .linea1 > .busca { flex: 1 1 0; }
   /* entre mapa, meses (controles) y calendario, 8 px (gap; 2026-11-15, el usuario: "margin mapa-meses-cal en 8px"; un rato, 4: "margin mapa, controles, calendario,
      foto en 4px"; antes, 10); la foto, abajo (margin-top: auto). A los lados,
      2 px (2026-11-15, el usuario: "margin lateral mapa-meses-cal-img 2px"; antes, 12), también en pantalla estrecha (el mismo padding: 2026-11-11); bajo la foto,
@@ -127,7 +131,7 @@
                      text-align: center; overflow-wrap: anywhere; }
   .cara figcaption span { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
   .yt { position: absolute; top: 3px; right: 3px; display: flex; filter: drop-shadow(0 1px 2px rgba(0,0,0,.6)); }
-  .yt img { width: 20px; height: 14px; }
+  .yt img { width: 18px; height: 12px; }   /* 2 px menos (2026-11-17, el usuario: "tg/ logo YT -2px"; antes 20 x 14) */
   .cara img, .cara figcaption { cursor: pointer; }
 
   .cuerpo > .conEnlace { cursor: pointer; }   /* la foto que abre algo (su enlace o, en la ficha del listado, el popup), también sin foto (.sinfoto) */
@@ -174,7 +178,7 @@
      minimalista y elegante"): los días, alineados por día de la semana (lunes primero), en gris (--grisMedio: el --grisOscuro es el fondo del panel); hoy, sin
      resaltar; cada uno con algo, relleno del color del logo de su tipo (F rojo, M amarillo, S verde, P cian, #00fffe): el que manda, uno solo. El mes: en blanco si
      tiene eventos, en gris si no, en amarillo el elegido; con la tira de meses, se pulsa como su botón */
-  .calendario { flex: none; height: 168px; box-sizing: border-box; padding-top: 0; overflow: hidden; }   /* la tabla, dentro: el nombre del mes, de 8 px de línea (con su línea normal, 12 filas de unos 12 px no cabían en 112 y la foto la tapaba) */   /* la mitad de 225 (2026-11-15, el usuario: "reduce altura calendario 50%"; antes, 150 + 50 %) */   /* 20 % más alto (2026-11-15, el usuario: "aumenta un 20% la altura del calendario"; antes 112): con puntos, tres en cada fila */   /* (el selector, encima, en su línea: .calBarra) */   /* 12 filas de 12 px, sus 13 huecos de 1 y la leyenda (10 y su hueco) */
+  .calendario { flex: none; height: 178px; box-sizing: border-box; padding-top: 0; overflow: hidden; }   /* la tabla, dentro: el nombre del mes, de 8 px de línea (con su línea normal, 12 filas de unos 12 px no cabían en 112 y la foto la tapaba) */   /* la mitad de 225 (2026-11-15, el usuario: "reduce altura calendario 50%"; antes, 150 + 50 %) */   /* 20 % más alto (2026-11-15, el usuario: "aumenta un 20% la altura del calendario"; antes 112): con puntos, tres en cada fila */   /* (el selector, encima, en su línea: .calBarra) */   /* 12 filas de 12 px, sus 13 huecos de 1 y la leyenda (10 y su hueco) */
   .calendario.unMes { height: auto; }   /* un mes solo: su fila, del doble de alto */
   .calendario.unMes .calTabla { height: auto; }
   .calendario.unMes .calTabla td, .calendario.unMes .calTabla th { height: calc(1px + 7px * var(--nfilas, 4)); }   /* un mes: una fila de 6 px por cada tipo que sale (--nfilas, lo pone pintaCalendario), el doble de alto que los puntos y líneas del año (2026-11-15, el usuario: "alto de la barra en moth doble que barra de year", "si solo un tipo altura moth y week es la misma"): 1 + 7 por fila; un rato 28 fijos, y antes 20 */
@@ -183,9 +187,8 @@
      panel; la tabla, de ese ancho), tercios de 3 px (6) y el punto a --dx px del borde de su celda */
   .calTabla { height: auto; table-layout: fixed; border-collapse: separate; border-spacing: 0 1px; }
   .calTabla td, .calTabla th { height: 12px; }   /* el año: cuatro filas de 3 px (12; antes 10, con tres y 1 de arriba) */
-  .calTabla th { width: 20px; padding: 0 3px 0 0; font-size: 9px; line-height: 8px; font-weight: 400; letter-spacing: .04em; text-align: left; color: var(--grisNota); white-space: nowrap; }
-  .calTabla th.conEventos { color: var(--texto); }
-  .calTabla th.elegido { color: var(--acento); }   /* el mes elegido en la tira */
+  .calTabla th { width: 20px; padding: 0; font-size: 11px; line-height: 8px; font-weight: 400; letter-spacing: .04em; text-align: center; color: var(--blanco); white-space: nowrap; }   /* los meses, centrados en su columna y 2 px más grandes (2026-11-16, el usuario: "fuente +2px", "meses centrados"; antes, 9 px y a la izquierda) */
+  /* los meses, todos en blanco, como las leyendas (2026-11-16, el usuario: "cal meses tb blancos"; antes, gris sin eventos, blanco con ellos y amarillo el elegido) */
   .calTabla td { padding: 0; font-size: 0; line-height: 0; }   /* sin texto: sin el alto de una línea, que con tres puntos estiraba la fila (12 px en vez de 10) */
   .calTabla td.d { background: var(--grisMedio); vertical-align: middle; }
   .calTabla td.impar { background: color-mix(in srgb, var(--grisMedio), var(--grisOscuro)); }   /* las semanas, en grises alternos (2026-11-15, el usuario: "grises alternos para las semanas"): #444 y #333 */
@@ -200,6 +203,15 @@
   .calTabla td.d.lM { background: var(--amarillo); }
   .calTabla td.d.lS { background: var(--verde); }
   .calTabla td.d.lP { background: var(--practica); }
+  /* la ★ de un favorito (con events; pintaCalendario), amarilla y encima de todo, también de los puntos (el lienzo), centrada en su día; con un contorno negro */
+  .calTabla td.conFav { position: relative; }
+  /* la tinta de ★ cae algo más baja que el centro de su caja: subida .055em, centrada en la línea del festival (2026-11-17, el usuario: "un poco mas alta la estella,
+     centrada en la linea de festival"; medido en la captura, con la ★ de la letra de respaldo) */
+  .calTabla .calFav { position: absolute; left: 50%; top: 50%; transform: translate(-50%, calc(-50% - .055em)); z-index: 2; pointer-events: none;
+                      font-size: 14px; line-height: 1; font-weight: normal; color: var(--amarillo); text-shadow: 0 0 2px var(--negro), 0 0 1px var(--negro); }
+  .calTabla .calFav::before { content: "★"; }
+  .calendario.unMes .calTabla .calFav { font-size: 16px; }   /* (+2 px dos veces, 2026-11-17, "size +2px": el año, 14; el mes y la semana, 16) */
+  .calendario.semana .calTabla .calFav { font-size: 16px; }   /* la semana: centrada, sobre la línea del festival (pintaCalendario: top) */
   .calTabla .cal { display: grid; grid-template-rows: repeat(var(--nAnyo, 4), var(--hAnyo, 3px)); row-gap: 0; grid-template-columns: 100%; justify-items: start; align-content: start; height: 100%; box-sizing: border-box; padding-top: 0; }   /* el año: las filas de los tipos que salen (--nAnyo, de festival, seminario, milonga, práctica), repartiéndose los 12 px (--hAnyo: uno, 12; cuatro, 3; pintaCalendario) */
   .calTabla .cal i { display: block; width: var(--wAnyo, 3px); height: var(--hAnyo, 3px); border-radius: 50%; margin-left: var(--dx, 1px); }   /* (el año: el alto de su fila; el ancho, ese o, si no cabe, el de la columna: una píldora) */
   .calTabla .cal i.lF { background: var(--rojo); }
@@ -221,19 +233,22 @@
   .calendario.conLienzo .cal i:not(.tramo) { visibility: hidden; }
   .calBarra { flex: none; display: flex; align-items: center; gap: 4px; min-width: 0; min-height: 12px; }   /* encima del calendario: el ocultador (24 px), el selector y los open */
   .calBarra:not(:has(> :not(.oculto))) { display: none; }
-  .calBarra #bCal { flex: none; display: inline-flex; align-items: center; justify-content: flex-start; gap: .4em; height: 18px; padding: 0 6px; border: 0; border-radius: 4px; font-size: .85em; line-height: 18px; background: var(--tarjeta); color: var(--texto); cursor: pointer; }   /* el ocultador del calendario: ▲ o ▼ calendar, como el del mapa ("mismas fuestes y triangiulos que los demas") */
-  .calBarra #bCal.cerrado { flex: 1 1 auto; }
-  .calBarra #bCal:not(.cerrado) { width: 23px; }   /* abierto, solo el triángulo: 23 px, el ancho de la columna 1 del calendario (CAL_TH; antes 22,9, de su contenido) */   /* cerrado, de todo el ancho ("ocupar el ancho del panel cuando estan cerrados") */
-  .calBarra #bCal:hover { background: var(--azulClaro); color: var(--negro); }
+  #bCal { flex: none; display: inline-flex; align-items: center; justify-content: flex-start; gap: .4em; height: 18px; padding: 0 6px; border: 0; border-radius: 4px; font-size: .85em; line-height: 18px; background: var(--tarjeta); color: var(--texto); cursor: pointer; }   /* el ocultador del calendario: ▲ o ▼ calendar, como el del mapa ("mismas fuestes y triangiulos que los demas") */
+  #bCal.cerrado { flex: 1 1 auto; }
+  .calNota { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; line-height: 12px; color: var(--blanco); }   /* crazy mode con el año: note: Crazy Mode is no showing regulars in year */
+  #bCal:not(.cerrado) { width: 23px; }   /* abierto, solo el triángulo: 23 px, el ancho de la columna 1 del calendario (CAL_TH; antes 22,9, de su contenido) */   /* cerrado, de todo el ancho ("ocupar el ancho del panel cuando estan cerrados") */
+  #bCal:hover { background: var(--azulClaro); color: var(--negro); }
   .iCal { display: block; flex: none; width: .71em; height: .6em; color: var(--acento); }   /* su triángulo, como el del mapa y la flecha ▼ del selector */
-  .calBarra #bCal:hover .iCal { color: inherit; }   /* el conmutador año / mes / semana: show annual month week */
+  #bCal:hover .iCal { color: inherit; }   /* el conmutador año / mes / semana: show annual month week */
   .calendario.semana .calTabla td, .calendario.semana .calTabla th { height: 72px; vertical-align: top; position: relative; }   /* arriba, 10 px para las líneas de festival y seminario; 2 de hueco; debajo, 60 de horas */
   /* dos fondos, uno para las líneas de festival y seminario y otro para las barras, con 2 px entre ellos (2026-11-15, el usuario: "week un fondo para fes y sem
      y otro para las barras , separa por 2px"): la celda, sin fondo; cada fondo, el gris de su día (el fin de semana, el otro; hoy, el claro) */
   .calendario.semana .calTabla td.d { background: none; }
   .calendario.semana .fondo { position: absolute; left: 0; right: 0; background: var(--grisMedio); }
   .calendario.semana td.impar .fondo { background: color-mix(in srgb, var(--grisMedio), var(--grisOscuro)); }
-  .calTabla tr.dias td, .calTabla tr.dias th { height: 10px; font-size: 8px; line-height: 10px; text-align: center; color: var(--grisNota); vertical-align: middle; }   /* la leyenda de debajo: los días (la semana), su número (el mes) o la inicial del día de la semana (el año) */
+  .calendario .calTabla tr.dias td, .calendario .calTabla tr.dias th { height: 18px; font-size: 10px; line-height: 18px; text-align: center; color: var(--blanco); vertical-align: middle; }   /* la leyenda, arriba: los días (la semana), su número (el mes) o la M de los lunes (el año), 2 px más grandes (2026-11-16, el usuario: "los dias arriba, fuente +2px"; antes, 8 px y debajo, en una fila de 10); la fila, del alto del ocultador, 18 */
+  .calendario .calTabla tr.dias th { font-size: inherit; line-height: 0; padding: 0 2px 2px 0; }   /* la primera celda, el ocultador ▲, con la letra del panel y 2 px de hueco abajo y a la derecha (2026-11-16, el usuario: "padding 2px expansor abajo y deracha", "separa 2px dere y abajo del expansor"): la fila, 20 px (la del mes y la semana, también: más específico que su alto) */
+  /* (el botón, sus 23 px, como el del mapa; la columna, 25: CAL_TH) */
   .calendario:not(.semana) .calTabla tr.dias td { text-align: left; overflow: visible; white-space: nowrap; }   /* (el número, desde su columna: en 6 px no cabe centrado) */
   .calendario.semana .fondo.arriba { top: 0; height: 10px; }
   .calendario.semana .fondo.abajo { top: 12px; height: 60px; }
@@ -248,7 +263,7 @@
   .calendario.semana .hora.lP { background: var(--practica); }
   .calendario.semana .hora.lF { background: var(--rojo); }
   .calendario.semana .hora.lS { background: var(--verde); }
-  .calendario.semana .calTabla th .h { position: absolute; left: 0; font-size: 8px; line-height: 8px; color: var(--grisNota); }
+  .calendario.semana .calTabla th .h { position: absolute; left: 0; font-size: 8px; line-height: 8px; color: var(--blanco); }   /* las horas, en blanco, como la leyenda ("leyendas cal en blanco") */
   .calendario.unMes .calTabla .cal i { width: 6px; height: 6px; }   /* un mes: 6 px, el doble que en el año (3) (2026-11-15: un rato 4, con las cuatro filas en 20 px) */
   .calendario.unMes .calTabla .cal i.tramo { width: auto; }
   .calendario.unMes .calTabla .cal i.tramo.ini { border-radius: 3px 0 0 3px; }
@@ -266,7 +281,7 @@
                  height: var(--altoTira); box-sizing: border-box; }   /* los meses y la ruta, de la misma altura (2026-11-16, un rato, sin relleno a los lados: "quitar los margin laterales de los botones" era el margen del conjunto de las filas 1-4, ver .cabecera) */
 
   .tira { flex: 1 1 auto; }
-  .tira button { flex: 1 0 auto; }
+  .tira button { flex: 1 0 auto; }   /* la cuarta línea, a todo el espacio que haya (2026-11-16, el usuario: "linea 4 ajustar al espacio disponible"; un rato, cada botón como mucho un 20 % más ancho que su texto) */
   .tira .grupo { display: flex; gap: 0; min-width: 0; flex: 1 0 auto; }   /* la cuarta línea: dos grupos, 4 px entre ellos (el gap de .tira), sus botones pegados */
   .tira .grupo.modos { flex: none; }
   .tira .grupo.modos button { min-width: 4.2em; }   /* YEAR y WEEK, más anchos (2026-11-16, el usuario: "boton year week mas anchos"; antes, de su texto) */
@@ -274,11 +289,25 @@
   .tira .grupo button:first-child { border-radius: 4px 0 0 4px; }
   .tira .grupo button:last-child { border-radius: 0 4px 4px 0; }
   .tira .grupo button:only-child { border-radius: 4px; }
-  .tipTira { position: fixed; z-index: 2000; pointer-events: none; padding: 2px 7px; font-size: 12px; white-space: nowrap;   /* el hover de las tiras: al momento y sin borde */
-             background: var(--grisMedio); color: var(--texto); border-radius: 4px; box-shadow: 0 1px 4px rgba(0,0,0,.6); }
   .fechas button.activo { background: var(--acento); color: var(--negro); position: relative; }
   .tira button:not(.activo):hover { background: var(--azulClaro); color: var(--negro); }   /* el botón bajo el ratón, como en la lista del mapa */
-  .tira button.cero, .tira button.cero:hover { background: none; color: var(--grisClaro); cursor: default; }   /* a cero: sin clic (el contador, en el hover) */
+  .tira button.cero, .tira button.cero:hover { background: none; color: var(--grisClaro); cursor: default; }   /* a cero: sin clic */
+  /* como la tercera línea: el texto en amarillo y, a su derecha, su contador en blanco, siempre a la vista (textoTira; 2026-11-17, el usuario: "4 fila, igual
+     que 3 fila , contadores visibles , eliminar el over del contador"); bajo el ratón y el elegido, en negro; a cero, en gris */
+  .tira button { flex-direction: row; gap: 8px; }
+  .tira button:not(.activo):not(.cero):not(:hover) .nom { color: var(--acento); }
+  /* sin scroll: los botones se encogen hasta caber (2026-11-17, el usuario: "no pongas scroll , reduce size del contador"; antes, la línea se desplazaba);
+     el contador, del tamaño del texto ("deja sz igual del contador"; un rato, a .75), sin el ancho fijo de tres cifras: lo justo */
+  .tira { overflow: hidden; }
+  .tira .grupo, .tira button { flex-shrink: 1; min-width: 0; }
+  .tira button .nom { overflow: hidden; }
+  .tira button .num { flex: none; font-variant-numeric: tabular-nums; }
+  /* la letra, la de la tercera línea (2026-11-17, el usuario: "fuente lines 4 como linea 3"); solo si no cabe, primero con menos relleno y luego
+     estrechada (Inconsolata tiene eje de ancho): lo mide ajustaTira, al pintar y con otro ancho (antes, por el ancho de la ventana, por debajo de 900 px) */
+  .tira.apretada button { padding: 0 2px; gap: .4em; }   /* delante del contador, un blanco (2026-11-17, el usuario: "blanco delante contador") */
+  .tira.apretada .grupo.modos button { min-width: 0; }
+  .tira.estrecha button { font-stretch: 62%; }
+  .tira.muyEstrecha button { font-stretch: 50%; padding: 0 1px; gap: .3em; }
 
   .listado.filas { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; gap: 0; border-top: 1px solid var(--borde); }
   .listado .fila { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; column-gap: 16px; align-items: center;
@@ -311,7 +340,12 @@
   .lineaRuta { flex: 1 1 100%; min-width: 0; display: flex; gap: 4px; }   /* la ruta y, fuera de ella a la derecha, el botón list / grid */
   /* la barra, en dos cajas (2026-11-11, el usuario: "añade otra caja debajo de las migas", "mueve las migas a esta caja", "en la caja de arriba mueve el logo kk
      y despues escribe: total listado X"): arriba, el total ("80 festivals") y los botones list, idioma y KK; debajo, las migas con su botón de copiar */
-  .ruta.cajaTotal { display: flex; align-items: center; gap: 8px; padding-right: 10px; }
+  /* el total (el número, el tipo, el tiempo y lo que dice R), la primera línea del listado, sobre él y sobre la parrilla (2026-11-17, el usuario: "linea 1 info status
+     move fisr line in listado"; antes, en una caja de la línea 1 de la cabecera, .cajaTotal): la letra de antes (la de la cabecera, 18 px, a .85) */
+  #estado { display: flex; align-items: center; box-sizing: border-box; height: var(--altoEstado); padding: 0 10px; font-size: calc((1em + 2px) * .85); }
+  /* fija, bajo la cabecera (2026-11-17, el usuario: "fixed linea 1 listado"): el listado (y la ficha abierta) pasan por debajo; la ficha, fija bajo ella */
+  #estado { position: sticky; top: var(--altoBarra, 0px); z-index: 2; background: var(--fondo); }
+  #estado .cuenta { color: var(--blanco); font-weight: bold; font-size: calc(1em + 6px); }   /* 2 px más (2026-11-17, el usuario: "counter 1 line listado up +2px"; antes, + 4 px) */
   /* el logo KK: un botón cuadrado como el del idioma, al final de la línea (2026-11-11, el usuario: "kk en un boton cuadrado como la bandera al final de la linea1") */
   .lineaRuta #info { flex: none; width: var(--altoTira); height: var(--altoTira); box-sizing: border-box; overflow: hidden;
                      border: 1px solid var(--borde); border-radius: 4px; }   /* el borde, como el de los otros botones (2026-11-11, el usuario: "borde de KK como los otros bordes") */
@@ -334,7 +368,7 @@
   #total .tTipo { color: var(--blanco); }   /* lo que cuenta, también en blanco (2026-11-11, el usuario: "caja result todo en blanco"; antes, gris) */
   #total > * { line-height: 1; }   /* con Courier, bajados 2 px a mano; con Inconsolata, sus cifras ya caen en el centro (medido: con 1 px, 1,5 px bajas a 125 %; 2026-11-11, el usuario: "el contador no esta centrado verticalmente") */
   .rutaDer { position: absolute; top: 0; right: 8px; height: 100%; display: flex; align-items: center; }   /* el de copiar */
-  #bListado, #bIdioma, #bAgendas button { height: var(--altoTira); padding: 0 7px; box-sizing: border-box; text-align: center; }
+  #bListado, #bIdioma { height: var(--altoTira); padding: 0 7px; box-sizing: border-box; text-align: center; }
   /* list / grid y, tras él, el idioma: cuadrados, del alto de la barra, solo con su icono (☰ o ▦) o la bandera (2026-11-11, el usuario: "crea un boton cuadrado
      para list, crea otro boton despues tb cuadrado con un selector para idioma solo con la bandera: ingles, coreano, chino, japones") */
   #bIdioma { width: var(--altoTira); padding: 0; display: flex; align-items: center; justify-content: center; }
@@ -403,11 +437,14 @@
   .logoTipo.lS, .fila .logoTipo.lS { background: var(--verde); border-color: var(--verde); color: var(--blanco); }   /* seminar, relleno de verde ("seminar logo verde solido") */
   .logoTipo.lP, .fila .logoTipo.lP { background: var(--practica); border-color: var(--practica); color: var(--negro); }   /* práctica, en #00fffe con la letra en negro (2026-11-15, el usuario: "#00fffe para practica"; un rato, marrón claro, #c69c6d; antes, morado con la letra en blanco) */   /* práctica, rellena de morado (2026-11-15, el usuario: "tg/ cambia practica a bola solida morada"; antes, letra y círculo en amarillo, sin relleno) */
   .listado .fila.abierta .logoTipo.lM, .listado .fila.abierta .logoTipo.lF, .listado .fila.abierta .logoTipo.lP { border-color: var(--negro); }
+  .logoTipo.l★ { color: var(--amarillo); }   /* favorite: la estrella y su círculo, en amarillo, como la ★ de los favoritos del listado (2026-11-17, el usuario: "logo start fav yellow"; antes, del color del texto) */
+  option:checked .logoTipo.l★, option:hover .logoTipo.l★, option:focus-visible .logoTipo.l★, #selRol:hover > button .logoTipo.l★ { color: inherit; }   /* sobre el amarillo de la elegida o el azul claro del ratón, del color del texto (negro): si no, no se ve */
   .logoTipo > span { text-box: trim-both cap alphabetic; }   /* la letra, centrada: su caja, de la altura de la mayúscula (sin el hueco de arriba y abajo de la letra; 2026-11-11, el usuario: "centra la letra de los logos") */
   .listado .fila.abierta .estrella { color: inherit; }   /* la estrella, sobre el amarillo */
   .listado .fila.abierta .estrella.go { color: var(--rojo); }   /* la de go, roja también sobre el amarillo */
   .fila .fIconos { display: flex; align-self: center; min-width: 16px; }
   .fila .fIconos img { height: 16px; width: 16px; display: block; }
+  .fila .fIconos img[src$="yt.svg"] { height: 14px; width: 14px; margin: 1px; }   /* el de YT, 2 px menos (2026-11-17, el usuario: "tg/ logo YT -2px"); con el margen, la columna sigue de 16 */
   /* el logo de la fila con su propio hover (como en el detalle): sobre él se resalta el logo, no la fila */
   .fila .fIconos a { display: block; padding: 3px; margin: -3px; border-radius: 4px; }
   .fila .fIconos a:hover { background: var(--enlace); }
@@ -424,12 +461,16 @@
 
   /* los tooltips del mapa, en azul (2026-11-15, el usuario: "tooltip del mapa en azul"): el de pasar el ratón (.tipNombre; antes gris) y la etiqueta de
      después del clic (antes blanca), con el azul claro de los controles bajo el ratón y la letra negra */
-  .leaflet-tooltip { background: var(--blanco); color: var(--negro); border-color: var(--blanco); }   /* en blanco (2026-11-16, el usuario: "leyendas mapa en blanco"; antes, el azul claro) */
+  /* todos, otra vez en azul claro y más pequeños (2026-11-17, el usuario: "tg/ todos los tooltip del mapa mas pequeños y fondo azul"; el 16, en blanco por
+     "leyendas mapa en blanco"): la letra, 10 px (antes 12, la de Leaflet), interlineado 1,2 (antes 1,5) y el relleno, 2 px 5 px (antes 6): de 32 px de alto a 18.
+     La flecha, de 4 px (antes 6), con la punta en el mismo sitio (los dos son direction: 'top') */
+  .leaflet-tooltip { background: var(--azulClaro); color: var(--negro); border-color: var(--azulClaro); font-size: 10px; line-height: 1.2; padding: 2px 5px; }
   .leaflet-tooltip.tipNombre { border: 1px solid var(--borde); box-shadow: 0 1px 4px rgba(0,0,0,.6); }
-  .leaflet-tooltip-top::before { border-top-color: var(--blanco); }
-  .leaflet-tooltip-bottom::before { border-bottom-color: var(--blanco); }
-  .leaflet-tooltip-left::before { border-left-color: var(--blanco); }
-  .leaflet-tooltip-right::before { border-right-color: var(--blanco); }
+  .leaflet-tooltip-top { margin-top: -4px; }
+  .leaflet-tooltip-top::before { border-width: 4px; margin-left: -4px; margin-bottom: -8px; border-top-color: var(--azulClaro); }
+  .leaflet-tooltip-bottom::before { border-bottom-color: var(--azulClaro); }
+  .leaflet-tooltip-left::before { border-left-color: var(--azulClaro); }
+  .leaflet-tooltip-right::before { border-right-color: var(--azulClaro); }
   .marcaLista { box-sizing: border-box; border-radius: 2px; background: var(--mapaMarca); color: var(--negro); }
   .marcaLista > div { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 8px; line-height: 1; }
   .mapaCaja { position: relative; z-index: 0; display: flex; }
@@ -447,9 +488,6 @@
      termina el evento de mover el mapa") */
   .ciudadesMapa.enVuelo { pointer-events: none; }
   .ciudadesMapa.enVuelo > * { opacity: .4; }   /* deshabilitada, no vacía (2026-11-15, el usuario: "en vez de apagar la linea 3 usa deshabilitar"; antes, visibility: hidden): se ve, atenuada y sin clic, hasta que el mapa termina de cargar */
-  .tipTira.circulo { box-sizing: border-box; min-width: 24px; height: 24px; padding: 0 5px;
-               font-size: 13px; line-height: 22px; text-align: center; white-space: nowrap;   /* el contador, en un círculo (también el de meses y días) */
-               background: var(--grisMedio); color: var(--texto); border: 1px solid var(--borde); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.6); }
   option { background: var(--grisMedio); color: var(--blanco); }
   option:checked { background: var(--amarillo); color: var(--negro); }   /* la elegida */
   #selRol option.negrita { font-weight: 700; }
@@ -469,6 +507,13 @@
   .ciudadesMapa > span { flex: 1 0 auto; box-sizing: border-box; height: var(--altoTira); display: flex; justify-content: center; gap: 8px; padding: 0 6px; cursor: pointer;
                        white-space: nowrap; align-items: center; border-radius: 4px; background: var(--tarjeta); color: var(--texto); }   /* cada uno, un botón como los meses: los de la página, todo el ancho de la línea, con el texto en el centro (2026-11-11, el usuario: "tercera linea que los botones ocupen todo el ancho"; antes, cada uno de su ancho) */
   .ciudadesMapa > span:hover { background: var(--azulClaro); color: var(--negro); }   /* el nombre bajo el ratón */
+  /* cada nombre, al espacio que haya: como poco, el ancho de su texto; como mucho, un 20 % más (2026-11-16, el usuario: "linea 3 ajustar al espacion disponible,
+     min ajustado al contenido, max 20% del ancho minimo"; el tope lo pone pintaCiudades, que mide el texto). Antes, un rato, solo su texto ("para linea 3
+     siempre ajustar al texto contenido") y otro, hasta 1/8 de la línea; lo que sobra, vacío, y more... en su sitio, a la derecha ("sino hay mas valores dejar
+     vacia la linea"; antes, los de la página llenaban la línea) */
+  .ciudadesMapa > span:not(.atras):not(.mas) { flex: 1 0 auto; }
+  .ciudadesMapa.mide > span { flex-grow: 0 !important; max-width: none !important; }   /* (midiendo el ancho de su texto) */
+  .ciudadesMapa > span.mas { margin-left: auto; }
   .ciudadesMapa > span.atras:not(:hover), .ciudadesMapa > span.mas:not(:hover) { color: var(--amarillo); }   /* back y more..., en amarillo */
   .ciudadesMapa > span.atras, .ciudadesMapa > span.mas { justify-content: center; flex: 0 0 40px; padding: 0; }   /* siempre del mismo ancho, 40 px: lo que sobra en la línea, para los nombres (2026-11-11, el usuario: "los botones de navegacion en la tercera linea siempre del mismo ancho") */
   .ciudadesMapa > span.vacio, .ciudadesMapa > span.vacio:hover { background: var(--tarjeta); cursor: default; }   /* back o more... sin nada que hacer: la casilla, vacía y en su sitio (2026-11-12, el usuario: "linea 3 mantenemos fijos los controles, sino tienen accion presentar vacios") */
@@ -488,7 +533,21 @@
   #bListado .iBoton { display: block; flex: none; width: 13px; height: 13px; color: var(--acento); }   /* en amarillo (2026-11-11, el usuario: "el logo de list y grid amarillo"), como los de back, more... y copiar */
   #bListado .iParrilla, #bListado .iLista { width: 16px; height: 16px; }   /* (la lista, también: con 13 px las viñetas no se ven) */
   #bListado:hover { background: var(--azulClaro); color: var(--negro); }   /* al pasar el ratón, como las migas y los botones de áreas, países y ciudades (2026-11-11, el usuario: "list/grid el mismo over") */
-  #bListado:hover .iBoton { color: inherit; }   /* el icono, también en negro (como back y more...) */
+  #bListado:hover .iBoton { color: inherit; }
+  /* R, delante de list / grid, cuadrado como él (2026-11-16, el usuario: "boton R delante de list/grid"; un rato, al principio de la cuarta línea): encendido, en
+     amarillo; con WEEK o sin regulares, desactivado, como lo que está a cero en las tiras */
+  #bRepite { flex: none; width: var(--altoTira); height: var(--altoTira); padding: 0; box-sizing: border-box; font-size: .85em; cursor: pointer;
+             background: var(--tarjeta); color: var(--texto); border: 1px solid var(--borde); border-radius: 4px; }
+  #bRepite.activo { background: var(--acento); color: var(--negro); }
+  #bRepite:not(.activo):not(:disabled):hover { background: var(--azulClaro); color: var(--negro); }
+  #bRepite:disabled { background: none; color: var(--grisClaro); cursor: default; }   /* el icono, también en negro (como back y more...) */
+  /* C, tras R, como ella (2026-11-17, el usuario: "add boton after R : C , on show counter in linea 3,4 ; off no show", "default is off"): encendida, en
+     amarillo, los contadores de las líneas 3 y 4 a la vista; apagada (al abrir), sin ellos (.sinContadores en la cabecera). No se guarda: al abrir, apagada */
+  #bContador { flex: none; width: var(--altoTira); height: var(--altoTira); padding: 0; box-sizing: border-box; font-size: .85em; cursor: pointer;
+               background: var(--tarjeta); color: var(--texto); border: 1px solid var(--borde); border-radius: 4px; }
+  #bContador.activo { background: var(--acento); color: var(--negro); }
+  #bContador:not(.activo):hover { background: var(--azulClaro); color: var(--negro); }
+  .sinContadores .ciudadesMapa .num, .sinContadores .tira button .num { display: none; }
   /* el triángulo del botón map, como los demás: relleno, amarillo y del tamaño de la flecha ▼ del selector de tipo (el botón, con la misma letra: .85em), hacia
      arriba con el mapa abierto y hacia abajo cerrado; al pasar el ratón, el botón en azul claro y negro (2026-11-11, el usuario: "triangulo del boton map como los
      demas"; antes, las letras ▴ y ▾, subidas 2 px) */
@@ -521,7 +580,7 @@
   .detalle { position: relative; box-sizing: border-box; margin: 0 0 16px; padding: 16px; background: var(--barra);
              border: 1px solid var(--borde); border-radius: 8px; }
 
-  .detalle { position: sticky; top: calc(var(--altoBarra, 0px) + 16px); z-index: 1;
+  .detalle { position: sticky; top: calc(var(--altoBarra, 0px) + var(--altoEstado)); z-index: 1;   /* bajo la primera línea del listado, fija (#estado; antes, a 16 px de la cabecera) */
              box-shadow: 0 -16px 0 var(--fondo), 0 16px 0 var(--fondo); }
   .detalle.larga { position: relative; top: auto; }   /* sin scroll propio: la que no cabe en la ventana no se queda fija, se lee bajando la página */
   .detalle .texto { margin-right: 30px; }
@@ -529,17 +588,17 @@
      igual"; antes, con los márgenes de cada línea: 8 px bajo el título, 4 sobre el panel) */
   .detalle .texto > *, #ficha .texto > * { margin: 0; line-height: 22px; }
   .detalle .texto p.enlaces, #ficha .texto p.enlaces { margin-top: 0; row-gap: 0; }
-  #dCerrar, #fCerrar, #aCerrar, #vCerrar { position: absolute; top: 6px; right: 8px; box-sizing: border-box; width: 26px; height: 26px; padding: 0; border: 2px solid currentColor; border-radius: 50%;
+  #dCerrar, #fCerrar, #aCerrar, #aBajar, #vCerrar { position: absolute; top: 6px; right: 8px; box-sizing: border-box; width: 26px; height: 26px; padding: 0; border: 2px solid currentColor; border-radius: 50%;
              display: flex; align-items: center; justify-content: center; background: none; color: var(--acento); cursor: pointer; }   /* en amarillo, como los demás logos (2026-11-11, el usuario: "logo cerrar es amarillo"; antes, blanco) */
-  #dCerrar svg, #fCerrar svg, #aCerrar svg, #vCerrar svg { display: block; width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }   /* la X dibujada: la × de la letra se descentraba según la fuente */
-  #fCerrar, #aCerrar, #vCerrar { top: 8px; }
+  #dCerrar svg, #fCerrar svg, #aCerrar svg, #aBajar svg, #vCerrar svg { display: block; width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }   /* la X dibujada: la × de la letra se descentraba según la fuente */
+  #fCerrar, #aCerrar, #aBajar, #vCerrar { top: 8px; }
   /* el vídeo de YouTube, en un popup (2026-11-11, el usuario: "podemos reproducir YT en un popup en vez de abrir nueva pestaña?"): 16:9, del ancho de la
      ventana como mucho, encima de la ficha; abajo, el enlace para verlo en YouTube (si no deja insertarlo: abierto como file://, sin referer) */
   #video { width: min(960px, 92vw); padding: 36px 12px 10px; box-sizing: border-box; }
   #video iframe { display: block; width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: 4px; background: var(--negro); }
   #video #vEnYt { display: inline-block; margin-top: 6px; font-size: .8em; color: var(--suave); }
   #video #vEnYt:hover { color: var(--azulClaro); }   /* el del popup, a la misma distancia arriba y a la derecha */
-  #dCerrar:hover, #fCerrar:hover, #aCerrar:hover, #vCerrar:hover { border-radius: 4px; background: var(--azulClaro); border-color: var(--azulClaro); color: var(--negro); }   /* bajo el ratón, de círculo a cuadrado y azul claro con la X negra, como los demás (2026-11-11, el usuario: "over de cerrar tb azul") */
+  #dCerrar:hover, #fCerrar:hover, #aCerrar:hover, #aBajar:hover, #vCerrar:hover { border-radius: 4px; background: var(--azulClaro); border-color: var(--azulClaro); color: var(--negro); }   /* bajo el ratón, de círculo a cuadrado y azul claro con la X negra, como los demás (2026-11-11, el usuario: "over de cerrar tb azul") */
   /* la primera línea de la ficha: el nombre, su tipo y el logo de copiar el enlace, seguidos en la misma línea, el logo a un blanco del tipo; si no caben,
      saltan a la siguiente (2026-11-10, el usuario: "debe salir en la mismalinea : nombre+tipo+copy", "sino cabe salta", "copy ... separado 1 blanco,
      despues del tipo de evento"). La última palabra del nombre, el tipo y el logo no se separan (.finTitulo): el logo nunca queda solo en una línea */
@@ -564,8 +623,12 @@
   /* pantalla ancha: el panel vertical. Bajo los selectores, el mapa; debajo los países o ciudades en 2 columnas, del alto de
      su contenido; al final, meses, días y roles, en rejilla (no caben en una tira) */
   /* OPEN SCHEDULER: sin scroll lateral, las 7 columnas caben siempre; cada milonga, dos líneas: la hora y el nombre, cortado si no cabe */
-  #bAgendas { flex: none; display: flex; gap: 2px; margin-top: 0; margin-left: auto; }   /* en la línea de encima del calendario, a la derecha, tras el selector (antes, bajo el calendario, en su línea, a partes iguales) */
-  .calBarra #bAgendas button { flex: none; height: 12px; line-height: 12px; padding: 0 4px; font-size: 8px; border: 0; border-radius: 2px; background: var(--tarjeta); color: var(--texto); cursor: pointer; }   /* como los del selector */
+  /* los open, see by venue y see by time, bajo el calendario, a partes iguales y con el estilo de los botones del panel (como el ocultador: 18 px, .85 em, fondo de
+     tarjeta) (2026-11-16, el usuario: "no veo los see , ponerlos debajo del calendario , mismo estilo de los otros botones, para week or moth de milongas y
+     practicas"; antes, en la línea de encima del calendario, a la derecha, con letra de 8 px) */
+  #bAgendas { flex: none; display: flex; gap: 4px; }
+  #bAgendas button { flex: 1 1 0; min-width: 0; height: 18px; padding: 0 6px; border: 0; border-radius: 4px; font-size: .85em; line-height: 18px; white-space: nowrap;
+                     overflow: hidden; text-overflow: ellipsis; background: var(--tarjeta); color: var(--texto); cursor: pointer; }
   #bAgendas button:not(:disabled):hover, #aAtras:hover, #aSigue:hover { background: var(--azulClaro); color: var(--negro); }
   /* OPEN SCHEDULER, a toda la pantalla, de ancho y de alto (2026-11-11, el usuario: "haz open ocupe todo el ancho alto de la pantalla"; antes, hasta 1280 px de
      ancho, con 8 px de margen y del alto de su contenido): sin margen, sin borde ni esquinas redondas; lo que no cabe, con el scroll de su tabla (#aScroll) */
@@ -578,16 +641,28 @@
      vez a la derecha; las filas, blancas y grises alternas; en cada celda, el nombre de la milonga en azul y debajo su horario (20:00 ~ 24:30), centrados y en
      las líneas que necesiten. En negrita, los títulos: el de la tabla, los días, los locales y los nombres. Antes, oscuro como el resto, con la hora sobre el
      nombre, cortado si no cabía. Sus colores, los de la tabla de Beto, solo aquí */
-  #agenda { --agFondo: #fff; --agTexto: #000; --agLinea: #555; --agDias: #92d050; --agLocal: #ffd966; --agGris: #e7e6e6; --agNombre: #1c2fc4; --agSemana: #e0191e;
+  #agenda { --anchoAgenda: 1100px; --agFondo: #fff; --agTexto: #000; --agLinea: #555; --agDias: #92d050; --agLocal: #ffd966; --agGris: #e7e6e6; --agNombre: #1c2fc4; --agSemana: #e0191e;
             background: var(--agFondo); color: var(--agTexto); }
   #aCabeza { flex: none; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 8px; padding: 10px 52px 10px 12px; }   /* el cursor, el título en el centro y la semana; a la derecha, sitio para la X */
   #aCursor { justify-self: start; display: flex; }
   #aTitulo { margin: 0; font-size: 1.6em; font-weight: bold; text-align: center; }
   #aSemana { justify-self: end; color: var(--agSemana); font-weight: bold; white-space: nowrap; }
-  #aCerrar { background: var(--barra); }   /* sobre el blanco, con el fondo oscuro de la página: su X amarilla se ve */
-  #aScroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; padding: 0 12px 12px; }
-  #agenda table { --topePrimera: 14%; display: grid; grid-template-columns: fit-content(var(--topePrimera)) repeat(7, minmax(0, 1fr)) fit-content(var(--topePrimera));
-                  width: 100%; font-size: .85em; border-right: 1px solid var(--agLinea); border-bottom: 1px solid var(--agLinea); }   /* los locales, del ancho de su nombre (con tope); los días, iguales */
+  #aCerrar, #aBajar { background: var(--barra); }   /* sobre el blanco, con el fondo oscuro de la página: su X amarilla se ve */
+  #aScroll { padding: 0 12px 12px; }
+  /* see by venue / see by time, como imagen JPG en el modal, en vez de la tabla (2026-11-17, el usuario: "see by se puede crear como un jpg en un modal ?",
+     "abre imagen iso tabla"): la tabla de siempre se pinta fuera de la vista (#aFuente), de un ancho fijo, el mismo en cualquier pantalla (ANCHO_AGENDA); se
+     dibuja en un lienzo (imagenAgenda) y el JPG, a todo el ancho del modal (#aImg); un clic, a su tamaño (con scroll; en el móvil, para leerla) y otro, de
+     vuelta. Arriba a la derecha, junto a la X, el botón de descargarla (#aBajar). En la imagen nada se pulsa: las fichas ya no se abren desde aquí */
+  #aBajar { right: 42px; display: flex; align-items: center; justify-content: center; color: var(--acento); }
+  #aFuente { position: fixed; left: -30000px; top: 0; width: var(--anchoAgenda); background: var(--agFondo); color: var(--agTexto); pointer-events: none; }
+  #aFuente #aCabeza { padding: 12px; }   /* (sin el sitio de la X) */
+  #aTitulo { grid-column: 2; } #aSemana { grid-column: 3; }   /* el título, en la columna del centro aunque el cursor (la primera) esté oculto: si no, caía en la primera, a la izquierda */
+  #aVista { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+  #aImg { display: block; width: 100%; height: auto; cursor: zoom-in; }
+  #aVista.zoom #aImg { width: var(--anchoAgenda); max-width: none; cursor: zoom-out; }
+  @media (max-width: 720px) { #aVista { padding-top: 42px; } }   /* estrecha, la imagen, más baja: su título no da sitio a los botones (descargar, cerrar), que tapaban la tabla */
+  #agenda table { --topePrimera: 14%; display: grid; grid-template-columns: fit-content(var(--topePrimera)) repeat(7, minmax(0, 1fr));
+                  width: 100%; font-size: .85em; border-right: 1px solid var(--agLinea); border-bottom: 1px solid var(--agLinea); }   /* los locales, del ancho de su nombre (con tope), solo a la izquierda; los días, iguales */
   #agenda thead, #agenda tbody, #agenda tfoot, #agenda tr { display: contents; }
   #agenda th, #agenda td { box-sizing: border-box; padding: 4px; border-top: 1px solid var(--agLinea); border-left: 1px solid var(--agLinea); overflow-wrap: anywhere;
                            font-weight: 400; text-align: center; align-content: center; }
@@ -603,30 +678,16 @@
                      background: var(--tarjeta); color: var(--texto); border: 1px solid var(--tarjeta); border-radius: 4px; }
   .sesion { display: block; box-sizing: border-box; width: 100%; padding: 1px 3px; border: 0; border-radius: 3px; font-size: inherit; text-align: center; cursor: pointer;
             background: none; color: inherit; }
-  .sesion + .sesion { margin-top: 4px; }
   .sesion:hover { background: var(--azulClaro); color: var(--negro); }
-  .sesion .nom, .sesion .hora { display: block; line-height: 1.25; }
+  .sesion:not(.local) { font-size: .85em; padding-top: 0; padding-bottom: 0; }   /* la letra, más pequeña: cada una en sus tres líneas (2026-11-16, el usuario: "reducir la letra para que entre en 3 lineas cada") */
+  /* el mismo interlineado en todas las líneas de una celda, también de una milonga a la siguiente (2026-11-16, el usuario: "see x mismo interlineado en todas las
+     lineas"; antes, 4 px y su relleno, 2, más entre una y otra) */
+  .sesion .nom, .sesion .frec, .sesion .hora { display: block; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }   /* nombre, frecuencia y horario: una línea cada uno, sin partirse */
   .sesion .nom { color: var(--agNombre); font-weight: bold; }   /* el nombre de la milonga, en azul */
   .sesion:hover .nom { color: inherit; }
   .sesion .hora { font-variant-numeric: tabular-nums; }
   .sesion.local { font-weight: bold; }   /* el nombre del local */
-  @media (max-width: 800px) {   /* el popup, estrecho: su límite es el del ancho de la ventana, no el del panel (720 px) */
-    #agenda table { --topePrimera: 26%; font-size: 12px; grid-template-columns: fit-content(var(--topePrimera)) repeat(7, minmax(0, 1fr)); }
-    #agenda .aDer { display: none; }   /* sin sitio, los locales solo a la izquierda */
-    #agenda th, #agenda td { padding: 2px 1px; }
-    #agenda td.vacio { padding: 12px; }
-    #aScroll { padding: 0 4px 4px; }
-    .sesion { padding: 1px 0; }
-    .sesion .hora, .sesion .nom { font-size: min(12px, 3.3vw); }
-    .sesion .estrella { margin-right: 0; }
-    #aTitulo { font-size: 1.2em; }
-  }
-  @media (max-width: 600px) {
-    #aCabeza { grid-template-columns: auto minmax(0, 1fr); }   /* el cursor y el título; la semana, debajo */
-    #aSemana { grid-column: 1 / -1; justify-self: center; }
-    #aTitulo { font-size: 1em; }
-    #aAtras, #aSigue { width: 2em; }
-  }
+  /* (sin las reglas del popup estrecho, de 800 y 600 px: la tabla, fuera de la vista, siempre del mismo ancho; la imagen se ve a lo ancho del modal) */
   /* el límite del panel vertical: 720 px (2026-11-10, el usuario: "mueve el punto de ruptura para ver a media pantalla el menú lateral"; antes 800,
      y Brave a media pantalla mide 768). El mismo en estos tres @media y en isMovil() */
   @media (min-width: 721px) {
@@ -659,18 +720,18 @@
     .fotoCiudad img, .fotoCiudad canvas { aspect-ratio: auto; height: 120px; }   /* de todo el ancho: más baja */
     #rBotones, #bAgendas, .fechas { margin-top: 0; }
     .mapaCaja.cerrado { display: none; }   /* aquí cerrar el mapa libera sitio */
-    .detalle { top: calc(var(--altoPanel, 0px) + var(--altoBarra, 0px) + 16px); }
+    #estado { top: calc(var(--altoPanel, 0px) + var(--altoBarra, 0px)); }   /* bajo el panel, que aquí va encima */
+    .linea1 { flex-wrap: wrap; row-gap: 4px; }
+    .linea1 > .busca { flex-basis: 100%; }
+    .detalle { top: calc(var(--altoPanel, 0px) + var(--altoBarra, 0px) + var(--altoEstado)); }
   }
 </style>
 </head>
 <body>
 <div class="app">
  <header id="cabecera" class="cabecera">
-  <div class="linea1">
-    <span class="busca"><input id="buscar" type="search" placeholder="search tango…" autocomplete="off"><div id="sugs" class="oculto"></div></span>
-  </div>
-  <div class="lineaRuta"><div class="ruta cajaTotal"><span id="total"></span></div><button id="bListado">list</button><span class="selIdioma"><button id="bIdioma" type="button" aria-label="language" aria-haspopup="true" aria-expanded="false"></button><div id="menuIdioma" class="menuIdioma oculto" role="menu"></div></span><a id="info" href="#"><img src="img/koko.svg" alt="KoKo Tango"><span class="kkOver" aria-hidden="true">KK</span></a></div>
-  <div class="lineaRuta lineaMigas"><label><select id="selRol" data-inicial="fes"><button><selectedcontent></selectedcontent></button></select></label><div class="ruta"><span id="ruta"></span><span id="rutaDer" class="rutaDer"></span></div></div>
+  <div class="lineaRuta linea1"><span class="busca"><input id="buscar" type="search" placeholder="search tango…" autocomplete="off"><div id="sugs" class="oculto"></div></span><label><select id="selRol" data-inicial="evs"><button><selectedcontent></selectedcontent></button></select></label><button id="bRepite" type="button" aria-label="repeat regulars">R</button><button id="bContador" type="button" aria-label="counters" aria-pressed="false">C</button><button id="bListado">list</button><span class="selIdioma"><button id="bIdioma" type="button" aria-label="language" aria-haspopup="true" aria-expanded="false"></button><div id="menuIdioma" class="menuIdioma oculto" role="menu"></div></span><a id="info" href="#"><img src="img/koko.svg" alt="KoKo Tango"><span class="kkOver" aria-hidden="true">KK</span></a></div>
+  <div class="lineaRuta lineaMigas"><div class="ruta"><span id="ruta"></span><span id="rutaDer" class="rutaDer"></span></div></div>
   <div class="linea3"><div id="ciudadesMapa" class="ciudadesMapa"></div></div>
   <!-- los filtros, meses o días (y los roles privados), cuarta línea, bajo la de áreas, países y ciudades (2026-11-15, el usuario: "pon los filtros como cuarta
        linea debajo de la tercera", "filtro meses o dias en cuarta fila"; antes, en el panel, bajo el mapa) -->
@@ -692,18 +753,19 @@
   </div>
   <!-- encima del calendario, en una línea: su selector (show annual month week) y los open, see by venue y see by time (2026-11-15, el usuario: "selector de
        calendario arriba del calendario", "en la misma linea los botones open"; antes, el selector debajo y los open en su línea bajo el calendario) -->
-  <div id="calBarra" class="calBarra"><button id="bCal" type="button" class="oculto"></button><div id="bAgendas"><button id="bAgenda">see by venue</button><button id="bAgenda2">see by time</button></div></div>
+  <div id="calBarra" class="calBarra"><button id="bCal" type="button" class="oculto"></button><span id="calNota" class="calNota oculto"></span></div>
   <div id="calendario" class="calendario oculto" role="button" tabindex="0" aria-label="calendar: squares or dots"></div>
+  <div id="bAgendas" class="oculto"><button id="bAgenda" type="button">see by venue</button><button id="bAgenda2" type="button">see by time</button></div>
 <figure id="fotoCiudad" class="fotoCiudad oculto"><a id="fcMapa" target="_blank" rel="noopener"><img id="fcImg" alt=""><canvas id="fcLienzo" role="img"></canvas></a><figcaption><a id="fcPie" target="_blank" rel="noopener"></a></figcaption></figure>
  </aside>
  <main class="principal">
+  <div id="estado"><span id="total"></span></div>
   <div id="detalle" class="detalle oculto"><button id="dCerrar" aria-label="close"><svg viewBox="0 0 14 14"><path d="M1.5 1.5l11 11M12.5 1.5l-11 11"/></svg></button><button id="dCopiar" aria-label="copy link"></button><div id="dCuerpo" class="cuerpo"></div><button id="dFuentes" class="oculto" aria-label="sources"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14V6M12 6c0-3 5-3.5 6 1v2M12 6c0-3-5-3.5-6 1v2"/><path d="M3.5 14h17c0 3.8-3.5 5.5-8.5 5.5S3.5 17.8 3.5 14zM8.5 22h7"/></svg></button></div>
   <div id="parrilla" class="parrilla oculto"></div>
   <div id="listado" class="listado"></div>
  </main>
 </div>
-<div id="tipTira" class="tipTira oculto"></div>
-<dialog id="agenda"><button id="aCerrar" aria-label="close"><svg viewBox="0 0 14 14"><path d="M1.5 1.5l11 11M12.5 1.5l-11 11"/></svg></button><div id="aCabeza"><div id="aCursor" class="oculto"><button id="aAtras" aria-label="previous week">‹</button><button id="aSigue" aria-label="next week">›</button></div><h2 id="aTitulo"></h2><span id="aSemana"></span></div><div id="aScroll"><table><thead><tr id="aDias"></tr></thead><tbody id="aFilas"></tbody><tfoot><tr id="aPie"></tr></tfoot></table></div></dialog>
+<dialog id="agenda"><button id="aCerrar" aria-label="close"><svg viewBox="0 0 14 14"><path d="M1.5 1.5l11 11M12.5 1.5l-11 11"/></svg></button><a id="aBajar" aria-label="download"><svg viewBox="0 0 14 14"><path d="M7 1.5v8.5M3.2 6.5L7 10.3l3.8-3.8M2 12.8h10"/></svg></a><div id="aVista"><img id="aImg" alt=""></div><div id="aFuente"><div id="aCabeza"><div id="aCursor" class="oculto"><button id="aAtras" aria-label="previous week">‹</button><button id="aSigue" aria-label="next week">›</button></div><h2 id="aTitulo"></h2><span id="aSemana"></span></div><div id="aScroll"><table><thead><tr id="aDias"></tr></thead><tbody id="aFilas"></tbody><tfoot><tr id="aPie"></tr></tfoot></table></div></div></dialog>
 <dialog id="video"><button id="vCerrar" aria-label="close"><svg viewBox="0 0 14 14"><path d="M1.5 1.5l11 11M12.5 1.5l-11 11"/></svg></button><iframe id="vMarco" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin"></iframe><a id="vEnYt" target="_blank" rel="noopener">YouTube ↗</a></dialog>
 <dialog id="ficha"><button id="fCerrar" aria-label="close"><svg viewBox="0 0 14 14"><path d="M1.5 1.5l11 11M12.5 1.5l-11 11"/></svg></button><div id="fCuerpo" class="cuerpo"></div></dialog>
 
@@ -723,13 +785,13 @@ const SEM = 'sem';
 const ACA = 'aca';
 const MIL = 'mil';
 const PRA = 'pra';
-const regular = r => r == MIL || r == PRA;   // milongas y prácticas: por días de la semana
+const regular = r => r == MIL || r == PRA || r == REGS;   // milongas y prácticas: por días de la semana (y su grupo, regulars)
 const deEventos = r => r == FES || r == SEM || r == ACA || regular(r);
 // la ventana de tiempo de la cuarta línea, un filtro más (2026-11-16, el usuario: "add boton YEAR WEEK : segun mostrar dias o meses", "si es un filtro nuevo",
 // "la cuarta linea podra decidir la ventana temporal"): YEAR, la tira de meses (one year y los 12 meses); WEEK, la de días (la semana y sus días); con
 // cualquier tipo con fecha. Al empezar, la de siempre: las regulares (milongas, prácticas), WEEK; lo demás, YEAR. La elegida, por tipo (modoTira)
 const modoTira = {};
-const tieneTiraFechas = r => deEventos(r) && !sinFecha(r) || r == EVS || r == FAV || regular(r);
+const tieneTiraFechas = r => deEventos(r) && !sinFecha(r) || comoEventos(r) || r == FAV || regular(r);
 const modoDe = r => tieneTiraFechas(r) ? modoTira[r] || (regular(r) ? 'dias' : 'meses') : null;
 const sinFecha = r => r == ACA || regular(r);
 const rolEvento = t => String(t).indexOf('seminar') != -1 ? SEM : String(t).indexOf('academy') != -1 ? ACA
@@ -738,7 +800,13 @@ const PEO = 'peo';
 const TIPOS_P = Object.keys(TIPOS_PERSONA).filter(t => t != 'person');   // group, couple: en el selector, sin tiras
 const LIS = 'lis';
 const COM = 'com';   // en el selector, community: todas las personas (2026-11-11, el usuario: "community=all people")
-const EVS = 'evs';   // events: todos los eventos ("events=all events")
+const EVS = 'evs';   // events: los festivales, los seminarios y los favoritos (2026-11-17, el usuario: "select events is only fes,sem,fav en listado"; antes, todos los eventos: "events=all events")
+const REGS = 'regs';   // regulars, en el selector: milongas y prácticas (2026-11-16, el usuario: "select tipo : crear otro grupo regulars : milonga y practica")
+// crazy mode: un grupo al final, sin tipos dentro (2026-11-16, el usuario: "crear otro grupo al final crazy mode", "pon crazy mode"; un rato, crazy mode):
+// todos los eventos y todas las regulares ("crazy mode muestra todos los events y todos los regulares"), como events, pero con R encendido al elegirlo ("crazy activa la R por defecto, los demas la apagan por defecto"); en negrita, como events ("crazy mode mismo tipo
+// de letra que events"; un rato, desactivado y en gris)
+const LOCO = 'loco';
+const comoEventos = r => r == EVS || r == LOCO;   // events y crazy mode: todos los eventos
 const FAV = 'fav';   // favorite: los eventos favoritos (favorito; 2026-11-15, el usuario: "añade favoritos en el select al final de events"): por fecha, como events
 const MUNDIAL = 'World';
 const $ = id => document.getElementById(id);
@@ -975,7 +1043,9 @@ const enRol  = (p, r) => r == TODOS ? true   // all: todo, también las listas
                        // pasamos a community"); events, sin ellas
                        : r == ACA ? (p.evento ? p.roles.includes(ACA) : p.tipoP == 'group')
                        : r == FAV ? !!p.evento && favorito(p)
-                       : r == EVS ? !!p.evento && p.roles[0] != ACA
+                       : r == REGS ? !!p.evento && (p.roles.includes(MIL) || p.roles.includes(PRA))
+                       : r == EVS ? !!p.evento && (p.roles.includes(FES) || p.roles.includes(SEM) || !!favorito(p))   // events: festival, seminar y favorite (sus tipos en el selector)
+                       : comoEventos(r) ? !!p.evento && p.roles[0] != ACA   // crazy mode: todos los eventos
                        : r == COM ? !p.evento || p.roles[0] == ACA
                        : r == PEO ? !p.evento && p.tipoP == 'person'
                        : TIPOS_P.includes(r) ? !p.evento && p.tipoP == r
@@ -1198,34 +1268,36 @@ function enVista(d, p){
   tope.setDate(tope.getDate() + DIAS_VISTA);
   return !!d && d < tope;
 }
-function filasMilongas(lista){   // [{p, dia}] por fecha desde hoy: con días elegidos, una por cada uno en que se hace
+function filasMilongas(lista, todas = false){   // (todas: cada vez de las regulares en la vista: el calendario y, con R, el listado)   // [{p, dia}] por fecha desde hoy: con días elegidos, una por cada uno en que se hace
   const dias = diasSel.size ? [...diasSel] : null;
   const filas = lista.flatMap(p => diasEvt(p) ? diasEvtVista(p, dias).map(dia => ({p, dia}))   // (con events, cada día de un evento no regular en la vista)
+                                  : todas && ocurrencias(p) ? vecesVista(p, dias).map(dia => ({p, dia}))   // (el calendario: cada vez de una regular en la vista)
                                   : dias ? dias.map(d => ({p, dia: proximaEn(p, [d])})) : [{p, dia: proximaEn(p)}]).filter(x => enVista(x.dia, x.p));
   const t = x => x.dia ? x.dia.getTime() : Infinity;
   const hora = new Map(filas.map(x => [x.p, horaDe(x.p)]));   // la hora de cada una, una vez (no en cada comparación)
   return filas.sort((x, y) => t(x) - t(y) || hora.get(x.p).localeCompare(hora.get(y.p)) || porNombre(x.p.nombre, y.p.nombre));
 }
 // el hover de un botón de las tiras: al momento (el title tarda), centrado sobre el botón, sin salirse de la ventana
-function tipTira(b, texto, circulo){   // circulo: solo el número, como el contador de las ciudades del mapa
-  const t = $('tipTira'), propio = b.textContent;
-  const fuera = () => { t.classList.add('oculto'); b.textContent = propio; b.style.flex = ''; };
-  b.onmouseenter = () => {
-    if (circulo && !isMovil()){   // en el panel vertical, el número en vez del texto; la celda, de su ancho (si no, los roles se recolocan)
-      b.style.flex = '0 0 ' + b.getBoundingClientRect().width + 'px';
-      b.textContent = texto;
-      return;
-    }
-    t.textContent = texto;
-    t.classList.toggle('circulo', !!circulo);
-    t.classList.remove('oculto');
-    const r = b.getBoundingClientRect();
-    t.style.left = Math.max(2, Math.min(r.left + (r.width - t.offsetWidth) / 2, innerWidth - t.offsetWidth - 2)) + 'px';
-    const arriba = r.top - t.offsetHeight - 4;   // encima del botón; si no cabe, debajo
-    t.style.top = (arriba >= 2 ? arriba : r.bottom + 4) + 'px';
-  };
-  b.onmouseleave = fuera;
-  b.addEventListener('click', fuera);   // al pulsar se repinta la tira: el botón se va sin su mouseleave
+// la cuarta línea, con la letra de la tercera; si algún botón no cabe (su texto cortado), apretada: menos relleno; si aún no, la letra estrechada (62 %, 50 %)
+const ESTRECHA = ['apretada', 'estrecha', 'muyEstrecha'];
+function ajustaTira(){
+  const t = $('fBotones'), corta = () => [...t.querySelectorAll('button')].some(b => b.scrollWidth > b.clientWidth + .5 || [...b.children].some(c => c.scrollWidth > c.clientWidth + .5));
+  t.classList.remove(...ESTRECHA);
+  for (const c of ESTRECHA){ if (!corta()) break; t.classList.add(c); }
+}
+new ResizeObserver(() => ajustaTira()).observe($('fechas'));   // con otro ancho
+// un botón de la cuarta línea (meses, días, roles; YEAR> o <WEEK, el de la tira a la vista): su texto y, a su derecha, su contador, siempre a la vista, como
+// en la tercera línea (2026-11-17, el usuario: "4 fila, igual que 3 fila , contadores visibles , eliminar el over del contador"; antes, el contador solo en el
+// hover, en un círculo: tipTira, #tipTira)
+function textoTira(b, texto, n){
+  const nom = document.createElement('span');
+  nom.className = 'nom';
+  nom.textContent = texto;
+  b.replaceChildren(nom);
+  if (n === undefined || n === null) return;
+  const num = b.appendChild(document.createElement('span'));
+  num.className = 'num';
+  num.textContent = n;
 }
 
 // people por roles: dos tiras (públicos y privados), varios a la vez; rolesSel vacío = todos
@@ -1243,8 +1315,8 @@ function pintaRoles(cuenta){
     for (const k of claves){
       const b = document.createElement('button');
       b.textContent = k === null ? tr('ALL') : k == PTC ? 'PTC' : tr(textoRol(k)).toUpperCase();   // en mayúsculas, como meses y días
-      const cuantos = cuenta(k);   // el contador, solo en el hover: en su círculo, como el de meses y días
-      tipTira(b, cuantos, true);
+      const cuantos = cuenta(k);   // el contador, a la vista, como el de meses y días
+      textoTira(b, b.textContent, cuantos);
       b.classList.toggle('activo', k === null ? !rolesSel.size : rolesSel.has(k));
       b.classList.toggle('cero', !cuantos && !b.classList.contains('activo'));   // a cero, sin clic (el activo, sí: se quita)
       if (b.classList.contains('cero')) return div.appendChild(b);
@@ -1269,16 +1341,23 @@ function gruposTira(div, r, cuentaModo){
   div.innerHTML = '';
   // YEAR al principio y WEEK al final de la fila (2026-11-16, el usuario: "poner fila 4 WEEK al final de la fila"; antes, juntos al principio): tres grupos
   const grupo = clase => { const g = div.appendChild(document.createElement('span')); g.className = clase; return g; };
-  const anyo = grupo('grupo modos'), resto = grupo('grupo'), semana = grupo('grupo modos');
   const modo = modoDe(r);
+  const anyo = grupo('grupo modos'), resto = grupo('grupo'), semana = grupo('grupo modos');
   for (const [m, texto, caja] of [['meses', 'YEAR', anyo], ['dias', 'WEEK', semana]]){
     const b = caja.appendChild(document.createElement('button'));
-    b.textContent = tr(texto);
-    if (m == modo) tipTira(b, cuentaModo, true);   // (el contador, el de su tira entera, solo en el hover)
+    b.textContent = m == 'meses' ? tr(texto) + '>' : '<' + tr(texto);   // YEAR> y <WEEK, apuntando a la tira (2026-11-17, el usuario: "4 linea por YEAR> <WEEK"; antes, YEAR y WEEK)
+    textoTira(b, b.textContent, null);   // sin contador (2026-11-17, el usuario: "no pongas CONTADOR en year ni week"; un rato, el de su tira entera), con su texto en amarillo
     b.classList.toggle('activo', m == modo && (m == 'meses' ? fechaSel == F_DOCE : !diasSel.size));
     b.onclick = () => { modoTira[r] = m; fechaSel = F_DOCE; diasSel.clear(); soloBuscado = false; deTira = true; pinta(); };
   }
   return resto;
+}
+// el botón R de la primera línea: encendido (amarillo) o apagado; sin uso (conR: YEAR con regulares), desactivado
+function pintaRepite(conR){
+  const b = $('bRepite');
+  b.disabled = !conR;
+  b.classList.toggle('activo', conR && repiteReg);
+  b.setAttribute('aria-pressed', String(conR && repiteReg));
 }
 function pintaDias(cuenta, r){
   const div = gruposTira($('fBotones'), r, cuenta(null));
@@ -1286,8 +1365,8 @@ function pintaDias(cuenta, r){
   [0, 1, 2, 3, 4, 5, 6].map(k => (hoy + k) % 7).forEach(d => {   // (la semana entera: WEEK, en el primer grupo)
     const b = document.createElement('button');
     b.textContent = tr(DIAS_SEM[d]);
-    const cuantos = cuenta(d);   // el contador, solo en el hover
-    tipTira(b, cuantos, true);
+    const cuantos = cuenta(d);   // el contador, a la vista
+    textoTira(b, b.textContent, cuantos);
     b.classList.toggle('activo', diasSel.has(d));
     b.classList.toggle('cero', !cuantos && !b.classList.contains('activo'));   // a cero, sin clic
     if (b.classList.contains('cero')) return div.appendChild(b);
@@ -1656,6 +1735,25 @@ const veces = p => ocurrencias(p) || diasEvt(p);   // los días de las líneas d
 // con la tira de días (WEEK), los días de un evento no regular en la vista (hoy y los 6 que siguen), solo los de la semana elegidos (dias: null, todos)
 const diasEvtVista = (p, dias) => (diasEvt(p) || []).filter(d => enVista(d, p) && (!dias || dias.includes(d.getDay())));
 const vecesEn = (p, i) => veces(p).filter(d => d >= PERIODOS[i][0] && d <= PERIODOS[i][1]);
+// el botón R, al principio de la cuarta línea (2026-11-16, el usuario: "boton R inicio de la linea 4 ; on/off ; on=repetir regulares off=no repetir regulares,
+// solo mostrar en primero en el listado"): encendido, cada vez de una regular es una línea en el periodo de YEAR; apagado, una sola, la primera. Con WEEK,
+// desactivado ("R desactivado para week"; un rato, encendido repetía en la vista): una línea por regular, su próxima, como antes. Lo siguen el listado y sus contadores; el calendario, siempre con todas ("calendario siempre representa el listado completo"): todas = true. Los días
+// de un evento no regular (con events) no son de una regular: siempre todos. Al abrir la página y al cambiar de tipo, el de ese tipo: crazy mode,
+// encendido; los demás, apagado (2026-11-16, el usuario: "crazy activa la R por defecto, los demas la apagan por defecto", "pantalla inicial events asia noR
+// year"; un rato, encendido y recordado en el navegador). deUrl y el cambio de tipo lo ponen
+let repiteReg = false;
+const vecesLista = (p, i, todas = repiteReg) => !todas && ocurrencias(p) ? vecesEn(p, i).slice(0, 1) : vecesEn(p, i);
+// las veces de una regular en la vista de la semana (hoy y los 6 que siguen), en esos días (null, todos); [] si no es regular
+function vecesVista(p, dias){
+  const tope = new Date();
+  tope.setHours(0, 0, 0, 0);
+  tope.setDate(tope.getDate() + DIAS_VISTA);
+  return (ocurrencias(p) || []).filter(d => d < tope && (!dias || dias.includes(d.getDay())));
+}
+// cuántas líneas da p con la tira de días, con esos días (null, todos): como filasMilongas (los contadores de WEEK, sus días y la tercera línea)
+const lineasVista = (p, dias, todas = false) => diasEvt(p) ? diasEvtVista(p, dias).length
+                                                   : todas && ocurrencias(p) ? vecesVista(p, dias).length
+                                                   : dias ? dias.filter(d => enVista(proximaEn(p, [d]), p)).length : +enVista(proximaEn(p), p);
 const enFecha = (p, i) => {
   if (i === null) return true;
   if (veces(p)) return vecesEn(p, i).length > 0;   // una regular (o, con events, un evento no regular): si se hace alguna vez en el periodo
@@ -1663,16 +1761,17 @@ const enFecha = (p, i) => {
   return f.doce ? m >= ordenDe(DOCE[0]) && m <= ordenDe(DOCE[11]) : Math.floor(m / 100) == f.anyo && (f.mes === undefined || m % 100 == f.mes);
 };
 // cuántas líneas da p en el listado con el filtro i: una regular, sus veces; lo demás, una si está en el periodo (los contadores de la tira: el listado de cada botón)
-const lineasEn = (p, i) => i === null ? 1 : veces(p) ? vecesEn(p, i).length : +enFecha(p, i);
-// las líneas del listado con el filtro i: cada vez de una regular (su día) y lo demás, una; por fecha (lo empezado, hoy; sin fecha, al final), hora y nombre
-function filasFechas(lista, i){
+const lineasEn = (p, i) => i === null ? 1 : veces(p) ? vecesLista(p, i).length : +enFecha(p, i);   // (con R apagado, una regular, una)
+// las líneas del listado con el filtro i: cada vez de una regular (su día; con R apagado, la primera) y lo demás, una; por fecha (lo empezado, hoy; sin fecha,
+// al final), hora y nombre. todas: cada vez, aunque R esté apagado (el calendario)
+function filasFechas(lista, i, todas = repiteReg){
   const t = ({p, dia}) => {
     if (dia) return dia.getTime();
     if (enCursoEvt(p.fechaOrig)) return HOY0.getTime();
     const e = leeEvt(p.fechaOrig);
     return e ? (e.ini || new Date(e.anyo, e.mes, 1)).getTime() : Infinity;
   };
-  const filas = lista.flatMap(p => veces(p) ? vecesEn(p, i).map(dia => ({p, dia})) : [{p, dia: null}]);
+  const filas = lista.flatMap(p => veces(p) ? vecesLista(p, i, todas).map(dia => ({p, dia})) : [{p, dia: null}]);
   const k = new Map(filas.map(x => [x, t(x)])), hora = new Map();
   const h = p => { if (!hora.has(p)) hora.set(p, horaDe(p)); return hora.get(p); };
   return filas.sort((x, y) => k.get(x) - k.get(y) || h(x.p).localeCompare(h(y.p)) || porNombre(x.p.nombre, y.p.nombre));
@@ -1690,12 +1789,12 @@ let calPuntos = (() => { try { return localStorage.getItem('tg.calendario') == '
 let calUltimo = null;   // con qué se pintó la última vez: para repintarlo al cambiar
 // qué sale en cada vista (2026-11-15, el usuario: "año: festival,seminarios ; mes : los 4 ; semana : lineas para festival y seminario y barras para milongas y
 // practicas"): año, festival y seminario (con puntos, una fila cada uno; un rato, tres con milonga/práctica); mes, los cuatro; semana, CAL_SEMANA
-const CAL_FILAS = [['F'], ['S']];   // año, con puntos: solo dos filas, festival y seminario (2026-11-15, el usuario: "cal year solo dos lineas fest y semi"; un rato, cuatro, con milonga y práctica); a la medida (--nAnyo): uno solo, los 12 px
+const CAL_FILAS = [['F'], ['M'], ['P'], ['S']];   // año, con puntos: una fila por cada tipo que sale, como el mes (2026-11-17, el usuario: "cal show all selected by year, by moth, by week"; antes, solo festival y seminario: "cal year solo dos lineas fest y semi"); a la medida (--nAnyo)
 // un mes solo o la semana: cuatro filas, una por tipo (2026-11-15, el usuario: "por mes o semana 4 lineas festival,milonga,practica,seminar")
 const CAL_FILAS4 = [['F'], ['M'], ['P'], ['S']];
 // la vista sólida (cuadrados): solo los eventos, festival > seminario (2026-11-15, el usuario: "vista solida del calendario, solo eventos>seminarios"; antes, también
 // milonga y práctica): un día con solo milongas o prácticas, sin rellenar (se ven con puntos)
-const CAL_SOLIDO = ['F', 'S'];   // el año con cuadrados: festival > seminario ("cal year solo dos lineas fest y semi"; un rato, también milonga y práctica)
+const CAL_SOLIDO = CAL_TIPOS;   // el año con cuadrados: los cuatro, como el mes, festival > milonga > seminario > práctica ("cal show all selected by year"; antes, festival > seminario)
 // la vista del calendario, la de la cuarta línea (2026-11-16, el usuario: "ya no necesitamos los sel del calendario year/moth/week se selecciona en la cuarta
 // linea"; un rato, un selector encima del calendario, show year month week): YEAR, el año o, con un mes elegido, ese mes; WEEK, la semana (hoy y los 6 que siguen)
 const CAL_DESDE = new Date(HOY.getFullYear(), HOY.getMonth(), 1), CAL_HASTA = new Date(HOY.getFullYear(), HOY.getMonth() + 12, 1);
@@ -1718,21 +1817,34 @@ function diasLinea(p, dia){   // los días de una línea del listado: el suyo (m
   const prox = proximaReg(p.fechaOrig);
   return prox && prox < CAL_HASTA ? [calClave(prox)] : [];
 }
-function pintaCalendario(lineas, visible, soloDias, anyo, semana){   // semana: con la tira de días (WEEK y los días), solo los días de la vista
+function pintaCalendario(lineas, visible, soloDias, anyo, semana, favs = []){   // semana: con la tira de días (WEEK y los días), solo los días de la vista; favs: las líneas de los favoritos (con events)
   const div = $('calendario');
-  calUltimo = [lineas, visible, soloDias, anyo, semana];
+  calUltimo = [lineas, visible, soloDias, anyo, semana, favs];
   ajustaPanel();
   // el ocultador, al principio de la línea de encima (bCal); oculto el calendario, también su selector y los open
   $('bCal').classList.toggle('oculto', !visible);
   pintaBotonCal();
   const ver = visible && !calOculto;
   div.classList.toggle('oculto', !ver);
-  if (!ver){ $('bAgendas').classList.add('oculto'); return; }
+  // see by venue / see by time: solo con las regulares (milonga, practica o regulars) y WEEK, con o sin ciudad, también con el calendario oculto y en el móvil
+  // (2026-11-17, el usuario: "muestra see by solo para regulars+week"; un rato, con WEEK y cualquier tipo: "see by always with week"; antes, con la semana o
+  // un mes, con una ciudad elegida y no en el móvil)
+  const tipoSee = $('selRol').value || $('selRol').dataset.inicial;
+  $('bAgendas').classList.toggle('oculto', !(semana && [MIL, PRA, REGS].includes(tipoSee)));
+  if (!ver){ $('calBarra').prepend($('bCal')); $('calNota').classList.add('oculto'); return; }   // (oculto, el ocultador vuelve a la línea de encima: ▼ calendar)
   div.classList.toggle('puntos', calPuntos);
   const vista = semana ? 'semana' : fechaSel >= 2 && fechaSel < 2 + DOCE.length ? 'mes' : 'anyo';   // la de la cuarta línea
+  // crazy mode con el año: una nota encima, las regulares no salen en el año (solo festival y seminario: CAL_FILAS, CAL_SOLIDO) (2026-11-16, el usuario:
+  // "crazy+year porner nota: no show in year regulars")
+  $('calNota').textContent = tr('note: Crazy Mode is no showing regulars in year');   // (el texto del usuario: "note: Crazy Mode is no showing regulars in year"; antes, "note: cazy mode no show in year the regulars")
+  $('calNota').classList.add('oculto');   // ya no: el año también muestra las regulares (2026-11-17, "cal show all selected by year, by moth, by week")
   // los open (see by venue, see by time), solo con la vista semana (2026-11-15, el usuario: "solo mostrar los open si selecciona cal week"; antes, siempre); en el
   // móvil no (2026-11-08, el usuario)
-  $('bAgendas').classList.toggle('oculto', vista != 'semana' || !(ciudadSel || lugarSel) || isMovil());   // y solo con una ciudad elegida (o un lugar del mapa; 2026-11-15, el usuario: "see solo cuando tengamos una ciudad seleccionada")
+  // los open, bajo el calendario, con la semana o un mes de milongas, prácticas o regulars (2026-11-16, el usuario: "para week or moth de milongas y practicas";
+  // antes, solo la semana) y una ciudad elegida (su horario es el de una ciudad); si no se aplican, no salen ("quita los botones see.. si no aplican"; un rato,
+  // en su sitio, en gris y luego vacíos); en el móvil, no
+  $('bAgenda').textContent = tr('see by venue');
+  $('bAgenda2').textContent = tr('see by time');   // y solo con una ciudad elegida (o un lugar del mapa; 2026-11-15, el usuario: "see solo cuando tengamos una ciudad seleccionada")
   const marcas = new Map(), conEventos = new Set();   // clave -> Set de letras; las filas (meses) con algo en el año
   // con puntos, los días de un festival o un seminario de varios días: una línea del grosor del punto, de su primer día al último (el usuario: «si es un
   // festival de varios dias dibujar una linea del grosor del punto en el calendario», «pon lineas tb para los seminarios»); letra + clave -> {ini, fin}: si
@@ -1770,6 +1882,25 @@ function pintaCalendario(lineas, visible, soloDias, anyo, semana){   // semana: 
   for (const p of anyo){
     if (CAL_TIPOS.includes(letraTipo(p))) for (const k of diasCalendario(p)) if (vale(k)) conEventos.add(Math.floor(k / 32));
   }
+  // con events (y festival), los favoritos: una ★ amarilla en su día, encima de lo que haya (2026-11-17, el usuario: "cal add fav to events as yellow start"); también las
+  // milongas y prácticas, que con events no salen en el calendario. Un evento, en su primer día (su barra dice los demás); una regular, cada vez del listado
+  // Sobre la marca del festival (su fila con puntos, su línea en la semana), 2 px más grande (2026-11-17, el usuario: "situa la estrella de fav sobre el festival y
+  // +2px"; antes, en el centro del día y, en la semana, arriba a la derecha): diasFav, clave -> la letra de su tipo (el festival manda)
+  const diasFav = new Map(), favVistos = new Set();
+  for (const {p, dia} of favs){
+    const evt = !dia || diasEvt(p);
+    if (evt && favVistos.has(p)) continue;
+    favVistos.add(p);
+    const k = diasLinea(p, evt ? null : dia)[0], l = letraTipo(p);
+    if (k !== undefined && vale(k) && (!diasFav.has(k) || l == 'F')) diasFav.set(k, l);
+  }
+  const estrellaCal = (td, k, y) => {   // y: el centro de la estrella, en px desde arriba de la celda (sin él, en medio)
+    if (!diasFav.has(k)) return;
+    td.classList.add('conFav');
+    const b = td.appendChild(document.createElement('b'));
+    b.className = 'calFav';
+    if (y !== undefined) b.style.top = y + 'px';
+  };
   // la celda del día k (clave: fila * 32 + día): cuadrados, rellena del color del que manda; puntos, cada tercio el de su tipo (un mes o la semana, cada cuarto)
   const cuatro = vista != 'anyo';
   let filasCelda = cuatro ? CAL_FILAS4 : CAL_FILAS;   // (el mes: solo las de los tipos que salen en él)
@@ -1844,7 +1975,10 @@ function pintaCalendario(lineas, visible, soloDias, anyo, semana){   // semana: 
     th.className = 'conEventos elegido';
     const etiqueta = (clase, texto, top) => { const s = th.appendChild(document.createElement('span')); s.className = clase; s.textContent = texto; if (top !== undefined) s.style.top = top + 'px'; };
     th.style.height = ALTO_CELDA + 'px';
-    if (PX && hayBarras){ etiqueta('h', h0, ARRIBA); etiqueta('h', h1, ARRIBA + ALTO - 8); }   // (sin WEEK: lo dice la leyenda; el usuario, "para week no necesitamos etiqueta week usamos la leyenda")
+    // las horas de la escala, 12:00 (2026-11-16, el usuario: "las horas en el cal poner 12:00 , creo que sale 32 ?"; antes, 12 y 32): lo que pasa de medianoche,
+    // con la hora del día siguiente (32, las 08:00; la escala va de 4 en 4 horas y la Late-night Milonga de Seoul acaba a las 04:30)
+    const hhmm = h => String(h % 24).padStart(2, '0') + ':00';
+    if (PX && hayBarras){ etiqueta('h', hhmm(h0), ARRIBA); etiqueta('h', hhmm(h1), ARRIBA + ALTO - 8); }   // (sin WEEK: lo dice la leyenda; el usuario, "para week no necesitamos etiqueta week usamos la leyenda")
     tr_.appendChild(th);
     for (let k = 0; k < DIAS_VISTA; k++){
       const d = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + k), td = tr_.insertCell();
@@ -1862,6 +1996,8 @@ function pintaCalendario(lineas, visible, soloDias, anyo, semana){   // semana: 
         i.className = 'linea l' + l + (prev ? '' : ' ini') + (next ? '' : ' fin');
         i.style.top = 1 + 7 * tiposLinea.indexOf(l) + 'px';   // la primera línea arriba; la otra, debajo
       }
+      const lFav = diasFav.get(calClave(d));   // un favorito ese día: sobre la línea de su tipo (festival, seminario); sin ella, arriba
+      estrellaCal(td, calClave(d), tiposLinea.includes(lFav) ? 1 + 7 * tiposLinea.indexOf(lFav) + 3 : 4);
       for (const l of todoElDia.get(calClave(d)) || []) (horas.get(calClave(d)) || horas.set(calClave(d), []).get(calClave(d))).unshift([h0, h1, l]);
       const unaSola = new Set((horas.get(calClave(d)) || []).map(x => x[2])).size < 2;   // solo milongas o solo prácticas: su barra, del ancho de las dos (el usuario: "si solo una barra ocupa el espacio de las dos")
       for (const [a, b, l] of horas.get(calClave(d)) || []){
@@ -1875,10 +2011,8 @@ function pintaCalendario(lineas, visible, soloDias, anyo, semana){   // semana: 
         i.style.height = y1 - y0 + 'px';
       }
     }
-    // debajo, la leyenda de los días, como en la cuarta línea (SUN, MON...; 2026-11-15, el usuario: "leyenda cal week dia"; hoy, sin resaltar)
-    const leyenda = tabla.insertRow();
-    leyenda.className = 'dias';
-    leyenda.appendChild(document.createElement('th'));
+    // arriba, la leyenda de los días, como en la cuarta línea (SUN, MON...; 2026-11-15, el usuario: "leyenda cal week dia"; hoy, sin resaltar)
+    const leyenda = leyendaArriba(tabla);
     for (let k = 0; k < DIAS_VISTA; k++){
       const d = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + k), td = leyenda.insertCell();
       td.textContent = tr(DIAS_SEM[d.getDay()]);
@@ -1899,7 +2033,11 @@ function pintaCalendario(lineas, visible, soloDias, anyo, semana){   // semana: 
     tabla.style.setProperty('--nfilas', Math.max(1, filasCelda.length));
   }   // mes: el elegido en la tira o, sin él, el de hoy
   div.classList.toggle('unMes', unMes);
-  const cols = Math.max(...filas.map(m => meses[m].hueco + meses[m].ult));
+  // con un mes, todos sus días, del 1 al último, a todo el ancho; los que ya pasaron, vacíos (2026-11-16, el usuario: "cal por mes el mes ocupa del 100% del
+  // espacio", "cal selccionado mes , el mes ocupa el 100% , representa todos los dias, pero si el dia paso queda vacio"; un rato, solo de hoy al último; antes,
+  // alineados por día de la semana como el año, con el hueco de antes del 1)
+  const diaDe = (m, c) => unMes ? c + 1 : c - meses[m].hueco + 1;   // el día del mes de la columna c
+  const cols = unMes ? meses[filas[0]].ult : Math.max(...filas.map(m => meses[m].hueco + meses[m].ult));
   // el año, a la medida: solo las filas de los tipos que salen en él, repartiéndose los 12 px de la celda (2026-11-15, el usuario: "para year si solo hay un tipo
   // ocupa el 100% de la altura de la barra"): un tipo, 12 px; dos, 6; tres, 4; cuatro, 3. Un punto más alto que la columna, una píldora de su ancho
   let tamPunto = unMes ? 6 : 3;
@@ -1913,6 +2051,9 @@ function pintaCalendario(lineas, visible, soloDias, anyo, semana){   // semana: 
     tabla.style.setProperty('--hAnyo', alto + 'px');
     tabla.style.setProperty('--wAnyo', tamPunto + 'px');
   }
+  // con puntos, la estrella en el centro de la fila de su tipo (el año, --hAnyo cada una; el mes, 1 px arriba y 6 + 1 cada una); con cuadrados o sin su fila, en medio
+  const altoFilaCal = parseFloat(tabla.style.getPropertyValue('--hAnyo')) || 12;
+  const filaFav = k => { const n = calPuntos ? filasCelda.findIndex(t => t.includes(diasFav.get(k))) : -1; return n < 0 ? undefined : unMes ? 1 + 7 * n + 3 : (n + .5) * altoFilaCal; };
   for (const m of filas){
     const {primero, hueco, ult} = meses[m];
     const tr_ = tabla.insertRow(), th = document.createElement('th');
@@ -1922,25 +2063,24 @@ function pintaCalendario(lineas, visible, soloDias, anyo, semana){   // semana: 
     // (sin clic: el filtro de meses es la tira; 2026-11-15, el usuario: "quita meses calendario clikcables")
     tr_.appendChild(th);
     for (let c = 0; c < cols; c++){
-      const td = tr_.insertCell(), dia = c - hueco + 1;
+      const td = tr_.insertCell(), dia = diaDe(m, c);
       if (dia < 1 || dia > ult) continue;
       const d = new Date(primero.getFullYear(), primero.getMonth(), dia);
       if (d < hoy) continue;   // los días de antes de hoy, sin celda (2026-11-15, el usuario: "no muestres los dias anteriores a hoy en el calendario")
-      td.className = 'd' + (Math.floor(c / 7) % 2 ? ' impar' : '');   // las semanas, de lunes a domingo, en grises alternos (hoy, sin resaltar: "no resaltes hoy en cal"; antes, más claro y, con cuadrados, un punto negro)
+      td.className = 'd' + (Math.floor((hueco + dia - 1) / 7) % 2 ? ' impar' : '');   // las semanas, de lunes a domingo, en grises alternos (hoy, sin resaltar: "no resaltes hoy en cal"; antes, más claro y, con cuadrados, un punto negro)
       pintaDia(td, m * 32 + dia);
+      estrellaCal(td, m * 32 + dia, filaFav(m * 32 + dia));
     }
   }
-  // debajo, la leyenda (2026-11-15, el usuario: "leyenda year o moth poner dia del mes", "mejor solo el primer dia de la semana en la leyenda"): solo los lunes;
+  // arriba, la leyenda (2026-11-15, el usuario: "leyenda year o moth poner dia del mes", "mejor solo el primer dia de la semana en la leyenda"): solo los lunes;
   // con un mes, su día del mes; con el año (cada fila, otro mes: la misma columna es otro día), su inicial (un rato, los siete días; y en el
   // mes, también el 1 y hoy)
-  const leyenda = tabla.insertRow();
-  leyenda.className = 'dias';
-  leyenda.appendChild(document.createElement('th'));
-  const {primero: p0, hueco: h0m, ult: u0} = meses[filas[0]];
+  const leyenda = leyendaArriba(tabla);
+  const {primero: p0, ult: u0} = meses[filas[0]];
   for (let c = 0; c < cols; c++){
     const td = leyenda.insertCell();
     if (!unMes){ if (c % 7 == 0) td.textContent = tr(DIAS_SEM[1])[0]; continue; }   // (las columnas empiezan en lunes)
-    const dia = c - h0m + 1, d = new Date(p0.getFullYear(), p0.getMonth(), dia);
+    const dia = diaDe(filas[0], c), d = new Date(p0.getFullYear(), p0.getMonth(), dia);
     if (dia < 1 || dia > u0 || d < hoy || d.getDay() != 1) continue;
     td.textContent = dia;
   }
@@ -1986,7 +2126,16 @@ function dibujaPuntos(div){
 }
 // las columnas del calendario, de ancho entero: el del nombre del mes (25 px) y cols de lo que quepa en el panel, redondeado hacia abajo (la tabla, de ese
 // ancho); --dx, dónde va el punto (tam px) en su celda, centrado a píxel entero. Así cada punto se pinta igual (el usuario: "no tienen los mismos pixel")
-const CAL_TH = 23;   // la columna 1 (los meses), del ancho del botón del triángulo abierto, 23 px (2026-11-16, el usuario: "col1 en cal mismo ancho que el boton triangulo"; antes 25)
+const CAL_TH = 25;   // la columna 1 (los meses): el botón del triángulo abierto, 23 px, y 2 de hueco a su derecha (2026-11-16, el usuario: "separa 2px dere y abajo del expansor"; antes 23: "col1 en cal mismo ancho que el boton triangulo"; y antes 25)
+// la fila de la leyenda (los días), arriba, y en su primera celda, la de los meses, el ocultador ▲ (2026-11-16, el usuario: "los dias arriba, fuente +2px,
+// primera columna expansor y meses centrados"; antes, debajo, y el ocultador en la línea de encima del calendario)
+function leyendaArriba(tabla){
+  const f = tabla.insertRow(0), th = document.createElement('th');
+  f.className = 'dias';
+  th.appendChild($('bCal'));
+  f.appendChild(th);
+  return f;
+}
 function ajustaCalendario(tabla, cols, tam){
   const w = Math.max(1, Math.floor(($('calendario').clientWidth - CAL_TH) / cols)), cg = document.createElement('colgroup');
   for (let c = 0; c <= cols; c++){ const col = cg.appendChild(document.createElement('col')); col.style.width = (c ? w : CAL_TH) + 'px'; }
@@ -2006,7 +2155,9 @@ function pintaBotonCal(){
   b.setAttribute('aria-label', calOculto ? 'show calendar' : 'hide calendar');
   b.classList.toggle('cerrado', calOculto);   // (cerrado, de todo el ancho)
 }
-$('bCal').addEventListener('click', () => {
+$('bCal').addEventListener('keydown', e => e.stopPropagation());   // (dentro del calendario: Intro y espacio no cambian cuadrados / puntos)
+$('bCal').addEventListener('click', e => {
+  e.stopPropagation();   // (ni el clic)
   calOculto = !calOculto;
   try { localStorage.setItem('tg.calOculto', calOculto ? '1' : '0'); } catch (e) {}
   if (calUltimo) pintaCalendario(...calUltimo);
@@ -2026,8 +2177,8 @@ function pintaFechas(cuenta, oculto, r){
     if (f.doce) return;   // (one year: YEAR, en el primer grupo)
     const b = document.createElement('button');
     b.textContent = f.doce ? tr(TEXTO_DOCE) : tr(MESES[f.mes]);
-    const cuantos = cuenta(i);   // el contador, solo en el hover
-    tipTira(b, cuantos, true);
+    const cuantos = cuenta(i);   // el contador, a la vista
+    textoTira(b, b.textContent, cuantos);
     b.classList.toggle('activo', i == fechaSel);
     b.classList.toggle('cero', !cuantos && i != fechaSel);   // a cero, sin clic
     // la ciudad (o el lugar) elegida se queda, como con los días (2026-11-11, el usuario: "clikar en los meses no quita la seleccion de ciudad")
@@ -2041,7 +2192,7 @@ let mapa = null, capaMapa = null, capaPaises = null, paisSel = null, areaMapa = 
 const marcadores = new Map();
 let marcaFicha = null;
 let tipMapa = null, etiquetaDe = null, relojEtiqueta = null;
-// tras pulsar una marca o una ciudad de la lista sale la etiqueta blanca: hasta que el ratón sale de ella (o se
+// tras pulsar una marca o una ciudad de la lista sale la etiqueta azul: hasta que el ratón sale de ella (o se
 // cierra la etiqueta), sin su hover (al repintar, la marca o la ciudad nueva queda bajo el ratón y lo abriría)
 let trasClic = false;
 const ETIQUETA_MS = 4000;
@@ -2079,39 +2230,39 @@ const bandera = k => '<img src="img/bandera-' + k + '.svg" alt="">';
 // aplicado, solo en los controles, no en el lsitado ni en detalle"): la clave es el texto en inglés; lo que falta, en inglés. Solo con tr(), donde se pintan
 // los controles (el listado y la ficha usan los mismos MESES y DIAS_SEM, sin traducir). Los países, con el navegador (nombrePais)
 const TEXTOS = {
-  ko: {'search tango…': '탱고 검색…', 'all': '전체', 'ALL': '전체', 'community': '커뮤니티', 'events': '이벤트',
-       'sources': '정보원', 'festival': '페스티벌', 'favorite': '즐겨찾기', 'seminar': '세미나', 'academy': '아카데미', 'milonga': '밀롱가', 'practica': '쁘락띠까',
+  ko: {'search tango…': '탱고 검색…', 'all registers': '전체 기록', 'ALL': '전체', 'community': '커뮤니티', 'events': '이벤트',
+       'sources': '정보원', 'festival': '페스티벌', 'favorite': '즐겨찾기', 'regulars': '정기', 'crazy mode': '크레이지 모드', 'note: Crazy Mode is no showing regulars in year': '참고: 크레이지 모드의 연간 보기에는 정기 모임이 나오지 않음', 'seminar': '세미나', 'academy': '아카데미', 'milonga': '밀롱가', 'practica': '쁘락띠까',
        'tanguer@': '땅게로', 'artist couple': '아티스트 커플', 'group': '그룹', 'organizer': '주최자', 'artist': '아티스트',
        'tangoDJ': '탱고 DJ', 'writer': '작가', 'teacher': '강사', 'shop': '상점', 'hostel': '숙소', 'milonguera': '밀롱게라', 'dancer': '댄서', 'source': '정보원',
        'World': '전 세계', 'Asia': '아시아', 'Europe': '유럽', 'America': '아메리카', 'Africa': '아프리카', 'Oceania': '오세아니아', 'no area': '지역 없음',
-       'map': '지도', 'back': '뒤로', 'more ...': '더 보기 …', 'one year': '1년', 'one week': '1주', 'YEAR': '연', 'WEEK': '이번 주', 'show': '보기', 'calendar': '달력', 'year': '연간', 'month': '월', 'week': '주',
+       'map': '지도', 'back': '뒤로', 'more ...': '더 보기 …', 'one year': '1년', 'one week': '1주', 'show all days': '모든 날 보기', 'show only first day': '첫날만 보기', 'YEAR': '연', 'WEEK': '이번 주', 'show': '보기', 'calendar': '달력', 'year': '연간', 'month': '월', 'week': '주',
        'JAN': '1월', 'FEB': '2월', 'MAR': '3월', 'APR': '4월', 'MAY': '5월', 'JUN': '6월', 'JUL': '7월', 'AUG': '8월', 'SEP': '9월', 'OCT': '10월', 'NOV': '11월', 'DEC': '12월',
        'SUN': '일', 'MON': '월', 'TUE': '화', 'WED': '수', 'THU': '목', 'FRI': '금', 'SAT': '토',
        'see by venue': '장소별 보기', 'see by time': '시간별 보기',
        'switch to grid': '격자로 보기', 'switch to list': '목록으로 보기', 'show / hide the map': '지도 보이기 / 숨기기', 'map: not applicable here': '여기서는 지도 없음',
-       'map: not available': '지도를 쓸 수 없음', 'copy link': '링크 복사', 'language': '언어', 'items': '항목', 'showing {n}': '{n}개 표시', 'max {n} elements': '최대 {n}개', 'list': '목록', 'grid': '격자'},
-  zh: {'search tango…': '搜索探戈…', 'all': '全部', 'ALL': '全部', 'community': '社群', 'events': '活动',
-       'sources': '信息源', 'festival': '探戈节', 'favorite': '收藏', 'seminar': '研讨会', 'academy': '学院', 'milonga': '米隆加', 'practica': '练习会',
+       'map: not available': '지도를 쓸 수 없음', 'copy link': '링크 복사', 'language': '언어', 'items': '항목', 'max {n} elements': '최대 {n}개', 'list': '목록', 'grid': '격자'},
+  zh: {'search tango…': '搜索探戈…', 'all registers': '全部记录', 'ALL': '全部', 'community': '社群', 'events': '活动',
+       'sources': '信息源', 'festival': '探戈节', 'favorite': '收藏', 'regulars': '定期', 'crazy mode': '疯狂模式', 'note: Crazy Mode is no showing regulars in year': '注：疯狂模式的年视图不显示定期活动', 'seminar': '研讨会', 'academy': '学院', 'milonga': '米隆加', 'practica': '练习会',
        'tanguer@': '探戈舞者', 'artist couple': '艺术家舞伴', 'group': '团体', 'organizer': '主办方', 'artist': '艺术家',
        'tangoDJ': '探戈DJ', 'writer': '作者', 'teacher': '老师', 'shop': '商店', 'hostel': '住宿', 'milonguera': '米隆加舞者', 'dancer': '舞者', 'source': '信息源',
        'World': '全世界', 'Asia': '亚洲', 'Europe': '欧洲', 'America': '美洲', 'Africa': '非洲', 'Oceania': '大洋洲', 'no area': '无地区',
-       'map': '地图', 'back': '返回', 'more ...': '更多 …', 'one year': '一年', 'one week': '一周', 'YEAR': '年', 'WEEK': '本周', 'show': '显示', 'calendar': '日历', 'year': '全年', 'month': '月', 'week': '周',
+       'map': '地图', 'back': '返回', 'more ...': '更多 …', 'one year': '一年', 'one week': '一周', 'show all days': '显示所有日期', 'show only first day': '只显示第一天', 'YEAR': '年', 'WEEK': '本周', 'show': '显示', 'calendar': '日历', 'year': '全年', 'month': '月', 'week': '周',
        'JAN': '1月', 'FEB': '2月', 'MAR': '3月', 'APR': '4月', 'MAY': '5月', 'JUN': '6月', 'JUL': '7月', 'AUG': '8月', 'SEP': '9月', 'OCT': '10月', 'NOV': '11月', 'DEC': '12月',
        'SUN': '周日', 'MON': '周一', 'TUE': '周二', 'WED': '周三', 'THU': '周四', 'FRI': '周五', 'SAT': '周六',
        'see by venue': '按场地查看', 'see by time': '按时间查看',
        'switch to grid': '网格视图', 'switch to list': '列表视图', 'show / hide the map': '显示 / 隐藏地图', 'map: not applicable here': '此处无地图',
-       'map: not available': '地图不可用', 'copy link': '复制链接', 'language': '语言', 'items': '项', 'showing {n}': '显示 {n}', 'max {n} elements': '最多 {n} 项', 'list': '列表', 'grid': '网格'},
-  ja: {'search tango…': 'タンゴを検索…', 'all': 'すべて', 'ALL': 'すべて', 'community': 'コミュニティ', 'events': 'イベント',
-       'sources': '情報源', 'festival': 'フェスティバル', 'favorite': 'お気に入り', 'seminar': 'セミナー', 'academy': 'アカデミー', 'milonga': 'ミロンガ', 'practica': 'プラクティカ',
+       'map: not available': '地图不可用', 'copy link': '复制链接', 'language': '语言', 'items': '项', 'max {n} elements': '最多 {n} 项', 'list': '列表', 'grid': '网格'},
+  ja: {'search tango…': 'タンゴを検索…', 'all registers': '全記録', 'ALL': 'すべて', 'community': 'コミュニティ', 'events': 'イベント',
+       'sources': '情報源', 'festival': 'フェスティバル', 'favorite': 'お気に入り', 'regulars': '定期', 'crazy mode': 'クレイジーモード', 'note: Crazy Mode is no showing regulars in year': '注：クレイジーモードの年表示では定期は表示されません', 'seminar': 'セミナー', 'academy': 'アカデミー', 'milonga': 'ミロンガ', 'practica': 'プラクティカ',
        'tanguer@': 'タンゲーロ', 'artist couple': 'アーティストカップル', 'group': 'グループ', 'organizer': '主催者', 'artist': 'アーティスト',
        'tangoDJ': 'タンゴDJ', 'writer': 'ライター', 'teacher': '講師', 'shop': 'ショップ', 'hostel': '宿泊', 'milonguera': 'ミロンゲーラ', 'dancer': 'ダンサー', 'source': '情報源',
        'World': '全世界', 'Asia': 'アジア', 'Europe': 'ヨーロッパ', 'America': 'アメリカ大陸', 'Africa': 'アフリカ', 'Oceania': 'オセアニア', 'no area': '地域なし',
-       'map': '地図', 'back': '戻る', 'more ...': 'もっと …', 'one year': '1年', 'one week': '1週間', 'YEAR': '年', 'WEEK': '今週', 'show': '表示', 'calendar': 'カレンダー', 'year': '年間', 'month': '月', 'week': '週',
+       'map': '地図', 'back': '戻る', 'more ...': 'もっと …', 'one year': '1年', 'one week': '1週間', 'show all days': 'すべての日を表示', 'show only first day': '初日のみ表示', 'YEAR': '年', 'WEEK': '今週', 'show': '表示', 'calendar': 'カレンダー', 'year': '年間', 'month': '月', 'week': '週',
        'JAN': '1月', 'FEB': '2月', 'MAR': '3月', 'APR': '4月', 'MAY': '5月', 'JUN': '6月', 'JUL': '7月', 'AUG': '8月', 'SEP': '9月', 'OCT': '10月', 'NOV': '11月', 'DEC': '12月',
        'SUN': '日', 'MON': '月', 'TUE': '火', 'WED': '水', 'THU': '木', 'FRI': '金', 'SAT': '土',
        'see by venue': '会場別に見る', 'see by time': '時間別に見る',
        'switch to grid': 'グリッド表示', 'switch to list': 'リスト表示', 'show / hide the map': '地図の表示 / 非表示', 'map: not applicable here': 'ここでは地図なし',
-       'map: not available': '地図は使えません', 'copy link': 'リンクをコピー', 'language': '言語', 'items': '件', 'showing {n}': '{n}件を表示', 'max {n} elements': '最大 {n}件', 'list': 'リスト', 'grid': 'グリッド'}
+       'map: not available': '地図は使えません', 'copy link': 'リンクをコピー', 'language': '言語', 'items': '件', 'max {n} elements': '最大 {n}件', 'list': 'リスト', 'grid': 'グリッド'}
 };
 const tr = t => (TEXTOS[idioma] || {})[t] || t;
 // el nombre de un país en el idioma elegido: su código ISO (paises.js) y el del navegador (Intl.DisplayNames); los que no tienen código propio, aquí
@@ -2133,10 +2284,8 @@ function nombrePais(n){
     return iso && nombresRegion[idioma].of(iso) || n;
   } catch (e) { return n; }
 }
-function textosFijos(){   // los del html: el buscador y los botones de la agenda
+function textosFijos(){   // los del html: el buscador (los botones de la agenda, see by venue y see by time, los pone pintaCalendario)
   $('buscar').placeholder = tr('search tango…');
-  $('bAgenda').textContent = tr('see by venue');
-  $('bAgenda2').textContent = tr('see by time');
 }
 function abreIdioma(abre){
   $('menuIdioma').classList.toggle('oculto', !abre);
@@ -2169,8 +2318,8 @@ const ciudadDe = p => p.pais + '|' + (p.ciudad || '');
 // max 100 elementos"). La parrilla, entera
 const MAX_LISTADO = 100;
 // lo que cuenta el total: el tipo en plural (en inglés; academy, academies; all, items) o, en otro idioma, su nombre en él
-const PLURAL = {academy: 'academies', all: 'items', sources: 'sources', 'tanguer@': 'tanguer@s', events: 'events', community: 'community'};
-const SINGULAR = {all: 'item', events: 'event'};
+const PLURAL = {academy: 'academies', all: 'items', sources: 'sources', 'tanguer@': 'tanguer@s', events: 'events', community: 'community', regulars: 'regulars'};
+const SINGULAR = {all: 'item', events: 'event', regulars: 'regular'};
 const textoCuenta = (tipo, n) => idioma != 'en' ? tr(tipo == 'all' ? 'items' : tipo)
                                  : n == 1 ? SINGULAR[tipo] || tipo : PLURAL[tipo] || tipo + 's';
 // la ciudad en 3 letras (CIUDADES_ABREV, de paises.js: la genera import/paisesgeo.py); sin ella en la tabla, las 3 primeras letras de su nombre (o de su lugar)
@@ -2730,7 +2879,7 @@ function pintaCiudades(){
     num.textContent = n.get(c);
     s.append(nom, num);
     s.classList.toggle('cero', !n.get(c));   // con el listado a cero, sin clic
-    s.onclick = () => {   // con el listado a cero, nada; si no, sale la etiqueta blanca del mapa
+    s.onclick = () => {   // con el listado a cero, nada; si no, sale la etiqueta azul del mapa
       if (!n.get(c)) return;
       clicEnTira = true;   // si el mapa vuela, la línea se queda vacía hasta que acabe (vuela, tiraVacia)
       try { elige(c, nombre); } finally { clicEnTira = false; }
@@ -2741,6 +2890,12 @@ function pintaCiudades(){
   // Los dos, siempre en su sitio: sin nada que hacer (back en World, more... si caben todas), la casilla vacía (2026-11-12, el usuario: "linea 3 mantenemos
   // fijos los controles, sino tienen accion presentar vacios"); antes no salían y los nombres se movían
   const vacio = clase => { const s = document.createElement('span'); s.className = clase + ' vacio'; s.setAttribute('aria-hidden', 'true'); return s; };
+  // el tope de cada uno, su texto más un 20 % (ver .ciudadesMapa en el css): medidos todos a la vez, sin estirarse
+  div.classList.add('mide');
+  div.replaceChildren(...celdas);
+  const anchos = celdas.map(s => s.getBoundingClientRect().width);
+  div.classList.remove('mide');
+  celdas.forEach((s, k) => { s.style.maxWidth = anchos[k] ? anchos[k] * 1.2 + 'px' : ''; });
   const porPaginas = !isMovil();
   const vistas = [];   // dónde empezaba cada página anterior
   const pagina = desde => {
@@ -2764,8 +2919,8 @@ function pintaCiudades(){
 let anchoBotones = 0;
 new ResizeObserver(() => { if ($('ciudadesMapa').clientWidth != anchoBotones && personas.length) pintaCiudades(); }).observe($('ciudadesMapa'));
 
-const PRIMEROS = {group: 'academy',   /* (un grupo es una academia: en su ficha, type academy) */ [COM]: 'community', [EVS]: 'events', [FAV]: 'favorite', [LIS]: 'sources',   /* (2026-11-10, el usuario: "cambia sources por link en el selector de tipo"; antes, links) */ [FES]: 'festival', [SEM]: 'seminar', [ACA]: 'academy', [MIL]: 'milonga', [PRA]: 'practica', [PEO]: 'tanguer@', couple: 'artist couple',   /* (2026-11-10, el usuario: "usa artis couple en vez de couple") */ org: 'organizer', art: 'artist'};
-function rutaListado(a, r, fs, dias, conRoles, n){   // la de la cabecera, tras el selector del tipo: World > área > país > ciudad > los roles (n líneas; el tiempo, en la caja del total)
+const PRIMEROS = {group: 'academy',   /* (un grupo es una academia: en su ficha, type academy) */ [COM]: 'community', [EVS]: 'events', [REGS]: 'regulars', [LOCO]: 'crazy mode', [FAV]: 'favorite', [LIS]: 'sources',   /* (2026-11-10, el usuario: "cambia sources por link en el selector de tipo"; antes, links) */ [FES]: 'festival', [SEM]: 'seminar', [ACA]: 'academy', [MIL]: 'milonga', [PRA]: 'practica', [PEO]: 'tanguer@', couple: 'artist couple',   /* (2026-11-10, el usuario: "usa artis couple en vez de couple") */ org: 'organizer', art: 'artist'};
+function rutaListado(a, r, fs, dias, conRoles, n, conR){   // conR: el botón R se puede usar (hay regulares y no es WEEK)   // la de la cabecera, tras el selector del tipo: World > área > país > ciudad > los roles (n líneas; el tiempo, en la caja del total)
   const lugar = lugarSel && ((porLugarMapa.get(lugarSel) || [])[0] || personas.find(p => p.pos && claveMarca(p) == lugarSel));   // con el mapa cerrado, porLugarMapa puede no tenerlo
   const [paisC, ciudadC] = (ciudadSel || '').split('|');
   const f = fs !== null ? FECHAS[fs] : null;
@@ -2809,18 +2964,23 @@ function rutaListado(a, r, fs, dias, conRoles, n){   // la de la cabecera, tras 
     }
     d.appendChild(s);
   });
-  // en la caja de arriba (antes, al final de las migas): el número, en blanco y más grande (.cuenta), y lo que cuenta, en gris: "80 festivals"; con más de
-  // 100 en el listado, "· showing 100" (2026-11-11, el usuario: "sugerencia para representar total listado", "haz la 1"; antes, "total listado 80")
+  // en la caja de arriba (antes, al final de las migas): el número, en blanco y más grande (.cuenta), y lo que cuenta, en gris: "80 festivals". Con más de 100
+  // en el listado, nada más (2026-11-16, el usuario: "quitar max 100 del texto"; un rato, "· max 100", "chng showing to max"; antes, "· showing 100": 2026-11-11,
+  // el usuario: "sugerencia para representar total listado", "haz la 1"; y antes, "total listado 80"): lo dice la última línea del listado, max 100 elements
   const pieza = (clase, texto) => { const e = document.createElement('span'); e.className = clase; e.textContent = texto; return e; };
-  const tipo = r == TODOS ? 'all' : PRIMEROS[r] || textoRol(r);
-  const corta = enListado && n > MAX_LISTADO;
+  const tipo = r == TODOS ? 'all' : r == LOCO ? 'events' : PRIMEROS[r] || textoRol(r);   // (crazy mode cuenta events)
   // y el filtro de tiempo, detrás del número y el tipo (2026-11-15, el usuario: "segunda linea no ponemos el filtro temporal, ponerlo en la primera despues del
   // contrador y tipo"; antes, al final de las migas): one year, el mes (JAN 2027) o los días elegidos (FRI)
   // (las regulares, milongas y prácticas, con la tira de días: sin días elegidos, WEEK, «one week»; el usuario, "para regulares poner one week")
   const tiempo = soloBuscado && buscado ? '' : [!f ? '' : f.doce ? tr(TEXTO_DOCE) : f.mes === undefined ? f.anyo : tr(MESES[f.mes]) + ' ' + f.anyo, ...(dias || []).map(d => tr(DIAS_SEM[d])),
                                                modoDe(r) == 'dias' && !f && !(dias && dias.length) ? tr('one week') : ''].filter(Boolean).join(' ');
+  // y, tras el tiempo, lo que dice R (2026-11-16, el usuario: "linea 1 , si R . repeat regular , sino R , no repeat regular"): solo si se puede usar (con WEEK
+  // o sin regulares, nada)
+  // "show all days" o "show only first day" (2026-11-17, el usuario: "text : no repeat regular => show only first day ; show all days"; antes, "repeat regular"
+  // y "no repeat regular"): solo con fechas (con los tipos sin ellas, community, sources..., R no cambia nada: sin texto)
+  const textoR = conR && tieneTiraFechas(r) && !(soloBuscado && buscado) ? tr(repiteReg ? 'show all days' : 'show only first day') : '';
   $('total').replaceChildren(pieza('cuenta', n), pieza('tTipo', textoCuenta(tipo, n)), ...(tiempo ? [pieza('tTipo', '· ' + tiempo)] : []),
-                             ...(corta ? [pieza('tTipo', '· ' + tr('showing {n}').replace('{n}', MAX_LISTADO))] : []));
+                             ...(textoR ? [pieza('tTipo', '· ' + textoR)] : []));
   const copia = document.createElement('button');   // a la derecha: copiar la url de esta ruta
   copia.className = 'copiaRuta';
   copia.setAttribute('aria-label', tr('copy link'));
@@ -2913,7 +3073,9 @@ function pinta(){
   // events (todos los eventos), con la tira de meses, como festival y seminar; la de días, solo las milongas y las prácticas (2026-11-11, el usuario: "para event
   // mostrar el filtro de meses, solo para milongas mostrar el de dias")
   const modo = modoDe(r), conFechas = modo == 'meses', conDias = modo == 'dias', conRoles = r == PEO;   // (la ventana de tiempo, YEAR o WEEK: modoDe)
-  porDiasEvt = r == EVS;   // con events, una línea por cada día de un evento no regular (veces)
+  // con R encendida, una línea por cada día de un evento no regular; apagada, una por evento (2026-11-17, el usuario: "R aplica tb a events , off only 1 linea ,
+  // on all days"; antes, con events y crazy mode siempre cada día y con los demás tipos, una)
+  porDiasEvt = repiteReg && (comoEventos(r) || deEventos(r) || r == FAV);
   const fs = conFechas && !soloBuscado ? fechaSel : null;
   const dias = conDias && diasSel.size && !soloBuscado ? [...diasSel] : null;
   const enDias = p => !conDias || soloBuscado || (diasEvt(p) ? diasEvtVista(p, dias).length > 0 : enVista(proximaEn(p, dias), p));   // con la búsqueda, aunque sea más adelante
@@ -2929,9 +3091,9 @@ function pinta(){
   const dh = new Map(), desde = p => { let v = dh.get(p); if (v === undefined) dh.set(p, v = desdeHoy(p)); return v; };   // desdeHoy de cada uno, una vez (no en cada comparación)
   const lista = (soloBuscado && buscado ? base.filter(p => p === buscado)
                                         : base.filter(enSel))
-                        .sort((x, y) => !deEventos(r) && r != EVS && r != FAV || r == ACA ? porNombre(x.nombre, y.nombre)   // (events y favorite, por fecha, como los de su tira de meses)
+                        .sort((x, y) => !deEventos(r) && !comoEventos(r) && r != FAV || r == ACA ? porNombre(x.nombre, y.nombre)   // (events y favorite, por fecha, como los de su tira de meses)
                                       : desde(x) - desde(y) || porNombre(x.nombre, y.nombre));
-  const filas = conDias && !soloBuscado ? filasMilongas(lista) : fs !== null ? filasFechas(lista, fs) : lista.map(p => ({p, dia: conDias ? proximaEn(p) : null}));   // con la tira de meses, cada vez de las regulares
+  const filas = conDias && !soloBuscado ? filasMilongas(lista, repiteReg) : fs !== null ? filasFechas(lista, fs) : lista.map(p => ({p, dia: conDias ? proximaEn(p) : null}));   // con la tira de meses, cada vez de las regulares
   const aCero = deTira, porTipo = deTipo;
   deTira = deTipo = false;
   if (!filas.length && estadoPintado && !aCero){   // a cero: todo como estaba, sin repintar (el mapa sin moverse, la ficha abierta); desde las tiras, el listado vacío
@@ -2943,10 +3105,15 @@ function pinta(){
   cierraFicha();
   // el calendario lineal, con lo del listado (solo con los tipos que tienen fecha); el año (sin el filtro de mes), para sus meses con eventos
   const listaAnyo = fs === null || fs === F_DOCE ? lista : personas.filter(p => enArea(p, a) && enRol(p, r) && enFecha(p, F_DOCE) && enTiras(p) && enSel(p));
-  pintaCalendario(filas, conFechas || conDias || r == TODOS, dias, listaAnyo, conDias && !soloBuscado);   // las líneas del listado (2026-11-15, el usuario: "calendario muestra las lineas del listado"; antes, con la parrilla, una por cara)   // todas las líneas del listado, no solo las 100 que se ven (2026-11-15, el usuario: "el listado esta limitado a mostar 100, pero el calendario debe cargar el listado completo")
+  // con R apagado, el calendario no: todas las veces de las regulares (el listado completo, con R encendido)
+  const todasCal = soloBuscado ? filas : conDias ? filasMilongas(lista, true) : fs !== null && !repiteReg ? filasFechas(lista, fs, true) : filas;   // (WEEK: el listado, sin repetir; el calendario, cada vez)
+  // con events, el calendario solo con los eventos, sin las regulares ni ninguna milonga o práctica, tampoco las de fecha suelta: lo del grupo regulars
+  // (2026-11-16, el usuario: "events solo muestra events en el cal", "cal events moth no muestra los regulares"; un rato, las de fecha suelta, sí); crazy mode, todo
+  const filasCal = todasCal;   // todo lo elegido, en el año, el mes y la semana (2026-11-17, el usuario: "cal show all selected by year, by moth, by week"; antes, con events, sin las regulares ni las milongas y prácticas)
+  pintaCalendario(filasCal, conFechas || conDias || r == TODOS, dias, listaAnyo, conDias && !soloBuscado, [EVS, FES].includes(r) ? todasCal.filter(({p}) => favorito(p)) : []);   // con events y festival, los favoritos (2026-11-17, el usuario: "cal fav put start on festival")   // las líneas del listado (2026-11-15, el usuario: "calendario muestra las lineas del listado"; antes, con la parrilla, una por cara)   // todas las líneas del listado, no solo las 100 que se ven (2026-11-15, el usuario: "el listado esta limitado a mostar 100, pero el calendario debe cargar el listado completo")
   // las líneas que tendría el listado con cada ciudad (pais|ciudad) o cada país: en una pasada (2026-11-10; antes, un filtro del listado por cada ciudad,
   // en cada movimiento del mapa). Las de una milonga, como en filasMilongas: una por cada día elegido en que sale
-  const nLineas = (p, i = fs) => soloBuscado ? 1 : conDias ? (diasEvt(p) ? diasEvtVista(p, dias).length : diasSel.size ? [...diasSel].filter(d => enVista(proximaEn(p, [d]), p)).length : +enVista(proximaEn(p), p))
+  const nLineas = (p, i = fs) => soloBuscado ? 1 : conDias ? lineasVista(p, dias, repiteReg)   // (una línea por regular; con R, cada vez en la vista)
                                  : i !== null ? lineasEn(p, i) : 1;   // con la tira de meses, las veces de las regulares
   const nCiudad = new Map(), nPais = new Map(), nArea = new Map();
   for (const p of base){
@@ -2984,14 +3151,18 @@ function pinta(){
   areasLista = areas;   // sus botones, en World (pintaCiudades)
   opciones(sa, areas, nombreArea, null, tr('World'));   // sin contador (2026-11-08, el usuario)
   if (paisSel){ if (areaPrevia) sa.value = areaPrevia; else sa.selectedIndex = -1; }   // con un país, se guarda su área
-  // all, community y events, y dentro de cada grupo por orden alfabético de lo que se lee (2026-11-10, el usuario: "orden alfabetico para select de tipos:
-  // all+community+events y dentro de cada uno tb orden alfabetico")
+  // all, sources, community, events, regulars y crazy mode (2026-11-16, el usuario: "select tipo : crear otro grupo regulars : milonga y practica , favorites en
+  // events , sources debajo de all , y crear otro grupo al final crazy mode"; antes, all, community y events, con sources, milonga y práctica dentro de events),
+  // y dentro de cada grupo por orden alfabético de lo que se lee (2026-11-10, el usuario: "orden alfabetico para select de tipos: all+community+events y dentro
+  // de cada uno tb orden alfabetico"). events, el grupo, sigue siendo todos los eventos (también milongas y prácticas)
   const nombreTipo = v => PRIMEROS[v] || textoRol(v), porTexto = vs => vs.sort((x, y) => nombreTipo(x).localeCompare(nombreTipo(y)));
-  opciones($('selRol'), [{valor: COM, valores: porTexto([PEO, ACA, ...TIPOS_P.filter(t => t != 'group')])},   // (group, dentro de academy)
-                         {valor: EVS, valores: [...porTexto([LIS, FES, SEM, MIL, PRA]), ...(listaFav().length ? [FAV] : [])]}],   // (favorite, al final, si hay favoritos)
-           v => tr(nombreTipo(v)), null, tr('all'),   // sin contador: el número va al final de la ruta. El orden, el del inglés
+  opciones($('selRol'), [LIS, {valor: COM, valores: porTexto([PEO, ACA, ...TIPOS_P.filter(t => t != 'group')])},   // (group, dentro de academy)
+                         {valor: EVS, valores: [...porTexto([FES, SEM]), ...(listaFav().length ? [FAV] : [])]},   // (favorite, al final, si hay favoritos)
+                         {valor: REGS, valores: porTexto([MIL, PRA])},
+                         {valor: LOCO, valores: []}],   // (crazy mode: sin tipos dentro)
+           v => tr(nombreTipo(v)), null, tr('all registers'),   // (la primera, all registers: 2026-11-16, el usuario: "primer all => all registers"; antes, all) sin contador: el número va al final de la ruta. El orden, el del inglés
            CSS.supports('appearance', 'base-select') ? v => LETRA_TIPO[v] : null);   // (el logo, solo con base-select: el desplegable nativo solo pinta texto; 2026-11-11, el usuario: "add el logo en el select")
-  // solo community y events en negrita; los demás, sin negrita y sangrados un carácter (2026-11-11, el usuario: "manten la negrita de events y comunity, los
+  // solo los grupos (community, events, regulars, crazy mode) en negrita; los demás, sin negrita y sangrados un carácter (2026-11-11, el usuario: "manten la negrita de events y comunity, los
   // otros sin negrita", "identa 1 caracter"; antes, academy y group también en negrita)
   anchoTipo();
   estadoPintado = filas.length ? estado() : null;   // con los selectores ya como se ven
@@ -3000,9 +3171,14 @@ function pinta(){
   // see by venue y see by time: a la vista con la vista semana del calendario (pintaCalendario); el horario, con lo que tienen los filtros (agendaDe, agendaFiltro)
   $('fBotones').dataset.tira = conDias ? 'dias' : conRoles ? 'roles' : 'meses';   // cada una, su rejilla en el panel vertical
   $('rBotones').classList.toggle('oculto', !conRoles || !hayPrivados);
-  if (conDias) pintaDias(d => deSel.reduce((n, p) => n + (diasEvt(p) ? diasEvtVista(p, d === null ? null : [d]).length : +enVista(proximaEn(p, d === null ? null : [d]), p)), 0), r);   // (las líneas: con events, los días de cada evento)
+  // el botón R, siempre disponible, también con WEEK y sin regulares (2026-11-17, el usuario: "manten disponible la R en cualquier caso"; antes, sin clic con
+  // WEEK o si no había regulares: festival, seminar...); con WEEK, encendido, cada vez de las regulares en la vista de 7 días (filasMilongas, lineasVista)
+  const conR = true;
+  pintaRepite(conR);
+  if (conDias) pintaDias(d => deSel.reduce((n, p) => n + lineasVista(p, d === null ? null : [d], repiteReg), 0), r);   // (las líneas: con events, los días de cada evento; una por regular o, con R, cada vez)
   else if (conRoles) pintaRoles(k => deSel.filter(p => k === null || conRol(p, k)).length);   // (conRoles: el tipo es PEO)
   else pintaFechas(i => deSel.reduce((n, p) => n + lineasEn(p, i), 0), !conFechas, r);   // las líneas que tendría el listado con cada botón (las veces de las regulares)
+  ajustaTira();
   pintaMapa(baseMapa, a, personas.some(p => p.pos && enArea(p, aMapa) && enRol(p, r)));   // sin las tiras: si el tipo lleva mapa
   pintaFotoCiudad();
   $('bListado').innerHTML = enListado ? ICONO_LISTA : ICONO_PARRILLA;   // lo que se ve; al pulsar, lo otro. Solo el icono (2026-11-12, el usuario: "quitar texto list/grid"; antes, el 2026-11-11, "quita list/grid deja solo el logo" y luego "vuelve a poner list/grid")
@@ -3011,7 +3187,7 @@ function pinta(){
   $('listado').classList.toggle('oculto', !enListado);
   window.scrollTo(0, 0);   // al cambiar el listado, arriba: a la vista su primera línea
   historia();
-  rutaListado(areaCuenta, r, fs, dias, conRoles, enListado ? filas.length : lista.length);   // la ruta, también con la parrilla: en ella el botón list / grid
+  rutaListado(areaCuenta, r, fs, dias, conRoles, enListado ? filas.length : lista.length, conR);   // la ruta, también con la parrilla: en ella el botón list / grid
   if (!enListado){ pintaParrilla(lista); return pintaVacio(filas.length, $('parrilla'), areaCuenta, r, fs, dias, conRoles, porTipo); }
   const div = $('listado');
   div.innerHTML = '';
@@ -3050,7 +3226,7 @@ function pinta(){
     const nombre = span('fNombre', '', textos);   // el título, estrechado como la fecha: su texto en una caja (fNomCaja) que corta con … (fNomTexto)
     // el logo de su tipo, delante (2026-11-11, el usuario: "poner el logo en el listado delante del nombre"); solo si el tipo elegido junta varios (all, community,
     // events): con uno solo, todos llevarían el mismo ("si tengo solo una opcion del select puedo quitar los logos del listado")
-    if (letraTipo(p) && [TODOS, COM, EVS, FAV].includes($('selRol').value || $('selRol').dataset.inicial || TODOS)) nombre.append(logoTipo(letraTipo(p)));
+    if (letraTipo(p) && [TODOS, COM, EVS, REGS, LOCO, FAV].includes($('selRol').value || $('selRol').dataset.inicial || TODOS)) nombre.append(logoTipo(letraTipo(p)));
     // una source, sin el último trozo de su dominio: hongkongtango.com -> hongkongtango, agendadeltango.com Madrid -> agendadeltango Madrid (2026-11-11, el usuario:
     // "para mostar las sources en el listado quita el ultimo subdominio (ej .com)")
     const nomTexto = span('fNomTexto', p.lista ? p.nombre.replace(/\.[a-z]{2,6}(?=\s|$)/gi, '') : p.nombre, span('fNomCaja', '', nombre));
@@ -3092,7 +3268,7 @@ function pintaVacio(n, div, a, r, fs, dias, conRoles, porTipo = false){
   v.className = 'vacio';
   // desde el selector de tipo, "No seminars here"; desde las tiras, "No events in <lugar>"
   v.textContent = (porTipo ? 'No ' + textoCuenta(r == TODOS ? 'all' : PRIMEROS[r] || textoRol(r), 0) + ' here'
-                           : 'No ' + (deEventos(r) || r == EVS || r == FAV ? 'events' : 'results') + ' in ' + donde) + cuando
+                           : 'No ' + (deEventos(r) || comoEventos(r) || r == FAV ? 'events' : 'results') + ' in ' + donde) + cuando
                 + (dias ? ' on ' + dias.map(d => DIAS_SEM[d]).join(', ') : '') + roles;
   if (cuando || dias || roles){
     const b = document.createElement('button');
@@ -3135,6 +3311,8 @@ function pintaParrilla(lista){
 let buscado = null, encontradas = [], activa = -1;
 let soloBuscado = false;
 const MAX_SUGS = 50;
+const MIN_SUGS = 4;   // las sugerencias, desde 4 letras escritas (2026-11-17, el usuario: "sugerencias 4 char"; antes, desde 1). Las escritas, no las de la clave
+// (sinAcentos, NFD: en coreano cada sílaba serían 2 o 3 letras)
 const variosRoles = p => new Set(p.roles.map(r => PTCS.includes(r) ? PTC : r)).size > 1;   // los PTC de varios años, uno solo (como en su botón)
 const tipoSug = p => p.geo || (!p.evento && !p.lista && p.tipoP == 'person' && variosRoles(p) ? 'MIX' : '') || String(p.tipoP && p.tipoP != 'person' ? p.tipoP : p.roles[0] || PEO).slice(0, 3).toUpperCase();
 let geos = null;
@@ -3166,7 +3344,7 @@ function muestra(){
   const q = sinAcentos($('buscar').value.trim()), d = $('sugs');
   const orden = (x, y) => x.clave.startsWith(q) == y.clave.startsWith(q) ? porNombre(x.nombre, y.nombre) : x.clave.startsWith(q) ? -1 : 1;
   const ordenGeo = (x, y) => x.clave.startsWith(q) == y.clave.startsWith(q) ? y.n - x.n || x.nombre.localeCompare(y.nombre) : x.clave.startsWith(q) ? -1 : 1;
-  encontradas = !q ? [] : [...lugaresSug().filter(g => g.clave.includes(q)).sort(ordenGeo),
+  encontradas = [...$('buscar').value.trim()].length < MIN_SUGS ? [] : [...lugaresSug().filter(g => g.clave.includes(q)).sort(ordenGeo),
                            ...personas.filter(p => p.clave.includes(q)).sort(orden)].slice(0, MAX_SUGS);
   activa = encontradas.length ? 0 : -1;
   d.innerHTML = '';
@@ -3316,19 +3494,42 @@ const horario = p => { const m = ((leeReg(p.fechaOrig) || {}).hora || '').match(
 const ORDINAL = {1: '1st', 2: '2nd', 3: '3rd', 4: '4th', 5: '5th', L: 'last'};
 const semanasMes = p => { const r = leeReg(p.fechaOrig); return r && r.frec == 'M' && r.semanas.length ? '(' + r.semanas.map(x => ORDINAL[x] || x).join(', ') + ')' : ''; };
 const horaTexto = h => h == '9999' ? 'no time' : h.slice(0, 2) + ':' + h.slice(2);   // la hora de inicio (horaDe, hhmm), como en la tabla: 20:00 (sin hora: no time)
-function botonSesion(p){   // dos líneas: el nombre (en azul, con la estrella de los favoritos y las semanas de las mensuales) y, debajo, su horario o, por horas, su local.
-  // Sin title (2026-11-11, el usuario: "quita los title de las tablas open"). Al pulsar, su ficha encima de la tabla
+// tres líneas, por local y por hora (2026-11-16, el usuario: "see by venue , cada milonga tiene tres linea: 1.nombre sino cabe eliminar el (), 2.frecuencia
+// mensual, si es semanal vacia, 3.horario ; reducir la letra para que entre en 3 lineas cada", "see by time igual"; antes, dos: el nombre con las semanas de
+// las mensuales y, debajo, el horario o, por hora, el local): 1, el nombre (en azul, con la estrella de los favoritos); 2, las semanas de una mensual, (1st, 3rd),
+// o cada dos semanas; semanal, vacía; 3, el horario. Cada una en su línea, sin partirse: lo que no cabe, con … (ajustaSesiones). Una línea vacía (semanal, sin
+// horario), sin su hueco ("see by venue, si una linea esta vacia no dejar el espacio"; un rato, en blanco, con su alto). Sin title (2026-11-11, el usuario:
+// "quita los title de las tablas open"). Al pulsar, su ficha encima de la tabla
+const frecuencia = p => semanasMes(p) || ((leeReg(p.fechaOrig) || {}).frec == 'Q' ? '(every 2 weeks)' : '');
+function botonSesion(p){
   const b = document.createElement('button');
-  const linea = clase => { const s = document.createElement('span'); s.className = clase; b.appendChild(s); return s; };
+  const linea = (clase, texto) => { if (!texto) return null; const s = document.createElement('span'); s.className = clase; s.textContent = texto; b.appendChild(s); return s; };   // (vacía, ninguna)
   b.className = 'sesion';
-  const nom = linea('nom');
-  if (favorito(p)) nom.appendChild(estrella(favorito(p)));
-  nom.append([p.nombre, semanasMes(p)].filter(Boolean).join(' '));
-  const debajo = horasAgenda ? localDe(p) : horario(p);
-  if (debajo) linea('hora').textContent = debajo;
+  const nom = linea('nom', p.nombre);
+  if (favorito(p)) nom.prepend(estrella(favorito(p)));
+  b.dataset.nombre = p.nombre;   // el entero: ajustaSesiones lo vuelve a poner antes de medir
+  linea('frec', frecuencia(p));
+  b.dataset.hora = horario(p);
+  linea('hora', b.dataset.hora);
   b.onclick = () => fichaEncima(p);
   return b;
 }
+// con la tabla a la vista: el nombre que no cabe en su línea, sin lo que lleva entre paréntesis (si sigue sin caber, cortado con …); el horario que no cabe,
+// solo su inicio (20:00). Al abrir, al cambiar de semana y con otro ancho
+function ajustaSesiones(){
+  if (!$('agenda').open) return;
+  const pasa = s => s.scrollWidth > s.clientWidth + .5;
+  for (const b of $('aFilas').querySelectorAll('button.sesion:not(.local)')){
+    const t = b.querySelector('.nom').lastChild, hora = b.querySelector('.hora');
+    t.data = b.dataset.nombre;
+    if (pasa(t.parentNode)) t.data = b.dataset.nombre.replace(/\s*\([^)]*\)/g, ' ').replace(/\s+/g, ' ').trim() || b.dataset.nombre;
+    if (!hora) continue;   // (sin horario, sin su línea)
+    hora.textContent = b.dataset.hora;
+    if (pasa(hora)) hora.textContent = b.dataset.hora.split(' ~ ')[0];
+  }
+}
+let anchoAgenda = 0;
+new ResizeObserver(() => { if ($('aScroll').clientWidth != anchoAgenda){ anchoAgenda = $('aScroll').clientWidth; ajustaSesiones(); } }).observe($('aScroll'));
 // el horario de los open, una semana de lunes a domingo (2026-11-15, el usuario: "en see queremos ver los eventos regulares por dia de la semana, añadimos las
 // filas de no regulares al inicio si esta semana hay alguno"; un rato, por meses): las regulares (milongas y prácticas semanales, mensuales...), en su día de la
 // semana, igual todas las semanas (las mensuales, con sus semanas del mes: botonSesion); arriba, las que no son regulares (festivales, seminarios, milongas con
@@ -3360,7 +3561,7 @@ function pintaAgenda(){
   const inicio = f => { const e = f.evento && leeEvt(f.evento.fechaOrig); return e && e.ini ? e.ini.getTime() : Infinity; };
   const ordenTipo = f => 'FSMP'.indexOf(f.tipo);
   const filas = [...grupos.values()].sort((x, y) => y.arriba - x.arriba || (x.arriba ? ordenTipo(x) - ordenTipo(y) || inicio(x) - inicio(y) : 0) || x.nombre.localeCompare(y.nombre));   // arriba lo no regular (festival, seminario, milonga, práctica; por su día de empezar); luego por local o por horas, 9999 (sin hora) al final
-  const donde = textoDonde($('selArea').value), tipo = PRIMEROS[$('selRol').value] || 'milonga', nombreRol = tipo + 's';
+  const donde = textoDonde($('selArea').value), tipo = $('selRol').value == LOCO ? 'event' : PRIMEROS[$('selRol').value] || 'milonga', nombreRol = tipo + 's';
   const celda = (tipo, clase) => {
     const c = document.createElement(tipo);
     if (clase) c.className = clase;
@@ -3370,14 +3571,14 @@ function pintaAgenda(){
   // como la de Beto: "Seoul Tango Milonga Schedule", y la semana a la derecha (NOV.10 - NOV.16)
   $('aTitulo').textContent = donde + ' Tango ' + tipo[0].toUpperCase() + tipo.slice(1) + ' Schedule';
   $('aSemana').textContent = '';   // el resumen semanal: sin fechas (2026-11-15, el usuario: "en see no usamos fechas", "es el resumen semanal")
-  // la fila de los días, arriba (con su fecha) y abajo; a los lados, Place (o Time)
-  const esquina = derecha => { const c = celda('th', derecha ? 'aDer' : ''); c.textContent = horasAgenda ? 'Time' : 'Place'; return c; };
+  // la fila de los días, arriba y abajo; a la izquierda, Place (o Time); a la derecha, ya no (2026-11-16, el usuario: "see no repetir la columnas 1 al final")
+  const esquina = () => { const c = celda('th'); c.textContent = horasAgenda ? 'Time' : 'Place'; return c; };
   const DIAS_LARGOS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  $('aDias').replaceChildren(esquina(false), ...dias.map(d => { const c = celda('th', claseDia(d)); c.textContent = DIAS_LARGOS[d.getDay()]; return c; }), esquina(true));   // (sin su fecha; hoy, resaltado)
-  $('aPie').replaceChildren(esquina(false), ...dias.map(d => { const c = celda('th'); c.textContent = DIAS_LARGOS[d.getDay()]; return c; }), esquina(true));
-  // cada local (o cada hora), a la izquierda y otra vez a la derecha; lo no regular: su nombre (por local) o su tipo (por hora)
-  const cabezaFila = (f, derecha) => {
-    const c = celda('th', derecha ? 'aDer' : '');
+  $('aDias').replaceChildren(esquina(), ...dias.map(d => { const c = celda('th', claseDia(d)); c.textContent = DIAS_LARGOS[d.getDay()]; return c; }));   // (sin su fecha; hoy, resaltado)
+  $('aPie').replaceChildren(esquina(), ...dias.map(d => { const c = celda('th'); c.textContent = DIAS_LARGOS[d.getDay()]; return c; }));
+  // cada local (o cada hora), a la izquierda (antes, también a la derecha); lo no regular: su nombre (por local) o su tipo (por hora)
+  const cabezaFila = f => {
+    const c = celda('th');
     if (f.evento) c.textContent = f.nombre;
     else if (f.texto) c.textContent = f.texto;
     else if (horasAgenda) c.textContent = horaTexto(f.nombre);
@@ -3387,13 +3588,12 @@ function pintaAgenda(){
   };
   $('aFilas').replaceChildren(...filas.map(f => {
     const tr = celda('tr', f.arriba ? 'aNoRegular' : '');
-    tr.appendChild(cabezaFila(f, false));
+    tr.appendChild(cabezaFila(f));
     for (const ps of f.celdas){
       const c = celda('td');
       ps.sort((x, y) => horaDe(x).localeCompare(horaDe(y)) || localDe(x).localeCompare(localDe(y)) || x.nombre.localeCompare(y.nombre)).forEach(p => c.appendChild(botonSesion(p)));
       tr.appendChild(c);
     }
-    tr.appendChild(cabezaFila(f, true));
     return tr;
   }));
   if (!filas.length){
@@ -3403,8 +3603,91 @@ function pintaAgenda(){
     $('aFilas').appendChild(tr);
   }
   $('aScroll').scrollTop = 0;
+  ajustaSesiones();   // (abierta: al cambiar de semana)
+  imagenAgenda();   // (abierta: su imagen, otra vez)
 }
 const mueveSemana = n => { semanaAgenda += n; pintaAgenda(); };
+// see by, como imagen (2026-11-17, el usuario: "see by se puede crear como un jpg en un modal ?", "abre imagen iso tabla"): la tabla, que el navegador ha puesto
+// fuera de la vista (#aFuente, ANCHO_AGENDA de ancho), se dibuja en un lienzo tal como está: los fondos y los bordes de cada celda, y cada texto en su sitio,
+// línea a línea (las cajas de sus letras: Range), con su letra y su color; lo cortado con … (text-overflow), cortado igual. Al doble de tamaño (ESCALA_AGENDA),
+// nítida al ampliarla. El JPG, en #aImg y en el botón de descargar (#aBajar), con el nombre del título
+const ESCALA_AGENDA = 2;
+let urlAgenda = '', vezAgenda = 0;
+async function imagenAgenda(){
+  const vez = ++vezAgenda, fuente = $('aFuente');
+  await document.fonts.ready;   // (con la letra ya cargada: el lienzo no la espera)
+  if (vez != vezAgenda || !$('agenda').open) return;
+  const caja = fuente.getBoundingClientRect(), E = ESCALA_AGENDA;
+  const lienzo = document.createElement('canvas');
+  lienzo.width = Math.ceil(caja.width * E); lienzo.height = Math.ceil(caja.height * E);
+  const x = lienzo.getContext('2d');
+  x.scale(E, E);
+  const rel = b => ({l: b.left - caja.left, t: b.top - caja.top, r: b.right - caja.left, b: b.bottom - caja.top});
+  const pinta_ = c => c && c != 'transparent' && !/^rgba\(.*,\s*0\)$/.test(c);
+  x.fillStyle = getComputedStyle(fuente).backgroundColor;
+  x.fillRect(0, 0, caja.width, caja.height);
+  // los fondos de las celdas y, encima, sus bordes (los de la tabla, el de la derecha y el de abajo)
+  const celdas = [...fuente.querySelectorAll('table, th, td')];
+  for (const e of celdas){
+    const st = getComputedStyle(e), b = rel(e.getBoundingClientRect());
+    if (e.tagName != 'TABLE' && pinta_(st.backgroundColor)){ x.fillStyle = st.backgroundColor; x.fillRect(b.l, b.t, b.r - b.l, b.b - b.t); }
+  }
+  for (const e of celdas){
+    const st = getComputedStyle(e), b = rel(e.getBoundingClientRect());
+    for (const lado of ['Top', 'Right', 'Bottom', 'Left']){
+      const w = parseFloat(st['border' + lado + 'Width']);
+      if (!w || st['border' + lado + 'Style'] == 'none' || !pinta_(st['border' + lado + 'Color'])) continue;
+      x.fillStyle = st['border' + lado + 'Color'];
+      if (lado == 'Top') x.fillRect(b.l, b.t, b.r - b.l, w);
+      else if (lado == 'Bottom') x.fillRect(b.l, b.b - w, b.r - b.l, w);
+      else if (lado == 'Left') x.fillRect(b.l, b.t, w, b.b - b.t);
+      else x.fillRect(b.r - w, b.t, w, b.b - b.t);
+    }
+  }
+  // los textos: cada letra, su caja; las de una misma línea, juntas, y escritas desde la primera, centradas en su alto
+  x.textBaseline = 'middle';
+  const andar = document.createTreeWalker(fuente, NodeFilter.SHOW_TEXT), rango = document.createRange();
+  for (let t; (t = andar.nextNode());){
+    if (!t.data.trim()) continue;
+    const el = t.parentElement, st = getComputedStyle(el);
+    if (st.visibility == 'hidden') continue;
+    x.font = `${st.fontStyle} ${st.fontWeight} ${st.fontSize} ${st.fontFamily}`;
+    x.fillStyle = st.color;
+    let corta = el;   // el que corta con … (su letra no cabe): hasta su borde de la derecha
+    while (corta != fuente && getComputedStyle(corta).textOverflow != 'ellipsis') corta = corta.parentElement;
+    const tope = corta != fuente && corta.scrollWidth > corta.clientWidth + .5 ? rel(corta.getBoundingClientRect()).r - parseFloat(getComputedStyle(corta).paddingRight) : Infinity;
+    const lineas = [];
+    for (let i = 0; i < t.data.length;){
+      const n = t.data.codePointAt(i) > 0xffff ? 2 : 1;
+      rango.setStart(t, i); rango.setEnd(t, i + n);
+      const r0 = rango.getClientRects()[0];
+      if (r0 && r0.width){
+        const r = rel(r0), y = (r.t + r.b) / 2, ult = lineas[lineas.length - 1];
+        if (ult && Math.abs(ult.y - y) < 2) ult.letras.push({c: t.data.slice(i, i + n), r: r.r});
+        else lineas.push({x: r.l, y, letras: [{c: t.data.slice(i, i + n), r: r.r}]});
+      }
+      i += n;
+    }
+    for (const {x: x0, y, letras} of lineas){
+      let texto = letras.map(l => l.c).join('');
+      if (letras[letras.length - 1].r > tope + .5){
+        const puntos = x.measureText('…').width;
+        const quedan = letras.filter(l => l.r + puntos <= tope + .5);
+        texto = quedan.map(l => l.c).join('').trimEnd() + '…';
+      }
+      x.fillText(texto, x0, y);
+    }
+  }
+  const blob = await new Promise(ok => lienzo.toBlob(ok, 'image/jpeg', .92));
+  if (vez != vezAgenda || !blob) return;
+  if (urlAgenda) URL.revokeObjectURL(urlAgenda);
+  urlAgenda = URL.createObjectURL(blob);
+  const titulo = $('aTitulo').textContent;
+  $('aImg').src = urlAgenda;
+  $('aImg').alt = titulo;
+  $('aBajar').href = urlAgenda;
+  $('aBajar').download = (sinAcentos(titulo).replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase() || 'schedule') + '.jpg';
+}
 
 function conecta(){
   $('buscar').oninput = muestra;
@@ -3426,12 +3709,17 @@ function conecta(){
     const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
     const ini = agendaFiltro.periodo && agendaFiltro.periodo[0];
     semanaAgenda = ini && ini > hoy ? Math.floor(Math.round((ini - hoy) / 864e5) / 7) : 0;   // los 7 días que tienen el primero del periodo
+    $('aImg').removeAttribute('src');   // (sin la imagen de antes mientras se hace la nueva)
+    $('aVista').classList.remove('zoom');
     pintaAgenda();
     $('agenda').showModal();
+    ajustaSesiones();   // (ya a la vista: se puede medir)
+    imagenAgenda();
   };
   $('bAgenda').onclick = () => abreAgenda(false);
   $('bAgenda2').onclick = () => abreAgenda(true);
   $('aCerrar').onclick = () => $('agenda').close();
+  $('aImg').onclick = () => $('aVista').classList.toggle('zoom');   // a su tamaño (con scroll) y de vuelta, a lo ancho
   $('agenda').onclick = e => { if (e.target == $('agenda')) $('agenda').close(); };
   $('agenda').onkeydown = e => { if (e.key == 'ArrowLeft') mueveSemana(-1); else if (e.key == 'ArrowRight') mueveSemana(1); };
   $('aAtras').onclick = () => mueveSemana(-1);
@@ -3440,6 +3728,16 @@ function conecta(){
   $('dCerrar').onclick = cierraFicha;
   $('bMapa').onclick = abreCierraMapa;
   $('bListado').onclick = () => { enListado = !enListado; sinEncuadre = true; pinta(); };
+  // C: los contadores de las líneas 3 y 4, a la vista o no; al abrir, apagada. La tercera línea, otra vez: el ancho de sus botones lo mide con lo que se ve
+  const pintaContador = () => { const on = !$('cabecera').classList.contains('sinContadores'); $('bContador').classList.toggle('activo', on); $('bContador').setAttribute('aria-pressed', String(on)); };
+  $('cabecera').classList.add('sinContadores');
+  pintaContador();
+  $('bContador').onclick = () => { $('cabecera').classList.toggle('sinContadores'); pintaContador(); pintaCiudades(); ajustaTira(); };
+  $('bRepite').onclick = () => {   // R: encendido / apagado (repiteReg)
+    repiteReg = !repiteReg;
+    deTira = true;
+    pinta();
+  };
   $('bIdioma').onclick = e => { e.stopPropagation(); abreIdioma($('menuIdioma').classList.contains('oculto')); };
   document.addEventListener('click', e => { if (!e.target.closest('.selIdioma')) abreIdioma(false); });   // fuera del selector, se cierra
   document.addEventListener('keydown', e => { if (e.key == 'Escape') abreIdioma(false); });
@@ -3460,6 +3758,7 @@ function conecta(){
     lugarSel = null;
     soloBuscado = false;
     deTira = deTipo = true;   // (a cero, el listado vacío, no lo de antes)
+    repiteReg = false;   // R, apagada al elegir un tipo, también crazy mode (2026-11-17, el usuario: "no crazy always defaul R off"; antes, crazy mode la encendía)
     pinta();
   };
 }
@@ -3473,6 +3772,7 @@ function deUrl(){
   if (q.has('d')) mapaAbierto = !/^(off|0|no)$/i.test(q.get('d'));
   idInicial = (q.get('id') || '').trim();
   rutaInicial = {pa: q.get('pa'), ci: q.get('ci'), lu: q.get('lu'), f: q.get('f'), w: q.get('w'), r: q.get('r')};
+  repiteReg = false;   // R, apagada al abrir, con cualquier tipo (también crazy mode: "no crazy always defaul R off")
 }
 // el resto de la ruta de la url (urlRuta): la fecha, los días y los roles; luego el lugar, la ciudad o el país, como al pulsarlos
 let rutaInicial = {};
