@@ -722,14 +722,15 @@
   .sesion:not(.local) { font-size: .85em; padding-top: 0; padding-bottom: 0; }   /* la letra, más pequeña: cada una en sus tres líneas (2026-11-16, el usuario: "reducir la letra para que entre en 3 lineas cada") */
   /* el mismo interlineado en todas las líneas de una celda, también de una milonga a la siguiente (2026-11-16, el usuario: "see x mismo interlineado en todas las
      lineas"; antes, 4 px y su relleno, 2, más entre una y otra) */
-  .sesion .hora { display: block; line-height: 1.25; white-space: nowrap; font-variant-numeric: tabular-nums; }   /* by venue, la hora (2000-2330): en una línea (2026-11-18, el usuario: "hora HHMM-HHMM one line") */
+  .sesion .hora { display: block; line-height: 1.25; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .sesion .hora .guion { display: inline-block; width: .35em; text-align: center; }   /* el guion de 1930-2330, estrecho: los tiempos, más juntos (2026-11-19, el usuario: "un guion mas corto") */   /* by venue, la hora (2000-2330): en una línea (2026-11-18, el usuario: "hora HHMM-HHMM one line") */
   .sesion.local { font-weight: bold; }   /* el nombre del local */
   .pNom .estrella, .pNom .estrella.go { color: var(--rojo); }   /* en rojo, también las de home y think (2026-11-18, el usuario: "start see by red"; un rato, en azul, el del nombre: "start see by blue"; antes, amarilla y roja) */
   .pNom .estrella { font-size: calc(1em + 6px); }   /* la ★ de los favoritos, 6 px más grande (2026-11-18, el usuario: "size +2px start", "sz start fav +2pc", "+2px"); en su sitio ("start see by red , up -2px"; un rato, 2 px más arriba: "up start fav 2px") */
   .pNom .logoTipo { margin-right: 3px; }   /* el logo de su tipo, delante del nombre (2026-11-18, el usuario: "incluye delante del nombre en see by el logo del tipo de artefacto") */
   .sesion .logoTipo { margin: 0; }   /* by venue, sin hora: el logo, solo en su celda */
   .pNom .pLocal { color: var(--agTexto); }   /* by time, el local delante de la milonga, en negro: «En Paz Studio - Wol Luminoso» */
-  .pNom small { font-weight: 400; color: var(--agTexto); }   /* detrás del nombre: las semanas de una mensual, (1ª 3ª); by time, no time */
+  .pNom small { font-weight: 400; color: var(--agTexto); }   /* detrás del nombre: las semanas de una mensual, (1ª3ª); by time, no time */
   /* see by country (2026-11-18, el usuario: "creamos otra tabla, esta vez en html, mismo formato que las see by, se llamara see by country"): como los see by,
      a toda la pantalla y con los colores de la tabla de Beto, pero la tabla en html, a la vista (sin imagen: cada evento se pulsa y abre su ficha encima). La
      primera columna, las fechas, fijas a la izquierda; las demás, de 130 px como poco: con muchas, scroll a lo ancho (pintaPais) */
@@ -742,7 +743,10 @@
   /* una fila por evento: la fecha, su nombre entero y, en la columna de su país (o ciudad, o área), el logo de su tipo (2026-11-18, el usuario: "see by month ,
      segunda columna name(completo) , siguientes cada pais con 3 letras, en las celdas de los paises , el logo"); antes, una fila por fecha y los eventos en
      las celdas de los países, de 130 px */
-  #pais table { display: grid; grid-template-columns: max-content minmax(max-content, 1fr) repeat(var(--columnas, 1), 3em); width: max-content; min-width: 100%;   /* (cada celda en una línea: el nombre, del ancho de lo suyo) */
+  /* sin scroll a lo ancho a media pantalla (2026-11-19, el usuario: "see by mont ajusta columnas para no poner scroll horizontal a media pantalla"): la fecha y los
+     países, del ancho de lo suyo (CHN, el logo); el nombre, lo que queda (6em como poco), en una línea, cortado con … si no cabe (entero, en su ficha). Con muchos
+     países (Europa) puede no caber: entonces, el scroll. Antes, el nombre entero y los países de 3em */
+  #pais table { display: grid; grid-template-columns: max-content minmax(6em, 1fr) repeat(var(--columnas, 1), max-content); width: 100%;
                 font-size: .85em; border-right: 1px solid var(--agLinea); border-bottom: 1px solid var(--agLinea); }
   #pais thead, #pais tbody, #pais tr { display: contents; }
   #pais th, #pais td { box-sizing: border-box; padding: 4px; border-top: 1px solid var(--agLinea); border-left: 1px solid var(--agLinea); white-space: nowrap;
@@ -753,7 +757,8 @@
   #pCols th { position: sticky; top: 0; z-index: 1; background: var(--agDias); font-weight: bold; }   /* los países (o ciudades, o áreas), arriba */
   #pCols th:first-child { left: 0; z-index: 2; }
   #pais td.vacio { grid-column: 1 / -1; padding: 12px; }
-  #pais td.pCeldaNom { text-align: left; }
+  #pais td.pCeldaNom { text-align: left; overflow: hidden; }
+  #pais .pNom { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }   /* el nombre, en una línea; si no cabe, con … */
   .pNom { display: block; width: 100%; box-sizing: border-box; padding: 1px 3px; border: 0; border-radius: 3px; background: none; font: inherit; font-weight: bold;
           text-align: left; color: var(--agNombre); cursor: pointer; }   /* el nombre entero, en azul, con la ★ delante si es favorito */
   .pLogo { display: inline-flex; padding: 0; border: 0; border-radius: 50%; background: none; font: inherit; color: var(--agNombre); cursor: pointer; }   /* el logo del tipo, en su país */
@@ -3293,7 +3298,10 @@ function pinta(){
   const deSel = personas.filter(p => enArea(p, a) && enRol(p, r) && enSel(p));   // lo del área, el tipo y el lugar elegidos: para los contadores de las tiras y la agenda (una pasada, no una por botón)
   // el horario de los open, con lo que tienen los filtros (2026-11-15, el usuario: "los open muestran lo que tengan los filtros"; antes, el área, el tipo y el lugar,
   // sin las fechas): las del listado; y sus días, los del periodo elegido (un mes, one year) y los días de la semana elegidos
-  agendaDe = () => lista;
+  // ... y, para venue y time, todas las de lo elegido (el área, el tipo y el lugar), no solo las del listado: la ventana de 7 días del listado dejaba fuera
+  // las mensuales de otras semanas, y en condensed (la semana tipo) faltaban (2026-11-19, el usuario: "segun see by venue, ocho solo tendria milonga el 2th
+  // sun a las 1930 ?": de Ocho, el domingo, solo la de la 4.ª); los días los decide pintaAgenda (condensed, su día de la semana; expand, la fecha que sale)
+  agendaDe = () => soloBuscado ? lista : personas.filter(p => enArea(p, a) && enRol(p, r) && enSel(p));
   agendaFiltro = {periodo: fs !== null ? PERIODOS[fs] : conDias && !soloBuscado ? [HOY0, new Date(HOY0.getFullYear(), HOY0.getMonth(), HOY0.getDate() + DIAS_VISTA - 1)] : null, dias};   // (con la tira de días, los de la vista: hoy y los 6 que siguen)
   baseLugares = base.filter(p => p.pos);
   // la tira de roles privados y el área 'no area' (las fichas sin país), solo si hay datos privados: la local; en la publicada nadie los tiene (2026-11-11, el
@@ -3386,7 +3394,7 @@ function pinta(){
     if (favorito(p)) nombre.append(logoTipo(LETRA_TIPO[FAV]));
     // una source, sin el último trozo de su dominio: hongkongtango.com -> hongkongtango, agendadeltango.com Madrid -> agendadeltango Madrid (2026-11-11, el usuario:
     // "para mostar las sources en el listado quita el ultimo subdominio (ej .com)")
-    // con R en condensed, una regular mensual (o cada dos semanas), sus semanas tras el nombre: Milonga X (1ª 3ª) (2026-11-18, el usuario: "(R) condensed => ...
+    // con R en condensed, una regular mensual (o cada dos semanas), sus semanas tras el nombre: Milonga X (1ª3ª) (2026-11-18, el usuario: "(R) condensed => ...
     // mensuales indicadas (1th 2th 3th 4h) despues del nombre"); en expand, cada vez, en su fecha
     span('fNomTexto', p.lista ? p.nombre.replace(/\.[a-z]{2,6}(?=\s|$)/gi, '') : p.nombre + (!repiteReg && frecuencia(p) ? ' ' + frecuencia(p) : ''), span('fNomCaja', '', nombre));
     const mini = cara(p);   // la miniatura al final, de la altura de la línea
@@ -3649,8 +3657,8 @@ function botonLocal(f){   // su enlace (el de la línea venue de la ficha) o, si
   return b;
 }
 const ORDINAL = {1: '1ª', 2: '2ª', 3: '3ª', 4: '4ª', 5: '5ª', L: 'last'};   // (2026-11-18, el usuario: "use 1ª 2ª 3ª 4ª last"; antes, 1st, 2nd, 3rd, 4th)
-const semanasMes = p => { const r = leeReg(p.fechaOrig); return r && r.frec == 'M' && r.semanas.length ? '(' + r.semanas.map(x => ORDINAL[x] || x).join(' ') + ')' : ''; };   // (1ª 3ª last), sin comas (2026-11-18, el usuario: "(1ª 2ª 3ª 4ª last) sin comas")
-// las semanas de una mensual, (1ª 3ª), o cada dos semanas; semanal, vacía
+const semanasMes = p => { const r = leeReg(p.fechaOrig); return r && r.frec == 'M' && r.semanas.length ? '(' + r.semanas.map(x => ORDINAL[x] || x).join('') + ')' : ''; };   // (1ª3ªlast), sin comas ni blancos (2026-11-18, el usuario: "(1ª 2ª 3ª 4ª last) sin comas"; 2026-11-19, "2ª3ª .. sin blancos")
+// las semanas de una mensual, (1ª3ª), o cada dos semanas; semanal, vacía
 const frecuencia = p => semanasMes(p) || ((leeReg(p.fechaOrig) || {}).frec == 'Q' ? '(every 2 weeks)' : '');
 // el nombre de una milonga (o de un evento) en los see by: entero, en azul, con el logo de su tipo y la ★ de los favoritos delante (2026-11-18, el usuario:
 // "incluye delante del nombre en see by el logo del tipo de artefacto", "fav delante del nombre"; see by month, sin el logo: va en la columna de su país) y,
@@ -3679,7 +3687,11 @@ function botonHora(p){
   b.type = 'button';
   b.className = 'sesion';
   b.setAttribute('aria-label', p.nombre);
-  if (horaReg(p)) b.appendChild(document.createElement('span')).textContent = horaReg(p);
+  if (horaReg(p)){   // 1930-2330, con el guion estrecho: los dos tiempos, más juntos (2026-11-19, el usuario: "usa 1930-2330 un guion mas corto para juntar mas el tiempo")
+    const s = b.appendChild(document.createElement('span'));
+    horaReg(p).split('-').forEach((x, i) => { if (i) s.appendChild(document.createElement('span')).className = 'guion'; s.append(x); });
+    s.querySelectorAll('.guion').forEach(g => g.textContent = '-');
+  }
   else if (letraTipo(p)) b.appendChild(logoTipo(letraTipo(p)));
   if (b.firstChild && b.firstChild.tagName == 'SPAN') b.firstChild.className = 'hora';
   b.onclick = () => fichaEncima(p);
